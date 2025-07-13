@@ -33,46 +33,41 @@ The tool implements a dual-wall cube calibration approach:
 6. Collapsible instructions panel
 
 ## Development Setup
-This project currently lacks standard React tooling. To make it functional:
+The project is set up with Vite, React, TypeScript, and shadcn/ui for a modern development experience.
 
-1. **Create a React project structure**:
-   ```bash
-   npx create-react-app . --template typescript
-   # or
-   npm create vite@latest . -- --template react
-   ```
-
-2. **Install required dependencies**:
-   ```bash
-   npm install lucide-react
-   npm install -D tailwindcss postcss autoprefixer
-   ```
-
-3. **Rename and move the component**:
-   ```bash
-   mv code src/OrcaFlowCalibration.jsx
-   ```
-
-4. **Configure Tailwind CSS** following standard setup procedures
+### Dependencies
+- React 18 with TypeScript
+- Vite for fast builds and HMR
+- Tailwind CSS for styling
+- shadcn/ui components with Radix UI
+- Lucide React for icons
 
 ## Common Tasks
 
 ### Running the Application
-Currently no build system is configured. After setting up the project:
 ```bash
-npm start  # for Create React App
-npm run dev  # for Vite
+npm run dev     # Start development server
+npm run build   # Build for production
+npm run preview # Preview production build locally
 ```
+
+### Deployment
+The project is configured for Vercel deployment:
+- Project ID: `prj_jV4xRdoRqKW11VxZVdi5VzFru9va`
+- Automatic deployments on push to main branch
+- Build command: `npm run build`
+- Output directory: `dist`
 
 ### Testing
 No test framework is currently implemented. Consider adding:
-- Jest + React Testing Library for unit tests
-- Cypress or Playwright for E2E tests
+- Vitest for unit tests (works well with Vite)
+- Playwright for E2E tests
 
 ### Code Quality
-No linting or formatting tools are configured. Consider adding:
-- ESLint with React configuration
-- Prettier for code formatting
+```bash
+npm run lint    # Run ESLint
+npm run build   # TypeScript type checking happens during build
+```
 
 ## Important Notes
 - The component expects Tailwind CSS to be properly configured for styling
