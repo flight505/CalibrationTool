@@ -139,7 +139,7 @@ const CalibrationGuide: React.FC<CalibrationGuideProps> = ({ onNavigateToTool })
         </AlertDescription>
       </Alert>
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {calibrationSteps.map((step, index) => {
           const isCompleted = completedSteps.has(step.id);
           const isCurrent = index === currentStep;
@@ -147,52 +147,52 @@ const CalibrationGuide: React.FC<CalibrationGuideProps> = ({ onNavigateToTool })
           return (
             <Card 
               key={step.id} 
-              className={`transition-all ${isCurrent ? 'ring-2 ring-primary' : ''}`}
+              className={`transition-all hover:shadow-lg cursor-pointer ${isCurrent ? 'ring-2 ring-primary' : ''} ${isCompleted ? 'bg-muted/30' : ''}`}
+              onClick={() => {
+                setCurrentStep(index);
+                onNavigateToTool(step.tool);
+              }}
             >
-              <CardHeader>
+              <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4">
-                    <button
-                      onClick={() => toggleStepCompletion(step.id)}
-                      className="mt-1"
-                    >
-                      {isCompleted ? (
-                        <CheckCircle2 className="w-6 h-6 text-green-600" />
-                      ) : (
-                        <Circle className="w-6 h-6 text-muted-foreground" />
-                      )}
-                    </button>
-                    <div>
-                      <CardTitle className="text-lg">
-                        {index + 1}. {step.title}
-                      </CardTitle>
-                      <CardDescription>{step.description}</CardDescription>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Estimated time: {step.time}
-                      </p>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-2xl font-bold text-muted-foreground">{index + 1}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleStepCompletion(step.id);
+                        }}
+                        className="ml-auto"
+                      >
+                        {isCompleted ? (
+                          <CheckCircle2 className="w-5 h-5 text-green-600" />
+                        ) : (
+                          <Circle className="w-5 h-5 text-muted-foreground" />
+                        )}
+                      </button>
                     </div>
+                    <CardTitle className="text-base">{step.title}</CardTitle>
+                    <CardDescription className="text-sm mt-1">{step.description}</CardDescription>
                   </div>
-                  <Button 
-                    size="sm"
-                    onClick={() => {
-                      setCurrentStep(index);
-                      onNavigateToTool(step.tool);
-                    }}
-                  >
-                    Go to Tool
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
                 </div>
               </CardHeader>
-              <CardContent>
-                <Accordion type="single" collapsible>
+              <CardContent className="pt-0">
+                <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
+                  <span>⏱ {step.time}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+                <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="tips" className="border-none">
-                    <AccordionTrigger className="text-sm py-2">
-                      View Tips
+                    <AccordionTrigger 
+                      className="text-xs py-1 hover:no-underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Quick Tips
                     </AccordionTrigger>
                     <AccordionContent>
-                      <ul className="space-y-1 text-sm text-muted-foreground">
-                        {step.tips.map((tip, tipIndex) => (
+                      <ul className="space-y-1 text-xs text-muted-foreground mt-2">
+                        {step.tips.slice(0, 2).map((tip, tipIndex) => (
                           <li key={tipIndex}>• {tip}</li>
                         ))}
                       </ul>
