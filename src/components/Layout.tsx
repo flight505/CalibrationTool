@@ -1,5 +1,5 @@
 import React from 'react';
-import { Printer, Calculator, Thermometer, Move3D, RotateCcw, FileText, Github, Gauge } from 'lucide-react';
+import { Printer, Calculator, Thermometer, Move3D, RotateCcw, FileText, Github, Gauge, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 
@@ -10,6 +10,7 @@ interface LayoutProps {
 }
 
 const tools = [
+  { id: 'guide', name: 'Guide', icon: BookOpen, description: 'Calibration sequence' },
   { id: 'temperature', name: 'Temperature', icon: Thermometer, description: 'Find optimal temperature' },
   { id: 'flow', name: 'Flow Rate', icon: Calculator, description: 'Calibrate flow rate' },
   { id: 'pressure', name: 'Pressure Advance', icon: Move3D, description: 'Tune pressure advance' },

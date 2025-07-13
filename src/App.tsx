@@ -6,12 +6,15 @@ import TemperatureTower from '@/components/TemperatureTower'
 import PressureAdvance from '@/components/PressureAdvance'
 import RetractionTest from '@/components/RetractionTest'
 import MaxVolumetricSpeed from '@/components/MaxVolumetricSpeed'
+import CalibrationGuide from '@/components/CalibrationGuide'
 
 function App() {
-  const [currentTool, setCurrentTool] = useState('flow')
+  const [currentTool, setCurrentTool] = useState('guide')
 
   const renderTool = () => {
     switch (currentTool) {
+      case 'guide':
+        return <CalibrationGuide onNavigateToTool={setCurrentTool} />
       case 'flow':
         return <FlowRateCalibration />
       case 'temperature':
@@ -23,7 +26,7 @@ function App() {
       case 'maxspeed':
         return <MaxVolumetricSpeed />
       default:
-        return <FlowRateCalibration />
+        return <CalibrationGuide onNavigateToTool={setCurrentTool} />
     }
   }
 
