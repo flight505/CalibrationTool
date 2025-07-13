@@ -43,8 +43,10 @@ const OrcaFlowCalibration = () => {
       : null;
 
     const nozzleSizeNum = parseFloat(nozzleSize);
-    const singleFlowPercent = singleAvg ? (nozzleSizeNum / singleAvg) * 100 : null;
-    const doubleFlowPercent = doubleAvg ? ((nozzleSizeNum * 2) / doubleAvg) * 100 : null;
+    // Upper section is double wall (2 × nozzle)
+    const doubleFlowPercent = singleAvg ? ((nozzleSizeNum * 2) / singleAvg) * 100 : null;
+    // Lower section is single thick wall (3 × nozzle)
+    const singleFlowPercent = doubleAvg ? ((nozzleSizeNum * 3) / doubleAvg) * 100 : null;
 
     let avgFlowPercent;
     if (singleFlowPercent && doubleFlowPercent) {
@@ -81,13 +83,13 @@ Date: ${new Date().toLocaleString()}
 Nozzle Size: ${nozzleSize}mm
 Current Flow Rate: ${currentFlow}%
 
-Single Wall Measurements: ${singleWallMeasurements.filter(m => m).join(', ')}mm
-Single Wall Average: ${results.singleWallAvg?.toFixed(3) || 'N/A'}mm
-Single Wall Flow %: ${results.singleFlowPercent?.toFixed(2) || 'N/A'}%
-
-Double Wall Measurements: ${doubleWallMeasurements.filter(m => m).join(', ')}mm
-Double Wall Average: ${results.doubleWallAvg?.toFixed(3) || 'N/A'}mm
+Double Wall Measurements (Upper): ${singleWallMeasurements.filter(m => m).join(', ')}mm
+Double Wall Average: ${results.singleWallAvg?.toFixed(3) || 'N/A'}mm
 Double Wall Flow %: ${results.doubleFlowPercent?.toFixed(2) || 'N/A'}%
+
+Single Wall Measurements (Lower): ${doubleWallMeasurements.filter(m => m).join(', ')}mm
+Single Wall Average: ${results.doubleWallAvg?.toFixed(3) || 'N/A'}mm
+Single Wall Flow %: ${results.singleFlowPercent?.toFixed(2) || 'N/A'}%
 
 Overall Average Flow %: ${results.avgFlowPercent.toFixed(2)}%
 Recommended New Flow Rate: ${results.newFlowRate}%
@@ -161,8 +163,8 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                   <ul className="space-y-1">
-                    <li>• Measure the <strong>upper single wall</strong> ({nozzleSize}mm target)</li>
-                    <li>• Measure the <strong>lower double wall</strong> ({(parseFloat(nozzleSize) * 2).toFixed(1)}mm target)</li>
+                    <li>• Measure the <strong>upper double wall</strong> ({(parseFloat(nozzleSize) * 2).toFixed(1)}mm target)</li>
+                    <li>• Measure the <strong>lower single wall</strong> ({(parseFloat(nozzleSize) * 3).toFixed(1)}mm target)</li>
                     <li>• Take measurements on all 4 sides</li>
                     <li>• Use calipers with 0.01mm precision</li>
                     <li>• Avoid measuring near corners</li>
@@ -176,8 +178,8 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
               <Lightbulb className="h-4 w-4" />
               <AlertTitle>Pro Tip</AlertTitle>
               <AlertDescription>
-                The dual-wall design provides better accuracy by testing both single and double wall extrusion in a single print. 
-                The algorithm averages both measurements for optimal results.
+                The calibration cube has a solid base (0.8mm), thick single walls (1.2mm) in the lower section, 
+                and thin double walls (0.4mm + 0.8mm gap + 0.4mm) in the upper section for comprehensive flow testing.
               </AlertDescription>
             </Alert>
 
@@ -234,20 +236,20 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
               <svg viewBox="0 0 200 200" className="w-full h-32">
                 <rect x="20" y="20" width="160" height="160" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground"/>
                 
-                <rect x="20" y="20" width="160" height="60" fill="hsl(var(--primary) / 0.1)" stroke="hsl(var(--primary))" strokeWidth="2"/>
-                <text x="100" y="55" textAnchor="middle" className="text-sm font-semibold fill-primary">
-                  Single Wall ({nozzleSize}mm)
+                <rect x="20" y="20" width="160" height="80" fill="hsl(var(--accent) / 0.1)" stroke="hsl(var(--accent))" strokeWidth="2"/>
+                <text x="100" y="65" textAnchor="middle" className="text-sm font-semibold fill-accent-foreground">
+                  Single Wall ({(parseFloat(nozzleSize) * 3).toFixed(1)}mm)
                 </text>
                 
-                <rect x="20" y="80" width="160" height="100" fill="hsl(var(--accent) / 0.1)" stroke="hsl(var(--accent))" strokeWidth="2"/>
-                <text x="100" y="135" textAnchor="middle" className="text-sm font-semibold fill-accent-foreground">
+                <rect x="20" y="100" width="160" height="80" fill="hsl(var(--primary) / 0.1)" stroke="hsl(var(--primary))" strokeWidth="2"/>
+                <text x="100" y="145" textAnchor="middle" className="text-sm font-semibold fill-primary">
                   Double Wall ({(parseFloat(nozzleSize) * 2).toFixed(1)}mm)
                 </text>
                 
-                <path d="M 10 50 L 15 50" stroke="hsl(var(--primary))" strokeWidth="2"/>
-                <path d="M 185 50 L 190 50" stroke="hsl(var(--primary))" strokeWidth="2"/>
-                <path d="M 10 130 L 15 130" stroke="hsl(var(--accent))" strokeWidth="2"/>
-                <path d="M 185 130 L 190 130" stroke="hsl(var(--accent))" strokeWidth="2"/>
+                <path d="M 10 60 L 15 60" stroke="hsl(var(--accent))" strokeWidth="2"/>
+                <path d="M 185 60 L 190 60" stroke="hsl(var(--accent))" strokeWidth="2"/>
+                <path d="M 10 140 L 15 140" stroke="hsl(var(--primary))" strokeWidth="2"/>
+                <path d="M 185 140 L 190 140" stroke="hsl(var(--primary))" strokeWidth="2"/>
               </svg>
               <p className="text-xs text-muted-foreground mt-2 text-center">
                 Measure wall thickness at marked locations
@@ -262,9 +264,9 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Ruler className="w-5 h-5" />
-              Single Wall Measurements
+              Double Wall Measurements (Upper Section)
             </CardTitle>
-            <CardDescription>Target: {nozzleSize}mm</CardDescription>
+            <CardDescription>Target: {(parseFloat(nozzleSize) * 2).toFixed(1)}mm</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
@@ -293,9 +295,9 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Ruler className="w-5 h-5" />
-              Double Wall Measurements
+              Single Wall Measurements (Lower Section)
             </CardTitle>
-            <CardDescription>Target: {(parseFloat(nozzleSize) * 2).toFixed(1)}mm</CardDescription>
+            <CardDescription>Target: {(parseFloat(nozzleSize) * 3).toFixed(1)}mm</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
@@ -351,11 +353,11 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
               {results.singleWallAvg && (
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardDescription>Single Wall Average</CardDescription>
+                    <CardDescription>Double Wall Average</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <p className="text-2xl font-bold">{results.singleWallAvg.toFixed(3)}mm</p>
-                    <p className="text-sm text-muted-foreground">Flow: {results.singleFlowPercent?.toFixed(1)}%</p>
+                    <p className="text-sm text-muted-foreground">Flow: {results.doubleFlowPercent?.toFixed(1)}%</p>
                   </CardContent>
                 </Card>
               )}
@@ -363,11 +365,11 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
               {results.doubleWallAvg && (
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardDescription>Double Wall Average</CardDescription>
+                    <CardDescription>Single Wall Average</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <p className="text-2xl font-bold">{results.doubleWallAvg.toFixed(3)}mm</p>
-                    <p className="text-sm text-muted-foreground">Flow: {results.doubleFlowPercent?.toFixed(1)}%</p>
+                    <p className="text-sm text-muted-foreground">Flow: {results.singleFlowPercent?.toFixed(1)}%</p>
                   </CardContent>
                 </Card>
               )}
@@ -410,8 +412,8 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
             This tool uses the formula: <code className="bg-muted px-2 py-1 rounded text-xs">New Flow = Current Flow × (Expected / Measured)</code>
           </p>
           <p>
-            The dual-wall cube design provides two independent measurements: single walls test fine extrusion control, 
-            while double walls verify consistency with multiple perimeters. The algorithm averages both results for optimal accuracy.
+            The calibration cube tests flow in two ways: the lower section has thick single walls (1.2mm) to test bulk extrusion, 
+            while the upper section has thin double walls (0.4mm + gap + 0.4mm) to test precise thin wall printing. The algorithm averages both results for optimal accuracy.
           </p>
         </CardContent>
       </Card>
