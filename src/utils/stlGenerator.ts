@@ -20,9 +20,8 @@ export function generateFlowCalibrationCube({
   const normals: number[] = [];
 
   // Wall thickness calculations
-  const thickWallThickness = nozzleSize * 3; // 1.2mm for 0.4mm nozzle
-  const thinWallThickness = nozzleSize; // 0.4mm for 0.4mm nozzle
-  const airGap = nozzleSize * 2; // 0.8mm for 0.4mm nozzle
+  const thickWallThickness = nozzleSize * 3; // 1.2mm for 0.4mm nozzle (single wall)
+  const thinWallThickness = nozzleSize; // 0.4mm for 0.4mm nozzle (will be printed with 2 perimeters)
 
   // Helper function to add a vertex with normal
   const addVertex = (x: number, y: number, z: number, nx: number, ny: number, nz: number) => {
@@ -64,14 +63,11 @@ export function generateFlowCalibrationCube({
   const z2 = baseHeight + singleWallHeight; // Top of single wall section (8.8mm)
   const z3 = totalHeight; // Top of cube (18.8mm)
   
-  // Inner dimensions for single wall section
-  const singleInnerHalf = halfSize - thickWallThickness; // 10 - 1.2 = 8.8mm
-  
-  // Inner dimensions for double wall section
-  const outerWallInnerHalf = halfSize - thinWallThickness; // 10 - 0.4 = 9.6mm
-  const innerWallOuterHalf = halfSize - thinWallThickness - airGap; // 10 - 0.4 - 0.8 = 8.8mm
+  // Inner dimensions
+  const thickInnerHalf = halfSize - thickWallThickness; // 10 - 1.2 = 8.8mm (17.6mm cavity)
+  const thinInnerHalf = halfSize - thinWallThickness; // 10 - 0.4 = 9.6mm (19.2mm cavity)
 
-  // 1. BOTTOM FACE (solid base at z=0)
+  // 1. BOTTOM FACE (solid base)
   addQuad(
     [-halfSize, -halfSize, z0],
     [-halfSize, halfSize, z0],
@@ -80,21 +76,58 @@ export function generateFlowCalibrationCube({
     [0, 0, -1]
   );
 
-  // 2. TOP OF BASE (z=baseHeight) with hole for single wall cavity
+  // 2. OUTER WALLS (continuous from bottom to top)
+  // Front wall
+  addQuad(
+    [-halfSize, -halfSize, z0],
+    [halfSize, -halfSize, z0],
+    [halfSize, -halfSize, z3],
+    [-halfSize, -halfSize, z3],
+    [0, -1, 0]
+  );
+  
+  // Back wall
+  addQuad(
+    [-halfSize, halfSize, z0],
+    [-halfSize, halfSize, z3],
+    [halfSize, halfSize, z3],
+    [halfSize, halfSize, z0],
+    [0, 1, 0]
+  );
+  
+  // Left wall
+  addQuad(
+    [-halfSize, -halfSize, z0],
+    [-halfSize, -halfSize, z3],
+    [-halfSize, halfSize, z3],
+    [-halfSize, halfSize, z0],
+    [-1, 0, 0]
+  );
+  
+  // Right wall
+  addQuad(
+    [halfSize, -halfSize, z0],
+    [halfSize, halfSize, z0],
+    [halfSize, halfSize, z3],
+    [halfSize, -halfSize, z3],
+    [1, 0, 0]
+  );
+
+  // 3. TOP OF BASE (z=0.8mm) - frame with hole for thick wall cavity
   // Front strip
   addQuad(
     [-halfSize, -halfSize, z1],
     [halfSize, -halfSize, z1],
-    [singleInnerHalf, -singleInnerHalf, z1],
-    [-singleInnerHalf, -singleInnerHalf, z1],
+    [thickInnerHalf, -thickInnerHalf, z1],
+    [-thickInnerHalf, -thickInnerHalf, z1],
     [0, 0, 1]
   );
   
   // Back strip
   addQuad(
     [-halfSize, halfSize, z1],
-    [-singleInnerHalf, singleInnerHalf, z1],
-    [singleInnerHalf, singleInnerHalf, z1],
+    [-thickInnerHalf, thickInnerHalf, z1],
+    [thickInnerHalf, thickInnerHalf, z1],
     [halfSize, halfSize, z1],
     [0, 0, 1]
   );
@@ -102,135 +135,180 @@ export function generateFlowCalibrationCube({
   // Left strip
   addQuad(
     [-halfSize, -halfSize, z1],
-    [-singleInnerHalf, -singleInnerHalf, z1],
-    [-singleInnerHalf, singleInnerHalf, z1],
+    [-thickInnerHalf, -thickInnerHalf, z1],
+    [-thickInnerHalf, thickInnerHalf, z1],
     [-halfSize, halfSize, z1],
     [0, 0, 1]
   );
   
   // Right strip
   addQuad(
-    [singleInnerHalf, -singleInnerHalf, z1],
+    [thickInnerHalf, -thickInnerHalf, z1],
     [halfSize, -halfSize, z1],
     [halfSize, halfSize, z1],
-    [singleInnerHalf, singleInnerHalf, z1],
+    [thickInnerHalf, thickInnerHalf, z1],
     [0, 0, 1]
   );
 
-  // 3. OUTER WALLS (from z0 to z3) - Split into sections for proper connection
-  
-  // Outer walls - bottom to base height
-  addQuad([-halfSize, -halfSize, z0], [halfSize, -halfSize, z0], [halfSize, -halfSize, z1], [-halfSize, -halfSize, z1], [0, -1, 0]);
-  addQuad([-halfSize, halfSize, z0], [-halfSize, halfSize, z1], [halfSize, halfSize, z1], [halfSize, halfSize, z0], [0, 1, 0]);
-  addQuad([-halfSize, -halfSize, z0], [-halfSize, -halfSize, z1], [-halfSize, halfSize, z1], [-halfSize, halfSize, z0], [-1, 0, 0]);
-  addQuad([halfSize, -halfSize, z0], [halfSize, halfSize, z0], [halfSize, halfSize, z1], [halfSize, -halfSize, z1], [1, 0, 0]);
-  
-  // Outer walls - base to single wall top
-  addQuad([-halfSize, -halfSize, z1], [halfSize, -halfSize, z1], [halfSize, -halfSize, z2], [-halfSize, -halfSize, z2], [0, -1, 0]);
-  addQuad([-halfSize, halfSize, z1], [-halfSize, halfSize, z2], [halfSize, halfSize, z2], [halfSize, halfSize, z1], [0, 1, 0]);
-  addQuad([-halfSize, -halfSize, z1], [-halfSize, -halfSize, z2], [-halfSize, halfSize, z2], [-halfSize, halfSize, z1], [-1, 0, 0]);
-  addQuad([halfSize, -halfSize, z1], [halfSize, halfSize, z1], [halfSize, halfSize, z2], [halfSize, -halfSize, z2], [1, 0, 0]);
-  
-  // Outer walls - single wall top to top
-  addQuad([-halfSize, -halfSize, z2], [halfSize, -halfSize, z2], [halfSize, -halfSize, z3], [-halfSize, -halfSize, z3], [0, -1, 0]);
-  addQuad([-halfSize, halfSize, z2], [-halfSize, halfSize, z3], [halfSize, halfSize, z3], [halfSize, halfSize, z2], [0, 1, 0]);
-  addQuad([-halfSize, -halfSize, z2], [-halfSize, -halfSize, z3], [-halfSize, halfSize, z3], [-halfSize, halfSize, z2], [-1, 0, 0]);
-  addQuad([halfSize, -halfSize, z2], [halfSize, halfSize, z2], [halfSize, halfSize, z3], [halfSize, -halfSize, z3], [1, 0, 0]);
-
-  // 4. SINGLE WALL SECTION - Inner walls (z1 to z2)
-  
+  // 4. THICK WALL SECTION - Inner walls (z1 to z2)
   // Front inner wall
   addQuad(
-    [-singleInnerHalf, -singleInnerHalf, z1],
-    [singleInnerHalf, -singleInnerHalf, z1],
-    [singleInnerHalf, -singleInnerHalf, z2],
-    [-singleInnerHalf, -singleInnerHalf, z2],
+    [-thickInnerHalf, -thickInnerHalf, z1],
+    [thickInnerHalf, -thickInnerHalf, z1],
+    [thickInnerHalf, -thickInnerHalf, z2],
+    [-thickInnerHalf, -thickInnerHalf, z2],
     [0, 1, 0]
   );
   
   // Back inner wall
   addQuad(
-    [-singleInnerHalf, singleInnerHalf, z1],
-    [-singleInnerHalf, singleInnerHalf, z2],
-    [singleInnerHalf, singleInnerHalf, z2],
-    [singleInnerHalf, singleInnerHalf, z1],
+    [-thickInnerHalf, thickInnerHalf, z1],
+    [-thickInnerHalf, thickInnerHalf, z2],
+    [thickInnerHalf, thickInnerHalf, z2],
+    [thickInnerHalf, thickInnerHalf, z1],
     [0, -1, 0]
   );
   
   // Left inner wall
   addQuad(
-    [-singleInnerHalf, -singleInnerHalf, z1],
-    [-singleInnerHalf, -singleInnerHalf, z2],
-    [-singleInnerHalf, singleInnerHalf, z2],
-    [-singleInnerHalf, singleInnerHalf, z1],
+    [-thickInnerHalf, -thickInnerHalf, z1],
+    [-thickInnerHalf, -thickInnerHalf, z2],
+    [-thickInnerHalf, thickInnerHalf, z2],
+    [-thickInnerHalf, thickInnerHalf, z1],
     [1, 0, 0]
   );
   
   // Right inner wall
   addQuad(
-    [singleInnerHalf, -singleInnerHalf, z1],
-    [singleInnerHalf, singleInnerHalf, z1],
-    [singleInnerHalf, singleInnerHalf, z2],
-    [singleInnerHalf, -singleInnerHalf, z2],
+    [thickInnerHalf, -thickInnerHalf, z1],
+    [thickInnerHalf, thickInnerHalf, z1],
+    [thickInnerHalf, thickInnerHalf, z2],
+    [thickInnerHalf, -thickInnerHalf, z2],
     [-1, 0, 0]
   );
 
-  // 5. TRANSITION PLATFORM (z2) - connects single wall to double wall
-  // This is the platform with multiple rings for the double wall structure
+  // 5. TRANSITION STEP (z=8.8mm) - connects thick wall cavity to thin wall cavity
+  // This creates the step from 17.6mm cavity to 19.2mm cavity
   
-  // Outermost ring (from cube edge to outer wall inner edge)
-  addQuad([-halfSize, -halfSize, z2], [halfSize, -halfSize, z2], [outerWallInnerHalf, -outerWallInnerHalf, z2], [-outerWallInnerHalf, -outerWallInnerHalf, z2], [0, 0, 1]);
-  addQuad([-halfSize, halfSize, z2], [-outerWallInnerHalf, outerWallInnerHalf, z2], [outerWallInnerHalf, outerWallInnerHalf, z2], [halfSize, halfSize, z2], [0, 0, 1]);
-  addQuad([-halfSize, -halfSize, z2], [-outerWallInnerHalf, -outerWallInnerHalf, z2], [-outerWallInnerHalf, outerWallInnerHalf, z2], [-halfSize, halfSize, z2], [0, 0, 1]);
-  addQuad([outerWallInnerHalf, -outerWallInnerHalf, z2], [halfSize, -halfSize, z2], [halfSize, halfSize, z2], [outerWallInnerHalf, outerWallInnerHalf, z2], [0, 0, 1]);
+  // Front step
+  addQuad(
+    [-thickInnerHalf, -thickInnerHalf, z2],
+    [thickInnerHalf, -thickInnerHalf, z2],
+    [thinInnerHalf, -thinInnerHalf, z2],
+    [-thinInnerHalf, -thinInnerHalf, z2],
+    [0, 0, 1]
+  );
   
-  // Middle ring (air gap - from outer wall inner to inner wall outer)
-  addQuad([-outerWallInnerHalf, -outerWallInnerHalf, z2], [outerWallInnerHalf, -outerWallInnerHalf, z2], [innerWallOuterHalf, -innerWallOuterHalf, z2], [-innerWallOuterHalf, -innerWallOuterHalf, z2], [0, 0, 1]);
-  addQuad([-outerWallInnerHalf, outerWallInnerHalf, z2], [-innerWallOuterHalf, innerWallOuterHalf, z2], [innerWallOuterHalf, innerWallOuterHalf, z2], [outerWallInnerHalf, outerWallInnerHalf, z2], [0, 0, 1]);
-  addQuad([-outerWallInnerHalf, -outerWallInnerHalf, z2], [-innerWallOuterHalf, -innerWallOuterHalf, z2], [-innerWallOuterHalf, innerWallOuterHalf, z2], [-outerWallInnerHalf, outerWallInnerHalf, z2], [0, 0, 1]);
-  addQuad([innerWallOuterHalf, -innerWallOuterHalf, z2], [outerWallInnerHalf, -outerWallInnerHalf, z2], [outerWallInnerHalf, outerWallInnerHalf, z2], [innerWallOuterHalf, innerWallOuterHalf, z2], [0, 0, 1]);
+  // Back step
+  addQuad(
+    [-thickInnerHalf, thickInnerHalf, z2],
+    [-thinInnerHalf, thinInnerHalf, z2],
+    [thinInnerHalf, thinInnerHalf, z2],
+    [thickInnerHalf, thickInnerHalf, z2],
+    [0, 0, 1]
+  );
   
-  // Innermost connection (from inner wall outer to single wall cavity)
-  addQuad([-innerWallOuterHalf, -innerWallOuterHalf, z2], [innerWallOuterHalf, -innerWallOuterHalf, z2], [singleInnerHalf, -singleInnerHalf, z2], [-singleInnerHalf, -singleInnerHalf, z2], [0, 0, 1]);
-  addQuad([-innerWallOuterHalf, innerWallOuterHalf, z2], [-singleInnerHalf, singleInnerHalf, z2], [singleInnerHalf, singleInnerHalf, z2], [innerWallOuterHalf, innerWallOuterHalf, z2], [0, 0, 1]);
-  addQuad([-innerWallOuterHalf, -innerWallOuterHalf, z2], [-singleInnerHalf, -singleInnerHalf, z2], [-singleInnerHalf, singleInnerHalf, z2], [-innerWallOuterHalf, innerWallOuterHalf, z2], [0, 0, 1]);
-  addQuad([singleInnerHalf, -singleInnerHalf, z2], [innerWallOuterHalf, -innerWallOuterHalf, z2], [innerWallOuterHalf, innerWallOuterHalf, z2], [singleInnerHalf, singleInnerHalf, z2], [0, 0, 1]);
+  // Left step
+  addQuad(
+    [-thickInnerHalf, -thickInnerHalf, z2],
+    [-thinInnerHalf, -thinInnerHalf, z2],
+    [-thinInnerHalf, thinInnerHalf, z2],
+    [-thickInnerHalf, thickInnerHalf, z2],
+    [0, 0, 1]
+  );
+  
+  // Right step
+  addQuad(
+    [thickInnerHalf, -thickInnerHalf, z2],
+    [thickInnerHalf, thickInnerHalf, z2],
+    [thinInnerHalf, thinInnerHalf, z2],
+    [thinInnerHalf, -thinInnerHalf, z2],
+    [0, 0, 1]
+  );
 
-  // 6. DOUBLE WALL SECTION - Outer thin walls (z2 to z3)
+  // 6. THIN WALL SECTION - Inner walls (z2 to z3)
+  // Front inner wall
+  addQuad(
+    [-thinInnerHalf, -thinInnerHalf, z2],
+    [thinInnerHalf, -thinInnerHalf, z2],
+    [thinInnerHalf, -thinInnerHalf, z3],
+    [-thinInnerHalf, -thinInnerHalf, z3],
+    [0, 1, 0]
+  );
   
-  // Outer wall inner faces
-  addQuad([-outerWallInnerHalf, -outerWallInnerHalf, z2], [outerWallInnerHalf, -outerWallInnerHalf, z2], [outerWallInnerHalf, -outerWallInnerHalf, z3], [-outerWallInnerHalf, -outerWallInnerHalf, z3], [0, 1, 0]);
-  addQuad([-outerWallInnerHalf, outerWallInnerHalf, z2], [-outerWallInnerHalf, outerWallInnerHalf, z3], [outerWallInnerHalf, outerWallInnerHalf, z3], [outerWallInnerHalf, outerWallInnerHalf, z2], [0, -1, 0]);
-  addQuad([-outerWallInnerHalf, -outerWallInnerHalf, z2], [-outerWallInnerHalf, -outerWallInnerHalf, z3], [-outerWallInnerHalf, outerWallInnerHalf, z3], [-outerWallInnerHalf, outerWallInnerHalf, z2], [1, 0, 0]);
-  addQuad([outerWallInnerHalf, -outerWallInnerHalf, z2], [outerWallInnerHalf, outerWallInnerHalf, z2], [outerWallInnerHalf, outerWallInnerHalf, z3], [outerWallInnerHalf, -outerWallInnerHalf, z3], [-1, 0, 0]);
+  // Back inner wall
+  addQuad(
+    [-thinInnerHalf, thinInnerHalf, z2],
+    [-thinInnerHalf, thinInnerHalf, z3],
+    [thinInnerHalf, thinInnerHalf, z3],
+    [thinInnerHalf, thinInnerHalf, z2],
+    [0, -1, 0]
+  );
+  
+  // Left inner wall
+  addQuad(
+    [-thinInnerHalf, -thinInnerHalf, z2],
+    [-thinInnerHalf, -thinInnerHalf, z3],
+    [-thinInnerHalf, thinInnerHalf, z3],
+    [-thinInnerHalf, thinInnerHalf, z2],
+    [1, 0, 0]
+  );
+  
+  // Right inner wall
+  addQuad(
+    [thinInnerHalf, -thinInnerHalf, z2],
+    [thinInnerHalf, thinInnerHalf, z2],
+    [thinInnerHalf, thinInnerHalf, z3],
+    [thinInnerHalf, -thinInnerHalf, z3],
+    [-1, 0, 0]
+  );
 
-  // 7. DOUBLE WALL SECTION - Inner thin walls (z2 to z3)
+  // 7. TOP FACE (z3) - frame with hole for thin wall cavity
+  // Front strip
+  addQuad(
+    [-halfSize, -halfSize, z3],
+    [halfSize, -halfSize, z3],
+    [thinInnerHalf, -thinInnerHalf, z3],
+    [-thinInnerHalf, -thinInnerHalf, z3],
+    [0, 0, 1]
+  );
   
-  // Inner wall outer faces (facing the air gap)
-  addQuad([-innerWallOuterHalf, -innerWallOuterHalf, z2], [innerWallOuterHalf, -innerWallOuterHalf, z2], [innerWallOuterHalf, -innerWallOuterHalf, z3], [-innerWallOuterHalf, -innerWallOuterHalf, z3], [0, -1, 0]);
-  addQuad([-innerWallOuterHalf, innerWallOuterHalf, z2], [-innerWallOuterHalf, innerWallOuterHalf, z3], [innerWallOuterHalf, innerWallOuterHalf, z3], [innerWallOuterHalf, innerWallOuterHalf, z2], [0, 1, 0]);
-  addQuad([-innerWallOuterHalf, -innerWallOuterHalf, z2], [-innerWallOuterHalf, -innerWallOuterHalf, z3], [-innerWallOuterHalf, innerWallOuterHalf, z3], [-innerWallOuterHalf, innerWallOuterHalf, z2], [-1, 0, 0]);
-  addQuad([innerWallOuterHalf, -innerWallOuterHalf, z2], [innerWallOuterHalf, innerWallOuterHalf, z2], [innerWallOuterHalf, innerWallOuterHalf, z3], [innerWallOuterHalf, -innerWallOuterHalf, z3], [1, 0, 0]);
+  // Back strip
+  addQuad(
+    [-halfSize, halfSize, z3],
+    [-thinInnerHalf, thinInnerHalf, z3],
+    [thinInnerHalf, thinInnerHalf, z3],
+    [halfSize, halfSize, z3],
+    [0, 0, 1]
+  );
   
-  // Inner wall inner faces (facing the cavity)
-  addQuad([-singleInnerHalf, -singleInnerHalf, z2], [singleInnerHalf, -singleInnerHalf, z2], [singleInnerHalf, -singleInnerHalf, z3], [-singleInnerHalf, -singleInnerHalf, z3], [0, 1, 0]);
-  addQuad([-singleInnerHalf, singleInnerHalf, z2], [-singleInnerHalf, singleInnerHalf, z3], [singleInnerHalf, singleInnerHalf, z3], [singleInnerHalf, singleInnerHalf, z2], [0, -1, 0]);
-  addQuad([-singleInnerHalf, -singleInnerHalf, z2], [-singleInnerHalf, -singleInnerHalf, z3], [-singleInnerHalf, singleInnerHalf, z3], [-singleInnerHalf, singleInnerHalf, z2], [1, 0, 0]);
-  addQuad([singleInnerHalf, -singleInnerHalf, z2], [singleInnerHalf, singleInnerHalf, z2], [singleInnerHalf, singleInnerHalf, z3], [singleInnerHalf, -singleInnerHalf, z3], [-1, 0, 0]);
+  // Left strip
+  addQuad(
+    [-halfSize, -halfSize, z3],
+    [-thinInnerHalf, -thinInnerHalf, z3],
+    [-thinInnerHalf, thinInnerHalf, z3],
+    [-halfSize, halfSize, z3],
+    [0, 0, 1]
+  );
+  
+  // Right strip
+  addQuad(
+    [thinInnerHalf, -thinInnerHalf, z3],
+    [halfSize, -halfSize, z3],
+    [halfSize, halfSize, z3],
+    [thinInnerHalf, thinInnerHalf, z3],
+    [0, 0, 1]
+  );
 
-  // 8. TOP FACE (z3) - Multiple rings for double wall structure
-  
-  // Outer ring (cube edge to outer wall inner)
-  addQuad([-halfSize, -halfSize, z3], [halfSize, -halfSize, z3], [outerWallInnerHalf, -outerWallInnerHalf, z3], [-outerWallInnerHalf, -outerWallInnerHalf, z3], [0, 0, 1]);
-  addQuad([-halfSize, halfSize, z3], [-outerWallInnerHalf, outerWallInnerHalf, z3], [outerWallInnerHalf, outerWallInnerHalf, z3], [halfSize, halfSize, z3], [0, 0, 1]);
-  addQuad([-halfSize, -halfSize, z3], [-outerWallInnerHalf, -outerWallInnerHalf, z3], [-outerWallInnerHalf, outerWallInnerHalf, z3], [-halfSize, halfSize, z3], [0, 0, 1]);
-  addQuad([outerWallInnerHalf, -outerWallInnerHalf, z3], [halfSize, -halfSize, z3], [halfSize, halfSize, z3], [outerWallInnerHalf, outerWallInnerHalf, z3], [0, 0, 1]);
-  
-  // Inner ring (inner wall outer to inner wall inner/cavity)
-  addQuad([-innerWallOuterHalf, -innerWallOuterHalf, z3], [innerWallOuterHalf, -innerWallOuterHalf, z3], [singleInnerHalf, -singleInnerHalf, z3], [-singleInnerHalf, -singleInnerHalf, z3], [0, 0, 1]);
-  addQuad([-innerWallOuterHalf, innerWallOuterHalf, z3], [-singleInnerHalf, singleInnerHalf, z3], [singleInnerHalf, singleInnerHalf, z3], [innerWallOuterHalf, innerWallOuterHalf, z3], [0, 0, 1]);
-  addQuad([-innerWallOuterHalf, -innerWallOuterHalf, z3], [-singleInnerHalf, -singleInnerHalf, z3], [-singleInnerHalf, singleInnerHalf, z3], [-innerWallOuterHalf, innerWallOuterHalf, z3], [0, 0, 1]);
-  addQuad([singleInnerHalf, -singleInnerHalf, z3], [innerWallOuterHalf, -innerWallOuterHalf, z3], [innerWallOuterHalf, innerWallOuterHalf, z3], [singleInnerHalf, singleInnerHalf, z3], [0, 0, 1]);
+  // Total triangle count:
+  // Bottom face: 1 quad = 2 triangles
+  // Outer walls: 4 quads = 8 triangles
+  // Base top: 4 quads = 8 triangles
+  // Thick inner walls: 4 quads = 8 triangles
+  // Transition step: 4 quads = 8 triangles
+  // Thin inner walls: 4 quads = 8 triangles
+  // Top face: 4 quads = 8 triangles
+  // Total: 2 + 8 + 8 + 8 + 8 + 8 + 8 = 50 triangles
 
   // Set geometry attributes
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
