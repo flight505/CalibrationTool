@@ -109,7 +109,7 @@ const RetractionTest = () => {
               <Alert className="bg-green-50/50 dark:bg-green-950/20 border-green-200">
                 <AlertTitle>Retraction Length</AlertTitle>
                 <AlertDescription className="text-2xl font-bold">
-                  {result.toFixed(2)}mm
+                  {result.toFixed(5)}mm
                 </AlertDescription>
                 <p className="text-sm mt-2">
                   Enter in Filament Settings → Setting Overrides → Retraction Length

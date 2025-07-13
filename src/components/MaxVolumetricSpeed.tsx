@@ -91,7 +91,7 @@ const MaxVolumetricSpeed = () => {
               <Alert className="bg-green-50/50 dark:bg-green-950/20 border-green-200">
                 <AlertTitle>Maximum Volumetric Speed</AlertTitle>
                 <AlertDescription className="text-2xl font-bold">
-                  {result.toFixed(1)} mm³/s
+                  {result.toFixed(2)} mm³/s
                 </AlertDescription>
                 <p className="text-sm mt-2">
                   Enter in Filament Settings → Advanced → Max Volumetric Speed
