@@ -1,6 +1,7 @@
 import React from 'react';
-import { Printer, Calculator, Thermometer, Move3D, RotateCcw, FileText, Github } from 'lucide-react';
+import { Printer, Calculator, Thermometer, Move3D, RotateCcw, FileText, Github, Gauge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -9,10 +10,11 @@ interface LayoutProps {
 }
 
 const tools = [
-  { id: 'flow', name: 'Flow Calibration', icon: Calculator, description: 'Calibrate flow rate' },
-  { id: 'temperature', name: 'Temperature Tower', icon: Thermometer, description: 'Find optimal temperature' },
+  { id: 'temperature', name: 'Temperature', icon: Thermometer, description: 'Find optimal temperature' },
+  { id: 'flow', name: 'Flow Rate', icon: Calculator, description: 'Calibrate flow rate' },
   { id: 'pressure', name: 'Pressure Advance', icon: Move3D, description: 'Tune pressure advance' },
-  { id: 'retraction', name: 'Retraction Test', icon: RotateCcw, description: 'Optimize retraction' },
+  { id: 'retraction', name: 'Retraction', icon: RotateCcw, description: 'Optimize retraction' },
+  { id: 'maxspeed', name: 'Max Speed', icon: Gauge, description: 'Find volumetric limit' },
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children, currentTool, onToolChange }) => {
@@ -26,6 +28,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentTool, onToolChange }) 
             <h1 className="text-2xl font-bold">Orca Slicer Calibration Suite</h1>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Button variant="ghost" size="icon" asChild>
               <a href="https://github.com" target="_blank" rel="noopener noreferrer">
                 <Github className="w-5 h-5" />
