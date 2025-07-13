@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calculator, Ruler, Download, RotateCcw, Info, CheckCircle2, Lightbulb } from 'lucide-react';
+import { Calculator, Ruler, Download, RotateCcw, Info, CheckCircle2, Lightbulb, Box } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { generateFlowCalibrationCube } from '@/utils/stlGenerator';
 
 interface CalibrationResults {
   singleWallAvg: number | null;
@@ -100,6 +101,20 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
     a.click();
   };
 
+  const downloadSTL = () => {
+    const nozzleSizeNum = parseFloat(nozzleSize);
+    const stlBlob = generateFlowCalibrationCube({ nozzleSize: nozzleSizeNum });
+    
+    const url = window.URL.createObjectURL(stlBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `flow_calibration_cube_${nozzleSize}mm.stl`;
+    a.click();
+    
+    // Clean up
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="container mx-auto p-4 space-y-6">
       <Card>
@@ -146,8 +161,8 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                   <ul className="space-y-1">
-                    <li>• Measure the <strong>upper single wall</strong> (0.4mm target)</li>
-                    <li>• Measure the <strong>lower triple wall</strong> (1.2mm target)</li>
+                    <li>• Measure the <strong>upper single wall</strong> ({nozzleSize}mm target)</li>
+                    <li>• Measure the <strong>lower triple wall</strong> ({(parseFloat(nozzleSize) * 3).toFixed(1)}mm target)</li>
                     <li>• Take measurements on all 4 sides</li>
                     <li>• Use calipers with 0.01mm precision</li>
                     <li>• Avoid measuring near corners</li>
@@ -165,6 +180,13 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
                 The algorithm averages both measurements for optimal results.
               </AlertDescription>
             </Alert>
+
+            <div className="mt-4 flex justify-center">
+              <Button onClick={downloadSTL} variant="outline" className="flex items-center gap-2">
+                <Box className="w-4 h-4" />
+                Download STL for {nozzleSize}mm Nozzle
+              </Button>
+            </div>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
