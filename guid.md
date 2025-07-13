@@ -1,6 +1,6 @@
 Looking at your STL file and spreadsheet, I understand perfectly! The cube is cleverly designed with:
 - Single walls (0.4mm) at the top section for fine measurement
-- Triple walls (1.2mm) at the bottom section for more robust measurement
+- Double walls (1.2mm) at the bottom section for more robust measurement
 - A divider creating this stepped wall thickness
 
 This dual-measurement approach provides better calibration accuracy by testing both thin and thick wall extrusion in a single print. Let me create a comprehensive React app for this calibration process.I've created a comprehensive React app for Orca Slicer flow calibration that understands your dual-wall cube design perfectly! Here's what makes it special:
@@ -9,7 +9,7 @@ This dual-measurement approach provides better calibration accuracy by testing b
 
 1. **Dual Measurement System**: 
    - Single wall (0.4mm) measurements for fine calibration
-   - Triple wall (1.2mm) measurements for robust validation
+   - Double wall (1.2mm) measurements for robust validation
    - Averages both for optimal accuracy
 
 2. **Smart Calculations**:
@@ -33,7 +33,7 @@ This dual-measurement approach provides better calibration accuracy by testing b
    - Scales calculations appropriately
    - Works with any starting flow rate
 
-The app implements the exact methodology from your spreadsheet but makes it much more accessible. The dual-wall approach is brilliant because it tests both precision (single wall) and consistency (triple wall) in one print.
+The app implements the exact methodology from your spreadsheet but makes it much more accessible. The dual-wall approach is brilliant because it tests both precision (single wall) and consistency (Double wall) in one print.
 
 Would you like me to expand this into a complete filament profile calibration suite that includes:
 - Temperature tower analyzer

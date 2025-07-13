@@ -11,9 +11,9 @@ import { generateFlowCalibrationCube } from '@/utils/stlGenerator';
 
 interface CalibrationResults {
   singleWallAvg: number | null;
-  tripleWallAvg: number | null;
+  doubleWallAvg: number | null;
   singleFlowPercent: number | null;
-  tripleFlowPercent: number | null;
+  doubleFlowPercent: number | null;
   avgFlowPercent: number;
   newFlowRate: string;
   adjustment: string;
@@ -23,14 +23,14 @@ const OrcaFlowCalibration = () => {
   const [nozzleSize, setNozzleSize] = useState('0.4');
   const [currentFlow, setCurrentFlow] = useState(100);
   const [singleWallMeasurements, setSingleWallMeasurements] = useState(['', '', '', '']);
-  const [tripleWallMeasurements, setTripleWallMeasurements] = useState(['', '', '', '']);
+  const [doubleWallMeasurements, setDoubleWallMeasurements] = useState(['', '', '', '']);
   const [results, setResults] = useState<CalibrationResults | null>(null);
 
   const calculateFlowRate = () => {
     const validSingle = singleWallMeasurements.filter(m => m && !isNaN(parseFloat(m))).map(m => parseFloat(m));
-    const validTriple = tripleWallMeasurements.filter(m => m && !isNaN(parseFloat(m))).map(m => parseFloat(m));
+    const validDouble = doubleWallMeasurements.filter(m => m && !isNaN(parseFloat(m))).map(m => parseFloat(m));
 
-    if (validSingle.length === 0 && validTriple.length === 0) {
+    if (validSingle.length === 0 && validDouble.length === 0) {
       return;
     }
 
@@ -38,28 +38,28 @@ const OrcaFlowCalibration = () => {
       ? validSingle.reduce((a, b) => a + b, 0) / validSingle.length 
       : null;
     
-    const tripleAvg = validTriple.length > 0 
-      ? validTriple.reduce((a, b) => a + b, 0) / validTriple.length 
+    const doubleAvg = validDouble.length > 0 
+      ? validDouble.reduce((a, b) => a + b, 0) / validDouble.length 
       : null;
 
     const nozzleSizeNum = parseFloat(nozzleSize);
     const singleFlowPercent = singleAvg ? (nozzleSizeNum / singleAvg) * 100 : null;
-    const tripleFlowPercent = tripleAvg ? ((nozzleSizeNum * 3) / tripleAvg) * 100 : null;
+    const doubleFlowPercent = doubleAvg ? ((nozzleSizeNum * 2) / doubleAvg) * 100 : null;
 
     let avgFlowPercent;
-    if (singleFlowPercent && tripleFlowPercent) {
-      avgFlowPercent = (singleFlowPercent + tripleFlowPercent) / 2;
+    if (singleFlowPercent && doubleFlowPercent) {
+      avgFlowPercent = (singleFlowPercent + doubleFlowPercent) / 2;
     } else {
-      avgFlowPercent = singleFlowPercent || tripleFlowPercent || 100;
+      avgFlowPercent = singleFlowPercent || doubleFlowPercent || 100;
     }
 
     const newFlowRate = (currentFlow * avgFlowPercent) / 100;
 
     setResults({
       singleWallAvg: singleAvg,
-      tripleWallAvg: tripleAvg,
+      doubleWallAvg: doubleAvg,
       singleFlowPercent,
-      tripleFlowPercent,
+      doubleFlowPercent,
       avgFlowPercent,
       newFlowRate: newFlowRate.toFixed(2),
       adjustment: ((avgFlowPercent - 100)).toFixed(2)
@@ -68,7 +68,7 @@ const OrcaFlowCalibration = () => {
 
   const resetCalculator = () => {
     setSingleWallMeasurements(['', '', '', '']);
-    setTripleWallMeasurements(['', '', '', '']);
+    setDoubleWallMeasurements(['', '', '', '']);
     setResults(null);
   };
 
@@ -85,9 +85,9 @@ Single Wall Measurements: ${singleWallMeasurements.filter(m => m).join(', ')}mm
 Single Wall Average: ${results.singleWallAvg?.toFixed(3) || 'N/A'}mm
 Single Wall Flow %: ${results.singleFlowPercent?.toFixed(2) || 'N/A'}%
 
-Triple Wall Measurements: ${tripleWallMeasurements.filter(m => m).join(', ')}mm
-Triple Wall Average: ${results.tripleWallAvg?.toFixed(3) || 'N/A'}mm
-Triple Wall Flow %: ${results.tripleFlowPercent?.toFixed(2) || 'N/A'}%
+Double Wall Measurements: ${doubleWallMeasurements.filter(m => m).join(', ')}mm
+Double Wall Average: ${results.doubleWallAvg?.toFixed(3) || 'N/A'}mm
+Double Wall Flow %: ${results.doubleFlowPercent?.toFixed(2) || 'N/A'}%
 
 Overall Average Flow %: ${results.avgFlowPercent.toFixed(2)}%
 Recommended New Flow Rate: ${results.newFlowRate}%
@@ -162,7 +162,7 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
                 <CardContent className="space-y-2 text-sm">
                   <ul className="space-y-1">
                     <li>• Measure the <strong>upper single wall</strong> ({nozzleSize}mm target)</li>
-                    <li>• Measure the <strong>lower triple wall</strong> ({(parseFloat(nozzleSize) * 3).toFixed(1)}mm target)</li>
+                    <li>• Measure the <strong>lower double wall</strong> ({(parseFloat(nozzleSize) * 2).toFixed(1)}mm target)</li>
                     <li>• Take measurements on all 4 sides</li>
                     <li>• Use calipers with 0.01mm precision</li>
                     <li>• Avoid measuring near corners</li>
@@ -176,7 +176,7 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
               <Lightbulb className="h-4 w-4" />
               <AlertTitle>Pro Tip</AlertTitle>
               <AlertDescription>
-                The dual-wall design provides better accuracy by testing both thin and thick wall extrusion in a single print. 
+                The dual-wall design provides better accuracy by testing both single and double wall extrusion in a single print. 
                 The algorithm averages both measurements for optimal results.
               </AlertDescription>
             </Alert>
@@ -241,7 +241,7 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
                 
                 <rect x="20" y="80" width="160" height="100" fill="hsl(var(--accent) / 0.1)" stroke="hsl(var(--accent))" strokeWidth="2"/>
                 <text x="100" y="135" textAnchor="middle" className="text-sm font-semibold fill-accent-foreground">
-                  Triple Wall ({(parseFloat(nozzleSize) * 3).toFixed(1)}mm)
+                  Double Wall ({(parseFloat(nozzleSize) * 2).toFixed(1)}mm)
                 </text>
                 
                 <path d="M 10 50 L 15 50" stroke="hsl(var(--primary))" strokeWidth="2"/>
@@ -293,24 +293,24 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Ruler className="w-5 h-5" />
-              Triple Wall Measurements
+              Double Wall Measurements
             </CardTitle>
-            <CardDescription>Target: {(parseFloat(nozzleSize) * 3).toFixed(1)}mm</CardDescription>
+            <CardDescription>Target: {(parseFloat(nozzleSize) * 2).toFixed(1)}mm</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
-              {tripleWallMeasurements.map((value, index) => (
+              {doubleWallMeasurements.map((value, index) => (
                 <div key={index} className="space-y-2">
-                  <Label htmlFor={`triple-${index}`}>Side {index + 1}</Label>
+                  <Label htmlFor={`double-${index}`}>Side {index + 1}</Label>
                   <Input
-                    id={`triple-${index}`}
+                    id={`double-${index}`}
                     type="number"
                     step="0.01"
                     value={value}
                     onChange={(e) => {
-                      const newMeasurements = [...tripleWallMeasurements];
+                      const newMeasurements = [...doubleWallMeasurements];
                       newMeasurements[index] = e.target.value;
-                      setTripleWallMeasurements(newMeasurements);
+                      setDoubleWallMeasurements(newMeasurements);
                     }}
                     placeholder="0.00"
                   />
@@ -326,7 +326,7 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
           onClick={calculateFlowRate} 
           size="lg" 
           className="flex-1"
-          disabled={singleWallMeasurements.every(m => !m) && tripleWallMeasurements.every(m => !m)}
+          disabled={singleWallMeasurements.every(m => !m) && doubleWallMeasurements.every(m => !m)}
         >
           <Calculator className="mr-2 h-5 w-5" />
           Calculate Flow Rate
@@ -360,14 +360,14 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
                 </Card>
               )}
               
-              {results.tripleWallAvg && (
+              {results.doubleWallAvg && (
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardDescription>Triple Wall Average</CardDescription>
+                    <CardDescription>Double Wall Average</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-2xl font-bold">{results.tripleWallAvg.toFixed(3)}mm</p>
-                    <p className="text-sm text-muted-foreground">Flow: {results.tripleFlowPercent?.toFixed(1)}%</p>
+                    <p className="text-2xl font-bold">{results.doubleWallAvg.toFixed(3)}mm</p>
+                    <p className="text-sm text-muted-foreground">Flow: {results.doubleFlowPercent?.toFixed(1)}%</p>
                   </CardContent>
                 </Card>
               )}
@@ -411,7 +411,7 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
           </p>
           <p>
             The dual-wall cube design provides two independent measurements: single walls test fine extrusion control, 
-            while triple walls verify consistency at higher volumes. The algorithm averages both results for optimal accuracy.
+            while double walls verify consistency with multiple perimeters. The algorithm averages both results for optimal accuracy.
           </p>
         </CardContent>
       </Card>

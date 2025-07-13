@@ -3,13 +3,15 @@ import * as THREE from 'three';
 interface CubeParameters {
   nozzleSize: number;
   cubeSize?: number;
-  dividerHeight?: number;
+  bottomHeight?: number;
+  topHeight?: number;
 }
 
 export function generateFlowCalibrationCube({
   nozzleSize,
-  cubeSize = 30,
-  dividerHeight = 10
+  cubeSize = 20,
+  bottomHeight = 9,
+  topHeight = 10
 }: CubeParameters): Blob {
   // Create scene
   const geometry = new THREE.BufferGeometry();
@@ -18,7 +20,9 @@ export function generateFlowCalibrationCube({
 
   // Wall thickness based on nozzle size
   const singleWallThickness = nozzleSize;
-  const tripleWallThickness = nozzleSize * 3;
+  // For 0.4mm nozzle: double wall total thickness = 1.2mm (matches drawing)
+  // This represents the total wall thickness from outer to inner surface
+  const doubleWallTotal = nozzleSize * 3; // 1.2mm for 0.4mm nozzle
 
   // Helper function to add a vertex with normal
   const addVertex = (x: number, y: number, z: number, nx: number, ny: number, nz: number) => {
@@ -52,146 +56,84 @@ export function generateFlowCalibrationCube({
 
   // Create the dual-wall calibration cube
   const halfSize = cubeSize / 2;
+  const totalHeight = bottomHeight + topHeight;
 
-  // Bottom section (triple wall) - outer walls
+  // Bottom section (double wall) - from 0 to bottomHeight (9mm)
+  // The double wall has total thickness of 1.2mm (for 0.4mm nozzle)
+  // This creates an inner cavity of 17.6mm x 17.6mm
+  const bottomInnerHalf = halfSize - doubleWallTotal;
+
+  // Outer walls of bottom section
   // Front wall
   addQuad(
     [-halfSize, -halfSize, 0],
     [halfSize, -halfSize, 0],
-    [halfSize, -halfSize, dividerHeight],
-    [-halfSize, -halfSize, dividerHeight],
+    [halfSize, -halfSize, bottomHeight],
+    [-halfSize, -halfSize, bottomHeight],
     [0, -1, 0]
   );
   
   // Back wall
   addQuad(
-    [-halfSize, halfSize - tripleWallThickness, 0],
-    [-halfSize, halfSize - tripleWallThickness, dividerHeight],
-    [halfSize, halfSize - tripleWallThickness, dividerHeight],
-    [halfSize, halfSize - tripleWallThickness, 0],
+    [-halfSize, halfSize, 0],
+    [-halfSize, halfSize, bottomHeight],
+    [halfSize, halfSize, bottomHeight],
+    [halfSize, halfSize, 0],
     [0, 1, 0]
   );
 
   // Left wall
   addQuad(
     [-halfSize, -halfSize, 0],
-    [-halfSize, -halfSize, dividerHeight],
-    [-halfSize, halfSize, dividerHeight],
+    [-halfSize, -halfSize, bottomHeight],
+    [-halfSize, halfSize, bottomHeight],
     [-halfSize, halfSize, 0],
     [-1, 0, 0]
   );
 
   // Right wall
   addQuad(
-    [halfSize - tripleWallThickness, -halfSize, 0],
-    [halfSize - tripleWallThickness, halfSize, 0],
-    [halfSize - tripleWallThickness, halfSize, dividerHeight],
-    [halfSize - tripleWallThickness, -halfSize, dividerHeight],
+    [halfSize, -halfSize, 0],
+    [halfSize, halfSize, 0],
+    [halfSize, halfSize, bottomHeight],
+    [halfSize, -halfSize, bottomHeight],
     [1, 0, 0]
   );
 
-  // Inner walls for triple wall
-  // Inner front wall
+  // Inner walls of bottom section
+  // Front inner wall
   addQuad(
-    [-halfSize + tripleWallThickness, -halfSize + tripleWallThickness, 0],
-    [halfSize - tripleWallThickness, -halfSize + tripleWallThickness, 0],
-    [halfSize - tripleWallThickness, -halfSize + tripleWallThickness, dividerHeight],
-    [-halfSize + tripleWallThickness, -halfSize + tripleWallThickness, dividerHeight],
+    [-bottomInnerHalf, -bottomInnerHalf, 0],
+    [bottomInnerHalf, -bottomInnerHalf, 0],
+    [bottomInnerHalf, -bottomInnerHalf, bottomHeight],
+    [-bottomInnerHalf, -bottomInnerHalf, bottomHeight],
     [0, 1, 0]
   );
 
-  // Inner back wall
+  // Back inner wall
   addQuad(
-    [-halfSize + tripleWallThickness, halfSize - tripleWallThickness, 0],
-    [-halfSize + tripleWallThickness, halfSize - tripleWallThickness, dividerHeight],
-    [halfSize - tripleWallThickness, halfSize - tripleWallThickness, dividerHeight],
-    [halfSize - tripleWallThickness, halfSize - tripleWallThickness, 0],
+    [-bottomInnerHalf, bottomInnerHalf, 0],
+    [-bottomInnerHalf, bottomInnerHalf, bottomHeight],
+    [bottomInnerHalf, bottomInnerHalf, bottomHeight],
+    [bottomInnerHalf, bottomInnerHalf, 0],
     [0, -1, 0]
   );
 
-  // Divider platform
+  // Left inner wall
   addQuad(
-    [-halfSize + tripleWallThickness, -halfSize + tripleWallThickness, dividerHeight],
-    [halfSize - tripleWallThickness, -halfSize + tripleWallThickness, dividerHeight],
-    [halfSize - tripleWallThickness, halfSize - tripleWallThickness, dividerHeight],
-    [-halfSize + tripleWallThickness, halfSize - tripleWallThickness, dividerHeight],
-    [0, 0, 1]
-  );
-
-  // Top section (single wall)
-  const topHeight = cubeSize;
-  
-  // Outer walls for single wall section
-  // Front wall
-  addQuad(
-    [-halfSize, -halfSize, dividerHeight],
-    [halfSize, -halfSize, dividerHeight],
-    [halfSize, -halfSize, topHeight],
-    [-halfSize, -halfSize, topHeight],
-    [0, -1, 0]
-  );
-
-  // Back wall
-  addQuad(
-    [-halfSize, halfSize, dividerHeight],
-    [-halfSize, halfSize, topHeight],
-    [halfSize, halfSize, topHeight],
-    [halfSize, halfSize, dividerHeight],
-    [0, 1, 0]
-  );
-
-  // Left wall
-  addQuad(
-    [-halfSize, -halfSize, dividerHeight],
-    [-halfSize, -halfSize, topHeight],
-    [-halfSize, halfSize, topHeight],
-    [-halfSize, halfSize, dividerHeight],
-    [-1, 0, 0]
-  );
-
-  // Right wall
-  addQuad(
-    [halfSize, -halfSize, dividerHeight],
-    [halfSize, halfSize, dividerHeight],
-    [halfSize, halfSize, topHeight],
-    [halfSize, -halfSize, topHeight],
+    [-bottomInnerHalf, -bottomInnerHalf, 0],
+    [-bottomInnerHalf, -bottomInnerHalf, bottomHeight],
+    [-bottomInnerHalf, bottomInnerHalf, bottomHeight],
+    [-bottomInnerHalf, bottomInnerHalf, 0],
     [1, 0, 0]
   );
 
-  // Inner walls for single wall section
-  // Inner front wall
+  // Right inner wall
   addQuad(
-    [-halfSize + singleWallThickness, -halfSize + singleWallThickness, dividerHeight],
-    [halfSize - singleWallThickness, -halfSize + singleWallThickness, dividerHeight],
-    [halfSize - singleWallThickness, -halfSize + singleWallThickness, topHeight],
-    [-halfSize + singleWallThickness, -halfSize + singleWallThickness, topHeight],
-    [0, 1, 0]
-  );
-
-  // Inner back wall
-  addQuad(
-    [-halfSize + singleWallThickness, halfSize - singleWallThickness, dividerHeight],
-    [-halfSize + singleWallThickness, halfSize - singleWallThickness, topHeight],
-    [halfSize - singleWallThickness, halfSize - singleWallThickness, topHeight],
-    [halfSize - singleWallThickness, halfSize - singleWallThickness, dividerHeight],
-    [0, -1, 0]
-  );
-
-  // Inner left wall
-  addQuad(
-    [-halfSize + singleWallThickness, -halfSize + singleWallThickness, dividerHeight],
-    [-halfSize + singleWallThickness, -halfSize + singleWallThickness, topHeight],
-    [-halfSize + singleWallThickness, halfSize - singleWallThickness, topHeight],
-    [-halfSize + singleWallThickness, halfSize - singleWallThickness, dividerHeight],
-    [1, 0, 0]
-  );
-
-  // Inner right wall
-  addQuad(
-    [halfSize - singleWallThickness, -halfSize + singleWallThickness, dividerHeight],
-    [halfSize - singleWallThickness, halfSize - singleWallThickness, dividerHeight],
-    [halfSize - singleWallThickness, halfSize - singleWallThickness, topHeight],
-    [halfSize - singleWallThickness, -halfSize + singleWallThickness, topHeight],
+    [bottomInnerHalf, -bottomInnerHalf, 0],
+    [bottomInnerHalf, bottomInnerHalf, 0],
+    [bottomInnerHalf, bottomInnerHalf, bottomHeight],
+    [bottomInnerHalf, -bottomInnerHalf, bottomHeight],
     [-1, 0, 0]
   );
 
@@ -202,6 +144,130 @@ export function generateFlowCalibrationCube({
     [halfSize, halfSize, 0],
     [halfSize, -halfSize, 0],
     [0, 0, -1]
+  );
+
+  // Divider platform at bottomHeight
+  addQuad(
+    [-bottomInnerHalf, -bottomInnerHalf, bottomHeight],
+    [bottomInnerHalf, -bottomInnerHalf, bottomHeight],
+    [bottomInnerHalf, bottomInnerHalf, bottomHeight],
+    [-bottomInnerHalf, bottomInnerHalf, bottomHeight],
+    [0, 0, 1]
+  );
+
+  // Top section (single wall) - from bottomHeight to totalHeight
+  const topInnerHalf = halfSize - singleWallThickness;
+  
+  // Outer walls of top section
+  // Front wall
+  addQuad(
+    [-halfSize, -halfSize, bottomHeight],
+    [halfSize, -halfSize, bottomHeight],
+    [halfSize, -halfSize, totalHeight],
+    [-halfSize, -halfSize, totalHeight],
+    [0, -1, 0]
+  );
+
+  // Back wall
+  addQuad(
+    [-halfSize, halfSize, bottomHeight],
+    [-halfSize, halfSize, totalHeight],
+    [halfSize, halfSize, totalHeight],
+    [halfSize, halfSize, bottomHeight],
+    [0, 1, 0]
+  );
+
+  // Left wall
+  addQuad(
+    [-halfSize, -halfSize, bottomHeight],
+    [-halfSize, -halfSize, totalHeight],
+    [-halfSize, halfSize, totalHeight],
+    [-halfSize, halfSize, bottomHeight],
+    [-1, 0, 0]
+  );
+
+  // Right wall
+  addQuad(
+    [halfSize, -halfSize, bottomHeight],
+    [halfSize, halfSize, bottomHeight],
+    [halfSize, halfSize, totalHeight],
+    [halfSize, -halfSize, totalHeight],
+    [1, 0, 0]
+  );
+
+  // Inner walls of top section
+  // Front inner wall
+  addQuad(
+    [-topInnerHalf, -topInnerHalf, bottomHeight],
+    [topInnerHalf, -topInnerHalf, bottomHeight],
+    [topInnerHalf, -topInnerHalf, totalHeight],
+    [-topInnerHalf, -topInnerHalf, totalHeight],
+    [0, 1, 0]
+  );
+
+  // Back inner wall
+  addQuad(
+    [-topInnerHalf, topInnerHalf, bottomHeight],
+    [-topInnerHalf, topInnerHalf, totalHeight],
+    [topInnerHalf, topInnerHalf, totalHeight],
+    [topInnerHalf, topInnerHalf, bottomHeight],
+    [0, -1, 0]
+  );
+
+  // Left inner wall
+  addQuad(
+    [-topInnerHalf, -topInnerHalf, bottomHeight],
+    [-topInnerHalf, -topInnerHalf, totalHeight],
+    [-topInnerHalf, topInnerHalf, totalHeight],
+    [-topInnerHalf, topInnerHalf, bottomHeight],
+    [1, 0, 0]
+  );
+
+  // Right inner wall
+  addQuad(
+    [topInnerHalf, -topInnerHalf, bottomHeight],
+    [topInnerHalf, topInnerHalf, bottomHeight],
+    [topInnerHalf, topInnerHalf, totalHeight],
+    [topInnerHalf, -topInnerHalf, totalHeight],
+    [-1, 0, 0]
+  );
+
+  // Connection walls between bottom inner cavity and top inner cavity
+  // These create the transition from the smaller bottom cavity to the larger top cavity
+  // Front transition
+  addQuad(
+    [-bottomInnerHalf, -bottomInnerHalf, bottomHeight],
+    [-topInnerHalf, -topInnerHalf, bottomHeight],
+    [topInnerHalf, -topInnerHalf, bottomHeight],
+    [bottomInnerHalf, -bottomInnerHalf, bottomHeight],
+    [0, 0, 1]
+  );
+
+  // Back transition
+  addQuad(
+    [-bottomInnerHalf, bottomInnerHalf, bottomHeight],
+    [bottomInnerHalf, bottomInnerHalf, bottomHeight],
+    [topInnerHalf, topInnerHalf, bottomHeight],
+    [-topInnerHalf, topInnerHalf, bottomHeight],
+    [0, 0, 1]
+  );
+
+  // Left transition
+  addQuad(
+    [-bottomInnerHalf, -bottomInnerHalf, bottomHeight],
+    [-bottomInnerHalf, bottomInnerHalf, bottomHeight],
+    [-topInnerHalf, topInnerHalf, bottomHeight],
+    [-topInnerHalf, -topInnerHalf, bottomHeight],
+    [0, 0, 1]
+  );
+
+  // Right transition
+  addQuad(
+    [bottomInnerHalf, -bottomInnerHalf, bottomHeight],
+    [topInnerHalf, -topInnerHalf, bottomHeight],
+    [topInnerHalf, topInnerHalf, bottomHeight],
+    [bottomInnerHalf, bottomInnerHalf, bottomHeight],
+    [0, 0, 1]
   );
 
   // Set geometry attributes

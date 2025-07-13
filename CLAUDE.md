@@ -20,7 +20,7 @@ This is a 3D printing calibration tool for Orca Slicer, implemented as a standal
 ### Calibration Methodology
 The tool implements a dual-wall cube calibration approach:
 - **Single wall measurements** (0.4mm target) - Tests fine extrusion control
-- **Triple wall measurements** (1.2mm target) - Verifies consistency at higher volumes
+- **Double wall measurements** (1.2mm target) - Verifies consistency at higher volumes
 - Uses formula: `New Flow = Current Flow × (Expected / Measured)`
 - Averages both measurement types for optimal accuracy
 
