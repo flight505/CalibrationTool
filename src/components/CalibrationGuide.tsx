@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CheckCircle2, Circle, ArrowRight, Info, FileText, Lightbulb } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { GlowCard } from '@/components/ui/spotlight-card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -144,14 +145,19 @@ const CalibrationGuide: React.FC<CalibrationGuideProps> = ({ onNavigateToTool })
           const isCurrent = index === currentStep;
           
           return (
-            <Card 
-              key={step.id} 
-              className={`transition-all hover:shadow-lg cursor-pointer ${isCurrent ? 'ring-2 ring-primary' : ''} ${isCompleted ? 'bg-muted/30' : ''}`}
-              onClick={() => {
-                setCurrentStep(index);
-                onNavigateToTool(step.tool);
-              }}
+            <GlowCard
+              key={step.id}
+              glowColor={isCompleted ? 'green' : isCurrent ? 'purple' : 'blue'}
+              customSize={true}
+              className={`cursor-pointer ${isCompleted ? 'opacity-70' : ''}`}
             >
+              <div
+                onClick={() => {
+                  setCurrentStep(index);
+                  onNavigateToTool(step.tool);
+                }}
+                className="h-full"
+              >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -199,7 +205,8 @@ const CalibrationGuide: React.FC<CalibrationGuideProps> = ({ onNavigateToTool })
                   </AccordionItem>
                 </Accordion>
               </CardContent>
-            </Card>
+              </div>
+            </GlowCard>
           );
         })}
       </div>

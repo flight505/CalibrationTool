@@ -31,7 +31,7 @@ function App() {
   }
 
   return (
-    <ThemeProvider defaultTheme="system" storageKey="orca-calibration-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="orca-calibration-theme">
       <Layout currentTool={currentTool} onToolChange={setCurrentTool}>
         {renderTool()}
       </Layout>
