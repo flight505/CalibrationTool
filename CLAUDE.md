@@ -5,31 +5,56 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Overview
 This is a comprehensive 3D printing calibration suite for Orca Slicer, implemented as a React web application. The suite provides multiple calibration tools including temperature analysis, flow rate calibration, pressure advance calculation, retraction testing, and maximum volumetric speed determination.
 
+## Recent Updates (2025-01-14)
+- Enhanced retraction calibration documentation with comprehensive guide including:
+  - Detailed cause-and-effect relationships between print issues and retraction settings
+  - Step-by-step calibration process with visual aids
+  - Material-specific test ranges for both Direct Drive and Bowden extruders
+  - Troubleshooting section for common issues
+  - Added retraction calibration to documentation TOC for better accessibility
+
 ## TODO
-- [ ] Add a dashboard with graph of all the calibrations such that the user can see how their well calibrations are doing. We need to think hard about how we could do this in a way that is not too complex and not too simple. But still useful for the user. We might have a base line or a target values.
-- [ ] Add a way to save the calibration settings to a file
-- [ ] Add a way to load the calibration settings from a file
-- [ ] Add a way to share the calibration settings with others
-- [ ] Add a way to import the calibration settings from a file
-- [ ] Add a way to export the calibration settings to a file
-- [ ] Add a way to import the calibration settings from a file
+- [ ] The retraction tower is not working exactly as the original STL then two tower were solid during last print and the small ridges on the towers seems to be slightly different than the original STL, that is a big problem as values read from the tower might not be accurate to the original STL.
+- [ ] The calibration cube uses another method for the STL generation. We should use similar method as the retraction tower. I need to create a ASCII STL for the flow calibration cube and add it to the project. then update the flow calibration cube to use a similar method.
+
+- [ ] Add a dashboard with graph of all the calibrations such that the user can see how well their calibrations are doing. We need to think hard about how we could do this in a way that is not too complex and not too simple. But still useful for the user. We might have baseline or target values.
+- [ ] Add a way to save/export calibration settings to a file
+- [ ] Add a way to load/import calibration settings from a file
+- [ ] Add a way to share calibration settings with others (possibly via URL or QR code)
+- [ ] Create comprehensive documentation for Temperature Tower calibration
+- [ ] Create comprehensive documentation for Max Volumetric Speed calibration
+- [ ] Add visual preview of calibration models before STL generation
+- [ ] Implement calibration history tracking
 ## Project Structure
 ```
 src/
 ├── components/
-│   ├── ui/                    # shadcn/ui components (buttons, cards, alerts, etc.)
-│   ├── CalibrationGuide.tsx   # Main guide with calibration sequence
-│   ├── FlowRateCalibration.tsx # Flow calibration with two methods
-│   ├── OrcaFlowCalibration.tsx # Orca cube-based flow calibration
-│   ├── YoloMethod.tsx         # Quick visual flow calibration
-│   ├── TemperatureTower.tsx   # Temperature optimization
-│   ├── PressureAdvance.tsx    # PA value calculator
-│   ├── RetractionTest.tsx     # Retraction length calculator
-│   └── MaxVolumetricSpeed.tsx # Hotend capacity testing
+│   ├── ui/                      # shadcn/ui components (buttons, cards, alerts, etc.)
+│   ├── CalibrationGuide.tsx     # Main guide with calibration sequence
+│   ├── DocumentationLayout.tsx  # Documentation navigation and structure
+│   ├── DocumentationViewer.tsx  # Markdown documentation renderer
+│   ├── FlowRateCalibration.tsx  # Flow calibration with two methods
+│   ├── OrcaFlowCalibration.tsx  # Orca cube-based flow calibration
+│   ├── YoloMethod.tsx           # Quick visual flow calibration
+│   ├── TemperatureTower.tsx     # Temperature optimization
+│   ├── PressureAdvance.tsx      # PA value calculator
+│   ├── RetractionTest.tsx       # Retraction length calculator with STL generation
+│   ├── MaxVolumetricSpeed.tsx   # Hotend capacity testing
+│   └── HelpButton.tsx           # Documentation link helper component
 ├── utils/
-│   └── stlGenerator.ts        # Three.js-based STL file generation
-├── App.tsx                    # Main app with routing and theme
-└── main.tsx                   # Entry point
+│   └── stlGenerator.ts          # Three.js-based STL file generation
+├── App.tsx                      # Main app with routing and theme
+└── main.tsx                     # Entry point
+
+public/
+├── docs/
+│   └── orca-slicer/
+│       ├── calibration/         # All calibration documentation
+│       │   ├── retraction-calibration.md  # Comprehensive retraction guide
+│       │   ├── flow-rate-calibration.md   # Flow rate calibration guide
+│       │   └── ...              # Other calibration docs
+│       └── images/              # Documentation images
+└── templates/                   # STL templates
 ```
 
 ## Key Technical Details
@@ -119,3 +144,22 @@ npx tsc --noEmit # Type check without building
   - Base: 0-0.8mm (solid)
   - Thick walls: 0.8-8.8mm (3× nozzle diameter)
   - Thin walls: 8.8-18.8mm (1× nozzle diameter)
+
+## Documentation System
+- Documentation is stored in `public/docs/orca-slicer/`
+- Each calibration tool has a help button linking to relevant documentation
+- Documentation viewer supports:
+  - GitHub Flavored Markdown
+  - Relative image paths (automatically converted)
+  - Responsive tables
+  - Code highlighting
+  - External link handling
+- All calibration guides are accessible through the Documentation section in the app
+- Images should be placed in appropriate subdirectories under `docs/orca-slicer/images/`
+
+## Best Practices
+1. When adding new calibration tools, create corresponding documentation
+2. Include visual aids and step-by-step instructions in documentation
+3. Test documentation links and image paths before committing
+4. Keep calculator formulas and precision consistent with Orca Slicer
+5. Maintain material-specific recommendations for each calibration type

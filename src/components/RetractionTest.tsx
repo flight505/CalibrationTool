@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { RotateCcw, Info, Lightbulb, AlertCircle, Download, Printer, Package, ChevronDown } from 'lucide-react';
+import { RotateCcw, Info, Lightbulb, AlertCircle, Download, Printer, Package, ChevronDown, ArrowRight, Calculator } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -87,7 +87,7 @@ const RetractionTest: React.FC<RetractionTestProps> = ({ onNavigate }) => {
           {onNavigate && (
             <div className="absolute right-4 top-4">
               <HelpButton 
-                docPath="/docs/orca-slicer/calibration/calibration-guide.md"
+                docPath="/docs/orca-slicer/calibration/retraction-calibration.md"
                 tooltip="View retraction calibration documentation"
                 onNavigate={onNavigate}
               />
@@ -100,102 +100,107 @@ const RetractionTest: React.FC<RetractionTestProps> = ({ onNavigate }) => {
           <CardDescription className="text-base">
             Optimize retraction settings to eliminate stringing
           </CardDescription>
+          <div className="mt-4 p-4 bg-muted/30 rounded-lg">
+            <p className="text-sm text-center">
+              Follow these steps: <span className="font-medium">1. Review Guidelines</span> 
+              <ArrowRight className="inline w-4 h-4 mx-2" />
+              <span className="font-medium">2. Generate & Print Test</span>
+              <ArrowRight className="inline w-4 h-4 mx-2" />
+              <span className="font-medium">3. Calculate Optimal Value</span>
+            </p>
+          </div>
         </CardHeader>
       </Card>
 
       <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-6">
-        <Card>
+        {/* Step 1: Retraction Guidelines */}
+        <Card className="md:col-span-2 lg:col-span-1">
           <CardHeader>
-            <CardTitle>Retraction Calculator</CardTitle>
-            <CardDescription>
-              Calculate retraction length from tower test
-            </CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <span className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">1</span>
+              Retraction Guidelines
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="extruder-type">Extruder Type</Label>
-              <Select value={extruderType} onValueChange={setExtruderType}>
-                <SelectTrigger id="extruder-type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Direct Drive">Direct Drive</SelectItem>
-                  <SelectItem value="Bowden">Bowden</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-sm text-muted-foreground">
-                Typical range: {extruderType === 'Direct Drive' ? '0.2-1.0mm' : '3.0-6.0mm'}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="start">Start Value</Label>
-              <Input
-                id="start"
-                type="number"
-                step="0.1"
-                value={start}
-                onChange={(e) => setStart(parseFloat(e.target.value) || 0)}
-                placeholder="0"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="measured-height">Measured Height (mm)</Label>
-              <Input
-                id="measured-height"
-                type="number"
-                value={measuredHeight}
-                onChange={(e) => setMeasuredHeight(parseFloat(e.target.value) || 0)}
-                placeholder="15"
-              />
-              <p className="text-sm text-muted-foreground">
-                Height where stringing stops
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="factor">Factor (Step Size)</Label>
-              <Input
-                id="factor"
-                type="number"
-                step="0.01"
-                value={factor}
-                onChange={(e) => setFactor(parseFloat(e.target.value) || 0)}
-                placeholder="0.1"
-              />
-              <p className="text-sm text-muted-foreground">
-                Typical: {extruderType === 'Direct Drive' ? '0.1' : '0.2'}
-              </p>
-            </div>
-
-            <Button onClick={calculate} className="w-full">
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Calculate Retraction Length
-            </Button>
-
-            {result !== null && (
-              <Alert className="bg-green-50/50 dark:bg-green-950/20 border-green-200">
-                <AlertTitle>Retraction Length</AlertTitle>
-                <AlertDescription className="text-2xl font-bold">
-                  {result.toFixed(5)}mm
-                </AlertDescription>
-                <p className="text-sm mt-2">
-                  Enter in Filament Settings → Setting Overrides → Retraction Length
+          <CardContent>
+            <div className="space-y-4 text-sm">
+              <div className="space-y-3">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Material Recommendations
+                </h4>
+                <div className="grid gap-2">
+                  {['PLA', 'ABS', 'PETG', 'TPU', 'Nylon'].map((material) => {
+                    const rec = materialRecommendations[extruderType][material];
+                    return (
+                      <div key={material} className="flex items-center justify-between p-2 rounded-md bg-muted/50">
+                        <span className="font-medium">{material}:</span>
+                        <div className="text-sm text-right">
+                          <span className="text-muted-foreground">Test: {rec.start}-{rec.end}mm</span>
+                          <span className="ml-2 font-medium text-green-600 dark:text-green-400">Best: {rec.optimal}mm</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {extruderType === 'Direct Drive' ? 
+                    'Direct drive systems need minimal retraction to prevent clogs' : 
+                    'Bowden systems require more retraction due to tube length'}
                 </p>
-              </Alert>
-            )}
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-1">How to Use Test Tower:</h4>
+                <ul className="space-y-1 text-muted-foreground">
+                  <li>• Print the generated STL file</li>
+                  <li>• Each layer tests a different retraction value</li>
+                  <li>• Look for the cleanest section with no stringing</li>
+                  <li>• Measure the height where stringing stops</li>
+                  <li>• Use the calculator in step 3 to find exact value</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold mb-1">What to Look For:</h4>
+                <ul className="space-y-1 text-muted-foreground">
+                  <li>• No stringing between towers</li>
+                  <li>• Clean travel moves</li>
+                  <li>• No oozing during moves</li>
+                  <li>• Good restart quality</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold mb-1">Retraction Speed:</h4>
+                <ul className="space-y-1 text-muted-foreground">
+                  <li>• Typical: 40-60mm/s</li>
+                  <li>• Too fast: Filament grinding</li>
+                  <li>• Too slow: Ineffective</li>
+                </ul>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
+        {/* Step 2: Retraction Test STL Generator */}
         <Card>
           <CardHeader>
-            <CardTitle>Retraction Test STL Generator</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <span className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">2</span>
+              Generate Test Tower
+            </CardTitle>
             <CardDescription>
-              Generate a parametric retraction test tower
+              Create a parametric retraction test STL
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <Alert className="bg-amber-50/50 dark:bg-amber-950/20 border-amber-200">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                <strong>Remember these values!</strong> You'll need them in Step 3 to calculate your optimal retraction.
+              </AlertDescription>
+            </Alert>
+            
             <div className="space-y-2">
               <Label htmlFor="stl-start">Start Retraction Length (mm)</Label>
               <Input
@@ -293,68 +298,97 @@ const RetractionTest: React.FC<RetractionTestProps> = ({ onNavigate }) => {
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2 lg:col-span-1">
+        {/* Step 3: Retraction Calculator */}
+        <Card>
           <CardHeader>
-            <CardTitle>Retraction Guidelines</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <span className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">3</span>
+              <Calculator className="h-5 w-5" />
+              Calculate Results
+            </CardTitle>
+            <CardDescription>
+              Find your optimal retraction value
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4 text-sm">
-              <div className="space-y-3">
-                <h4 className="font-semibold flex items-center gap-2">
-                  <Package className="h-4 w-4" />
-                  Material Recommendations
-                </h4>
-                <div className="grid gap-2">
-                  {['PLA', 'ABS', 'PETG', 'TPU', 'Nylon'].map((material) => {
-                    const rec = materialRecommendations[extruderType][material];
-                    return (
-                      <div key={material} className="flex items-center justify-between p-2 rounded-md bg-muted/50">
-                        <span className="font-medium">{material}:</span>
-                        <div className="text-sm text-right">
-                          <span className="text-muted-foreground">Test: {rec.start}-{rec.end}mm</span>
-                          <span className="ml-2 font-medium text-green-600 dark:text-green-400">Best: {rec.optimal}mm</span>
-                        </div>
-                      </div>
-                    );
-                  })}
+          <CardContent className="space-y-4">
+            <Alert className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200">
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                <strong>Example:</strong> If you used Start: 0mm, Step: 0.1mm in the STL generator, and the cleanest section is at 15mm height:
+                <div className="mt-2 font-mono text-center">
+                  0mm + (15mm × 0.1mm) = <strong>1.5mm retraction</strong>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {extruderType === 'Direct Drive' ? 
-                    'Direct drive systems need minimal retraction to prevent clogs' : 
-                    'Bowden systems require more retraction due to tube length'}
+              </AlertDescription>
+            </Alert>
+
+            <div className="space-y-2">
+              <Label htmlFor="start">Start Retraction from STL (mm)</Label>
+              <Input
+                id="start"
+                type="number"
+                step="0.1"
+                value={start}
+                onChange={(e) => setStart(parseFloat(e.target.value) || 0)}
+                placeholder="0"
+              />
+              <p className="text-sm text-muted-foreground">
+                The start value you used when generating the STL
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="measured-height">Measured Height (mm)</Label>
+              <Input
+                id="measured-height"
+                type="number"
+                value={measuredHeight}
+                onChange={(e) => setMeasuredHeight(parseFloat(e.target.value) || 0)}
+                placeholder="15"
+              />
+              <p className="text-sm text-muted-foreground">
+                Measure where stringing stops on your printed tower
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="factor">Step Size from STL (mm)</Label>
+              <Input
+                id="factor"
+                type="number"
+                step="0.01"
+                value={factor}
+                onChange={(e) => setFactor(parseFloat(e.target.value) || 0)}
+                placeholder="0.1"
+              />
+              <p className="text-sm text-muted-foreground">
+                The step size you used when generating the STL
+              </p>
+            </div>
+
+            {(start !== 0 || measuredHeight !== 0 || factor !== 0) && (
+              <div className="p-3 bg-muted/50 rounded-md">
+                <p className="text-sm font-mono text-center">
+                  {start}mm + ({measuredHeight}mm × {factor}mm) = <strong>{(start + (measuredHeight * factor)).toFixed(5)}mm</strong>
                 </p>
               </div>
+            )}
 
-              <div>
-                <h4 className="font-semibold mb-1">How to Use Test Tower:</h4>
-                <ul className="space-y-1 text-muted-foreground">
-                  <li>• Print the generated STL file</li>
-                  <li>• Each layer tests a different retraction value</li>
-                  <li>• Look for the cleanest section with no stringing</li>
-                  <li>• Measure the height where stringing stops</li>
-                  <li>• Use the calculator above to find exact value</li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold mb-1">What to Look For:</h4>
-                <ul className="space-y-1 text-muted-foreground">
-                  <li>• No stringing between towers</li>
-                  <li>• Clean travel moves</li>
-                  <li>• No oozing during moves</li>
-                  <li>• Good restart quality</li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold mb-1">Retraction Speed:</h4>
-                <ul className="space-y-1 text-muted-foreground">
-                  <li>• Typical: 40-60mm/s</li>
-                  <li>• Too fast: Filament grinding</li>
-                  <li>• Too slow: Ineffective</li>
-                </ul>
-              </div>
-            </div>
+            <Button onClick={calculate} className="w-full">
+              <Calculator className="mr-2 h-4 w-4" />
+              Calculate Retraction Length
+            </Button>
+
+            {result !== null && (
+              <Alert className="bg-green-50/50 dark:bg-green-950/20 border-green-200">
+                <AlertTitle>Optimal Retraction Length</AlertTitle>
+                <AlertDescription className="text-2xl font-bold">
+                  {result.toFixed(5)}mm
+                </AlertDescription>
+                <p className="text-sm mt-2">
+                  Enter this value in: <strong>Filament Settings → Setting Overrides → Retraction Length</strong>
+                </p>
+              </Alert>
+            )}
           </CardContent>
         </Card>
       </div>

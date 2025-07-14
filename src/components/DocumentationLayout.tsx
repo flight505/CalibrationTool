@@ -52,6 +52,10 @@ const docStructure: DocSection[] = [
         title: 'Adaptive Pressure Advance',
         path: '/docs/orca-slicer/calibration/adaptive-pressure-advance-calibration.md',
       },
+      {
+        title: 'Retraction Calibration',
+        path: '/docs/orca-slicer/calibration/retraction-calibration.md',
+      },
     ],
   },
 ];
