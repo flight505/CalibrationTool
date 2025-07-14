@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { RotateCcw, Info, Lightbulb, AlertCircle, Download, Printer, Package, ChevronDown, ArrowRight, Calculator } from 'lucide-react';
+import { RotateCcw, Info, Lightbulb, AlertCircle, Download, Printer, Package, ArrowRight, Calculator } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { HelpButton } from '@/components/HelpButton';
@@ -15,7 +14,7 @@ interface RetractionTestProps {
 }
 
 const RetractionTest: React.FC<RetractionTestProps> = ({ onNavigate }) => {
-  const [extruderType, setExtruderType] = useState('Direct Drive');
+  const [extruderType] = useState('Direct Drive');
   const [start, setStart] = useState(0);
   const [measuredHeight, setMeasuredHeight] = useState(15);
   const [factor, setFactor] = useState(0.1);
@@ -26,10 +25,9 @@ const RetractionTest: React.FC<RetractionTestProps> = ({ onNavigate }) => {
   const [stlEndRetraction, setStlEndRetraction] = useState(2);
   const [stlRetractionStep, setStlRetractionStep] = useState(0.1);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showHeightGuide, setShowHeightGuide] = useState(false);
   
   // Material recommendations
-  const materialRecommendations = {
+  const materialRecommendations: Record<string, Record<string, { start: number; end: number; optimal: string }>> = {
     'Direct Drive': {
       'PLA': { start: 0.2, end: 0.8, optimal: '0.4-0.6' },
       'ABS': { start: 0.2, end: 0.8, optimal: '0.4-0.6' },
