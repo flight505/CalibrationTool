@@ -232,7 +232,7 @@ The knowledge of where profiles reside, how inheritance functions, and the criti
 Ultimately, this comprehensive approach to profile management transforms a source of anxiety into a powerful tool. It allows you to spend less time troubleshooting and more time innovating, experimenting, and bringing your creative visions to life with reliable, high-quality 3D prints. Continuous learning and careful management are not just best practices; they are the keys to unlocking the full potential of OrcaSlicer and, by extension, the boundless possibilities of 3D printing."""
     
     # Write the fixed content
-    with open('docs/orca-slicer/profiles/profile-management-guide.md', 'w', encoding='utf-8') as f:
+    with open('public/docs/orca-slicer/profiles/profile-management-guide.md', 'w', encoding='utf-8') as f:
         f.write(content)
     
     print("Profile management guide has been fixed with local image paths!")

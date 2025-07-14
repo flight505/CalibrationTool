@@ -155,7 +155,7 @@ npx tsc --noEmit # Type check without building
   - Code highlighting
   - External link handling
 - All calibration guides are accessible through the Documentation section in the app
-- Images should be placed in appropriate subdirectories under `docs/orca-slicer/images/`
+- Images should be placed in appropriate subdirectories under `public/docs/orca-slicer/images/`
 
 ## Best Practices
 1. When adding new calibration tools, create corresponding documentation

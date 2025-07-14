@@ -90,7 +90,7 @@ def update_markdown_file(filepath):
 
 def main():
     # Process all markdown files in the calibration directory
-    calibration_dir = 'docs/orca-slicer/calibration'
+    calibration_dir = 'public/docs/orca-slicer/calibration'
     for filename in os.listdir(calibration_dir):
         if filename.endswith('.md'):
             filepath = os.path.join(calibration_dir, filename)
