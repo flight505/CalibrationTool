@@ -57,3 +57,139 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Prose styles for markdown content */
+@layer components {
+  .prose {
+    @apply text-foreground max-w-none;
+  }
+  
+  /* Headings */
+  .prose h1 {
+    @apply text-3xl font-bold mb-6 mt-8 first:mt-0;
+  }
+  
+  .prose h2 {
+    @apply text-2xl font-semibold mb-4 mt-8 first:mt-0;
+  }
+  
+  .prose h3 {
+    @apply text-xl font-semibold mb-3 mt-6;
+  }
+  
+  .prose h4 {
+    @apply text-lg font-semibold mb-2 mt-4;
+  }
+  
+  /* Paragraphs and lists */
+  .prose p {
+    @apply mb-4 leading-7;
+  }
+  
+  .prose ul {
+    @apply list-disc list-inside mb-4 ml-4 space-y-2;
+  }
+  
+  .prose ol {
+    @apply list-decimal list-inside mb-4 ml-4 space-y-2;
+  }
+  
+  .prose li {
+    @apply leading-7;
+  }
+  
+  .prose li > p {
+    @apply inline;
+  }
+  
+  /* Links */
+  .prose a {
+    @apply text-primary hover:underline font-medium;
+  }
+  
+  /* Strong and emphasis */
+  .prose strong {
+    @apply font-semibold;
+  }
+  
+  .prose em {
+    @apply italic;
+  }
+  
+  /* Code blocks */
+  .prose code {
+    @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono;
+  }
+  
+  .prose pre {
+    @apply bg-muted p-4 rounded-lg mb-4 overflow-x-auto;
+  }
+  
+  .prose pre code {
+    @apply bg-transparent p-0;
+  }
+  
+  /* Blockquotes */
+  .prose blockquote {
+    @apply border-l-4 border-primary pl-4 italic my-4 text-muted-foreground;
+  }
+  
+  /* Tables */
+  .prose table {
+    @apply w-full mb-4 border-collapse;
+  }
+  
+  .prose th {
+    @apply text-left font-semibold p-2 border-b border-border bg-muted/50;
+  }
+  
+  .prose td {
+    @apply p-2 border-b border-border;
+  }
+  
+  .prose tr:last-child td {
+    @apply border-b-0;
+  }
+  
+  /* Images */
+  .prose img {
+    @apply rounded-lg shadow-md my-4 max-w-full h-auto;
+  }
+  
+  /* Horizontal rules */
+  .prose hr {
+    @apply border-border my-8;
+  }
+  
+  /* Dark mode specific adjustments */
+  .dark .prose {
+    @apply text-foreground;
+  }
+  
+  .dark .prose h1,
+  .dark .prose h2,
+  .dark .prose h3,
+  .dark .prose h4 {
+    @apply text-foreground;
+  }
+  
+  .dark .prose strong {
+    @apply text-foreground;
+  }
+  
+  .dark .prose blockquote {
+    @apply text-muted-foreground border-primary/50;
+  }
+  
+  .dark .prose code {
+    @apply bg-muted/50 text-foreground;
+  }
+  
+  .dark .prose pre {
+    @apply bg-muted/30;
+  }
+  
+  .dark .prose th {
+    @apply bg-muted/30;
+  }
+}

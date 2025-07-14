@@ -7,24 +7,33 @@ import PressureAdvance from '@/components/PressureAdvance'
 import RetractionTest from '@/components/RetractionTest'
 import MaxVolumetricSpeed from '@/components/MaxVolumetricSpeed'
 import CalibrationGuide from '@/components/CalibrationGuide'
+import { DocumentationLayout } from '@/components/DocumentationLayout'
 
 function App() {
   const [currentTool, setCurrentTool] = useState('guide')
+  const [docPath, setDocPath] = useState<string | undefined>()
+
+  const handleToolChange = (tool: string, path?: string) => {
+    setCurrentTool(tool)
+    setDocPath(path)
+  }
 
   const renderTool = () => {
     switch (currentTool) {
       case 'guide':
-        return <CalibrationGuide onNavigateToTool={setCurrentTool} />
+        return <CalibrationGuide onNavigateToTool={handleToolChange} />
       case 'flow':
-        return <FlowRateCalibration />
+        return <FlowRateCalibration onNavigate={handleToolChange} />
       case 'temperature':
-        return <TemperatureTower />
+        return <TemperatureTower onNavigate={handleToolChange} />
       case 'pressure':
-        return <PressureAdvance />
+        return <PressureAdvance onNavigate={handleToolChange} />
       case 'retraction':
-        return <RetractionTest />
+        return <RetractionTest onNavigate={handleToolChange} />
       case 'maxspeed':
-        return <MaxVolumetricSpeed />
+        return <MaxVolumetricSpeed onNavigate={handleToolChange} />
+      case 'documentation':
+        return <DocumentationLayout onBack={() => handleToolChange('guide')} initialPath={docPath} />
       default:
         return <CalibrationGuide onNavigateToTool={setCurrentTool} />
     }
@@ -32,7 +41,7 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="orca-calibration-theme">
-      <Layout currentTool={currentTool} onToolChange={setCurrentTool}>
+      <Layout currentTool={currentTool} onToolChange={handleToolChange}>
         {renderTool()}
       </Layout>
     </ThemeProvider>

@@ -7,8 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { HelpButton } from '@/components/HelpButton';
 
-const RetractionTest = () => {
+interface RetractionTestProps {
+  onNavigate?: (tool: string, path?: string) => void;
+}
+
+const RetractionTest: React.FC<RetractionTestProps> = ({ onNavigate }) => {
   const [extruderType, setExtruderType] = useState('Direct Drive');
   const [start, setStart] = useState(0);
   const [measuredHeight, setMeasuredHeight] = useState(15);
@@ -23,7 +28,16 @@ const RetractionTest = () => {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="text-center">
+        <CardHeader className="text-center relative">
+          {onNavigate && (
+            <div className="absolute right-4 top-4">
+              <HelpButton 
+                docPath="/docs/orca-slicer/calibration/calibration-guide.md"
+                tooltip="View retraction calibration documentation"
+                onNavigate={onNavigate}
+              />
+            </div>
+          )}
           <CardTitle className="text-3xl font-bold flex items-center justify-center gap-3">
             <RotateCcw className="w-8 h-8" />
             Retraction Test Manager

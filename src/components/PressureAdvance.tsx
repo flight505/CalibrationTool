@@ -7,8 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { HelpButton } from '@/components/HelpButton';
 
-const PressureAdvance = () => {
+interface PressureAdvanceProps {
+  onNavigate?: (tool: string, path?: string) => void;
+}
+
+const PressureAdvance: React.FC<PressureAdvanceProps> = ({ onNavigate }) => {
   const [extruderType, setExtruderType] = useState('DDE');
   const [paStep, setPaStep] = useState(0.002);
   const [measuredHeight, setMeasuredHeight] = useState(8);
@@ -22,7 +27,16 @@ const PressureAdvance = () => {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="text-center">
+        <CardHeader className="text-center relative">
+          {onNavigate && (
+            <div className="absolute right-4 top-4">
+              <HelpButton 
+                docPath="/docs/orca-slicer/calibration/adaptive-pressure-advance-calibration.md"
+                tooltip="View pressure advance calibration documentation"
+                onNavigate={onNavigate}
+              />
+            </div>
+          )}
           <CardTitle className="text-3xl font-bold flex items-center justify-center gap-3">
             <Move3D className="w-8 h-8" />
             Pressure Advance Calibration

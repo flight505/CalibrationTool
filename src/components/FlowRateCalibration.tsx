@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import OrcaFlowCalibration from '@/components/OrcaFlowCalibration';
+import { HelpButton } from '@/components/HelpButton';
 
 const YoloFlowCalibration = () => {
   const [flowRatioOld, setFlowRatioOld] = useState(0.98);
@@ -97,11 +98,24 @@ const YoloFlowCalibration = () => {
   );
 };
 
-const FlowRateCalibration = () => {
+interface FlowRateCalibrationProps {
+  onNavigate?: (tool: string, path?: string) => void;
+}
+
+const FlowRateCalibration: React.FC<FlowRateCalibrationProps> = ({ onNavigate }) => {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="text-center">
+        <CardHeader className="text-center relative">
+          {onNavigate && (
+            <div className="absolute right-4 top-4">
+              <HelpButton 
+                docPath="/docs/orca-slicer/calibration/flow-rate-calibration.md"
+                tooltip="View flow rate calibration documentation"
+                onNavigate={onNavigate}
+              />
+            </div>
+          )}
           <CardTitle className="text-3xl font-bold flex items-center justify-center gap-3">
             <Calculator className="w-8 h-8" />
             Flow Rate Calibration

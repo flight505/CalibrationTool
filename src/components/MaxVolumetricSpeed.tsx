@@ -6,8 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { HelpButton } from '@/components/HelpButton';
 
-const MaxVolumetricSpeed = () => {
+interface MaxVolumetricSpeedProps {
+  onNavigate?: (tool: string, path?: string) => void;
+}
+
+const MaxVolumetricSpeed: React.FC<MaxVolumetricSpeedProps> = ({ onNavigate }) => {
   const [start, setStart] = useState(15);
   const [measuredHeight, setMeasuredHeight] = useState(16);
   const [step, setStep] = useState(0.5);
@@ -21,7 +26,16 @@ const MaxVolumetricSpeed = () => {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="text-center">
+        <CardHeader className="text-center relative">
+          {onNavigate && (
+            <div className="absolute right-4 top-4">
+              <HelpButton 
+                docPath="/docs/orca-slicer/calibration/calibration-guide.md"
+                tooltip="View volumetric speed calibration documentation"
+                onNavigate={onNavigate}
+              />
+            </div>
+          )}
           <CardTitle className="text-3xl font-bold flex items-center justify-center gap-3">
             <Gauge className="w-8 h-8" />
             Maximum Volumetric Speed

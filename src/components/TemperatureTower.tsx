@@ -7,8 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { HelpButton } from '@/components/HelpButton';
 
-const TemperatureTower = () => {
+interface TemperatureTowerProps {
+  onNavigate?: (tool: string, path?: string) => void;
+}
+
+const TemperatureTower: React.FC<TemperatureTowerProps> = ({ onNavigate }) => {
   const [material, setMaterial] = useState('PLA');
   const [bestTemp, setBestTemp] = useState('');
   const [result, setResult] = useState<string | null>(null);
@@ -43,7 +48,16 @@ const TemperatureTower = () => {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="text-center">
+        <CardHeader className="text-center relative">
+          {onNavigate && (
+            <div className="absolute right-4 top-4">
+              <HelpButton 
+                docPath="/docs/orca-slicer/calibration/calibration-guide.md"
+                tooltip="View temperature calibration documentation"
+                onNavigate={onNavigate}
+              />
+            </div>
+          )}
           <CardTitle className="text-3xl font-bold flex items-center justify-center gap-3">
             <Thermometer className="w-8 h-8" />
             Temperature Tower Analysis

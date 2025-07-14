@@ -29,6 +29,14 @@ const Layout: React.FC<LayoutProps> = ({ children, currentTool, onToolChange }) 
             <h1 className="text-2xl font-bold">Orca Slicer Calibration Suite</h1>
           </div>
           <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => onToolChange('documentation')}
+              title="Documentation"
+            >
+              <BookOpen className="w-5 h-5" />
+            </Button>
             <ThemeToggle />
             <Button variant="ghost" size="icon" asChild>
               <a href="https://github.com" target="_blank" rel="noopener noreferrer">
@@ -76,9 +84,28 @@ const Layout: React.FC<LayoutProps> = ({ children, currentTool, onToolChange }) 
               <span>Calibration tools for Orca Slicer</span>
             </div>
             <div className="flex items-center gap-4">
-              <a href="#" className="hover:text-foreground transition-colors">Documentation</a>
-              <a href="#" className="hover:text-foreground transition-colors">Support</a>
-              <a href="#" className="hover:text-foreground transition-colors">About</a>
+              <button 
+                onClick={() => onToolChange('documentation')}
+                className="hover:text-foreground transition-colors"
+              >
+                Documentation
+              </button>
+              <a 
+                href="https://github.com/SoftFever/OrcaSlicer" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-foreground transition-colors"
+              >
+                Support
+              </a>
+              <a 
+                href="https://github.com/SoftFever/OrcaSlicer/wiki" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-foreground transition-colors"
+              >
+                About
+              </a>
             </div>
           </div>
         </div>
