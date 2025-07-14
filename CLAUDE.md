@@ -5,6 +5,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Overview
 This is a comprehensive 3D printing calibration suite for Orca Slicer, implemented as a React web application. The suite provides multiple calibration tools including temperature analysis, flow rate calibration, pressure advance calculation, retraction testing, and maximum volumetric speed determination.
 
+## TODO
+- [ ] Add a dashboard with graph of all the calibrations such that the user can see how their well calibrations are doing. We need to think hard about how we could do this in a way that is not too complex and not too simple. But still useful for the user. We might have a base line or a target values.
+- [ ] Add a way to save the calibration settings to a file
+- [ ] Add a way to load the calibration settings from a file
+- [ ] Add a way to share the calibration settings with others
+- [ ] Add a way to import the calibration settings from a file
+- [ ] Add a way to export the calibration settings to a file
+- [ ] Add a way to import the calibration settings from a file
 ## Project Structure
 ```
 src/

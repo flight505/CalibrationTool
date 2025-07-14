@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { RotateCcw, Info, Lightbulb, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { RotateCcw, Info, Lightbulb, AlertCircle, Download, Printer, Package, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { HelpButton } from '@/components/HelpButton';
+import { generateRetractionTestTower } from '@/utils/stlGenerator';
 
 interface RetractionTestProps {
   onNavigate?: (tool: string, path?: string) => void;
@@ -19,10 +20,64 @@ const RetractionTest: React.FC<RetractionTestProps> = ({ onNavigate }) => {
   const [measuredHeight, setMeasuredHeight] = useState(15);
   const [factor, setFactor] = useState(0.1);
   const [result, setResult] = useState<number | null>(null);
+  
+  // STL Generation states
+  const [stlStartRetraction, setStlStartRetraction] = useState(0);
+  const [stlEndRetraction, setStlEndRetraction] = useState(2);
+  const [stlRetractionStep, setStlRetractionStep] = useState(0.1);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showHeightGuide, setShowHeightGuide] = useState(false);
+  
+  // Material recommendations
+  const materialRecommendations = {
+    'Direct Drive': {
+      'PLA': { start: 0.2, end: 0.8, optimal: '0.4-0.6' },
+      'ABS': { start: 0.2, end: 0.8, optimal: '0.4-0.6' },
+      'PETG': { start: 0.5, end: 1.5, optimal: '0.8-1.2' },
+      'TPU': { start: 0.0, end: 0.4, optimal: '0.1-0.3' },
+      'Nylon': { start: 0.3, end: 1.0, optimal: '0.5-0.8' }
+    },
+    'Bowden': {
+      'PLA': { start: 3.0, end: 6.0, optimal: '4.0-5.0' },
+      'ABS': { start: 3.0, end: 6.0, optimal: '4.0-5.0' },
+      'PETG': { start: 4.0, end: 7.0, optimal: '5.0-6.0' },
+      'TPU': { start: 1.0, end: 3.0, optimal: '1.5-2.5' },
+      'Nylon': { start: 3.5, end: 6.5, optimal: '4.5-5.5' }
+    }
+  };
+
+  // Update STL generator defaults when extruder type changes
+  useEffect(() => {
+    setStlStartRetraction(extruderType === 'Direct Drive' ? 0 : 1);
+    setStlEndRetraction(extruderType === 'Direct Drive' ? 2 : 6);
+    setStlRetractionStep(extruderType === 'Direct Drive' ? 0.1 : 0.2);
+  }, [extruderType]);
 
   const calculate = () => {
     const retractionLength = start + (measuredHeight * factor);
     setResult(retractionLength);
+  };
+
+  const generateSTL = async () => {
+    setIsGenerating(true);
+    try {
+      const blob = await generateRetractionTestTower({
+        startRetraction: stlStartRetraction,
+        endRetraction: stlEndRetraction,
+        retractionStep: stlRetractionStep
+      });
+      
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `retraction_test_${stlStartRetraction}-${stlEndRetraction}mm_${stlRetractionStep}step.stl`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to generate STL:', error);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -48,7 +103,7 @@ const RetractionTest: React.FC<RetractionTestProps> = ({ onNavigate }) => {
         </CardHeader>
       </Card>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Retraction Calculator</CardTitle>
@@ -135,20 +190,152 @@ const RetractionTest: React.FC<RetractionTestProps> = ({ onNavigate }) => {
 
         <Card>
           <CardHeader>
+            <CardTitle>Retraction Test STL Generator</CardTitle>
+            <CardDescription>
+              Generate a parametric retraction test tower
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="stl-start">Start Retraction Length (mm)</Label>
+              <Input
+                id="stl-start"
+                type="number"
+                step="0.5"
+                value={stlStartRetraction}
+                onChange={(e) => setStlStartRetraction(parseFloat(e.target.value) || 0)}
+                placeholder={extruderType === 'Direct Drive' ? '0' : '1'}
+              />
+              <p className="text-sm text-muted-foreground">
+                {extruderType === 'Direct Drive' ? 'Typical: 0mm' : 'Typical: 1mm'}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="stl-end">End Retraction Length (mm)</Label>
+              <Input
+                id="stl-end"
+                type="number"
+                step="0.5"
+                value={stlEndRetraction}
+                onChange={(e) => setStlEndRetraction(parseFloat(e.target.value) || 0)}
+                placeholder={extruderType === 'Direct Drive' ? '2' : '6'}
+              />
+              <p className="text-sm text-muted-foreground">
+                {extruderType === 'Direct Drive' ? 'Typical: 2mm' : 'Typical: 6mm'}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="stl-step">Step Size (mm)</Label>
+              <Input
+                id="stl-step"
+                type="number"
+                step="0.05"
+                value={stlRetractionStep}
+                onChange={(e) => setStlRetractionStep(parseFloat(e.target.value) || 0.1)}
+                placeholder="0.1"
+              />
+              <p className="text-sm text-muted-foreground">
+                {extruderType === 'Direct Drive' ? 'Typical: 0.1mm' : 'Typical: 0.2mm'}
+              </p>
+            </div>
+
+            <Alert className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200">
+              <Printer className="h-4 w-4" />
+              <AlertDescription>
+                <div className="space-y-1">
+                  <div><strong>Tower Height:</strong> {(1.0 + ((stlEndRetraction - stlStartRetraction) / stlRetractionStep)).toFixed(1)}mm</div>
+                  <div><strong>Test Sections:</strong> {Math.floor((stlEndRetraction - stlStartRetraction) / stlRetractionStep) + 1}</div>
+                  <div><strong>Tower Configuration:</strong> 4 towers (~3mm diameter each)</div>
+                  <div><strong>Base Plate:</strong> 40×15×0.4mm</div>
+                </div>
+              </AlertDescription>
+            </Alert>
+
+            <Button 
+              onClick={generateSTL} 
+              className="w-full"
+              disabled={isGenerating || stlRetractionStep <= 0 || stlEndRetraction <= stlStartRetraction}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              {isGenerating ? 'Generating...' : 'Download STL'}
+            </Button>
+
+            {/* Collapsible Height reference guide */}
+            <Accordion type="single" collapsible className="mt-4">
+              <AccordionItem value="height-guide" className="border rounded-md bg-muted/30">
+                <AccordionTrigger className="px-3 py-2 hover:no-underline">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Info className="h-4 w-4" />
+                    <span>Height Reference Guide ({Math.floor((stlEndRetraction - stlStartRetraction) / stlRetractionStep) + 1} test layers)</span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-3 pb-3">
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Each layer tests a different retraction value. Find the cleanest layer and note its height.
+                  </p>
+                  <div className="space-y-1 text-xs max-h-48 overflow-y-auto">
+                    <div className="font-mono sticky top-0 bg-background/95 backdrop-blur-sm py-1">Base: 0.0 - 1.0mm (no retraction)</div>
+                    {Array.from({ length: Math.floor((stlEndRetraction - stlStartRetraction) / stlRetractionStep) + 1 }, (_, i) => {
+                      const retraction = stlStartRetraction + (i * stlRetractionStep);
+                      const layerHeight = 1.0 + i;
+                      return (
+                        <div key={i} className="font-mono hover:bg-muted/50 px-1 rounded">
+                          Height {layerHeight.toFixed(1)}mm → {retraction.toFixed(2)}mm retraction
+                        </div>
+                      );
+                    })}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2 lg:col-span-1">
+          <CardHeader>
             <CardTitle>Retraction Guidelines</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4 text-sm">
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle className="text-sm">Material Specific</AlertTitle>
-                <AlertDescription className="mt-2 space-y-1">
-                  <div><strong>PLA/ABS:</strong> 0.2-0.4mm (DD), 3-5mm (Bowden)</div>
-                  <div><strong>PETG:</strong> 0.5-1.5mm (DD), 4-6mm (Bowden)</div>
-                  <div><strong>TPU:</strong> 0.1-0.3mm (minimal retraction)</div>
-                </AlertDescription>
-              </Alert>
+              <div className="space-y-3">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Material Recommendations
+                </h4>
+                <div className="grid gap-2">
+                  {['PLA', 'ABS', 'PETG', 'TPU', 'Nylon'].map((material) => {
+                    const rec = materialRecommendations[extruderType][material];
+                    return (
+                      <div key={material} className="flex items-center justify-between p-2 rounded-md bg-muted/50">
+                        <span className="font-medium">{material}:</span>
+                        <div className="text-sm text-right">
+                          <span className="text-muted-foreground">Test: {rec.start}-{rec.end}mm</span>
+                          <span className="ml-2 font-medium text-green-600 dark:text-green-400">Best: {rec.optimal}mm</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {extruderType === 'Direct Drive' ? 
+                    'Direct drive systems need minimal retraction to prevent clogs' : 
+                    'Bowden systems require more retraction due to tube length'}
+                </p>
+              </div>
 
+              <div>
+                <h4 className="font-semibold mb-1">How to Use Test Tower:</h4>
+                <ul className="space-y-1 text-muted-foreground">
+                  <li>• Print the generated STL file</li>
+                  <li>• Each layer tests a different retraction value</li>
+                  <li>• Look for the cleanest section with no stringing</li>
+                  <li>• Measure the height where stringing stops</li>
+                  <li>• Use the calculator above to find exact value</li>
+                </ul>
+              </div>
+              
               <div>
                 <h4 className="font-semibold mb-1">What to Look For:</h4>
                 <ul className="space-y-1 text-muted-foreground">

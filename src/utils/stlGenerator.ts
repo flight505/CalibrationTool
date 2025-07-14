@@ -315,15 +315,98 @@ export function generateFlowCalibrationCube({
   geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
 
   // Convert to STL format
-  const stlString = geometryToSTL(geometry);
+  const stlString = geometryToSTL(geometry, 'FlowCalibrationCube');
   return new Blob([stlString], { type: 'application/octet-stream' });
 }
 
-function geometryToSTL(geometry: THREE.BufferGeometry): string {
+interface RetractionTestParameters {
+  startRetraction: number;
+  endRetraction: number;
+  retractionStep: number;
+  towerDiameter?: number;
+  towerSpacing?: number;
+  plateWidth?: number;
+  plateLength?: number;
+  plateThickness?: number;
+  layerHeight?: number;
+}
+
+export async function generateRetractionTestTower({
+  startRetraction = 0,
+  endRetraction = 2,
+  retractionStep = 0.1
+}: RetractionTestParameters): Promise<Blob> {
+  // Calculate the maximum height based on OrcaSlicer's formula
+  // height = 1.0 + ((end - start) / step)
+  const maxHeight = 1.0 + ((endRetraction - startRetraction) / retractionStep);
+  
+  try {
+    // Fetch the template STL file
+    const response = await fetch('/templates/retraction_tower_template.stl');
+    const templateSTL = await response.text();
+    
+    // Parse and filter the STL
+    const filteredSTL = filterSTLByHeight(templateSTL, maxHeight);
+    
+    // Return as blob
+    return new Blob([filteredSTL], { type: 'application/sla' });
+  } catch (error) {
+    console.error('Failed to generate retraction test tower:', error);
+    throw error;
+  }
+}
+
+// Function to parse and filter STL triangles by height
+function filterSTLByHeight(stlContent: string, maxHeight: number): string {
+  const lines = stlContent.split('\n');
+  const filteredLines: string[] = [];
+  let currentFacet: string[] = [];
+  let inFacet = false;
+  let facetMaxZ = 0;
+  
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    
+    if (trimmedLine.startsWith('solid')) {
+      filteredLines.push(line);
+    } else if (trimmedLine.startsWith('endsolid')) {
+      filteredLines.push(line);
+    } else if (trimmedLine.startsWith('facet normal')) {
+      inFacet = true;
+      currentFacet = [line];
+      facetMaxZ = 0;
+    } else if (trimmedLine.startsWith('endfacet')) {
+      currentFacet.push(line);
+      
+      // Only include facet if all vertices are below maxHeight
+      if (facetMaxZ <= maxHeight) {
+        filteredLines.push(...currentFacet);
+      }
+      
+      inFacet = false;
+      currentFacet = [];
+    } else if (inFacet) {
+      currentFacet.push(line);
+      
+      // Check if this is a vertex line and extract Z coordinate
+      if (trimmedLine.startsWith('vertex')) {
+        const parts = trimmedLine.split(/\s+/);
+        if (parts.length >= 4) {
+          const z = parseFloat(parts[3]);
+          facetMaxZ = Math.max(facetMaxZ, z);
+        }
+      }
+    }
+  }
+  
+  return filteredLines.join('\n');
+}
+
+function geometryToSTL(geometry: THREE.BufferGeometry, modelName: string = 'Model'): string {
   const positions = geometry.getAttribute('position');
   const normals = geometry.getAttribute('normal');
   
-  let stl = 'solid FlowCalibrationCube\n';
+  let stl = `solid ${modelName}\n`;
   
   // Process triangles
   for (let i = 0; i < positions.count; i += 3) {
@@ -361,6 +444,6 @@ function geometryToSTL(geometry: THREE.BufferGeometry): string {
     stl += '  endfacet\n';
   }
   
-  stl += 'endsolid FlowCalibrationCube\n';
+  stl += `endsolid ${modelName}\n`;
   return stl;
 }
