@@ -8,6 +8,7 @@ import RetractionTest from '@/components/RetractionTest'
 import MaxVolumetricSpeed from '@/components/MaxVolumetricSpeed'
 import CalibrationGuide from '@/components/CalibrationGuide'
 import { DocumentationLayout } from '@/components/DocumentationLayout'
+import Recommendations from '@/components/Recommendations'
 
 function App() {
   const [currentTool, setCurrentTool] = useState('guide')
@@ -32,6 +33,8 @@ function App() {
         return <RetractionTest onNavigate={handleToolChange} />
       case 'maxspeed':
         return <MaxVolumetricSpeed onNavigate={handleToolChange} />
+      case 'recommendations':
+        return <Recommendations onNavigate={handleToolChange} />
       case 'documentation':
         return <DocumentationLayout onBack={() => handleToolChange('guide')} initialPath={docPath} />
       default:
