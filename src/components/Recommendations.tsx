@@ -177,7 +177,7 @@ export default function Recommendations({ onNavigate }: RecommendationsProps) {
             key={category}
             categoryName={category}
             subCategories={subCategories}
-            defaultOpen={index === 0 && !hasActiveFilters}
+            defaultOpen={hasActiveFilters}
             onNavigate={onNavigate}
           />
         ))}

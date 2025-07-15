@@ -40,7 +40,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentTool, onToolChange }) 
             </Button>
             <ThemeToggle />
             <Button variant="ghost" size="icon" asChild>
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/flight505/CalibrationTool" target="_blank" rel="noopener noreferrer">
                 <Github className="w-5 h-5" />
               </a>
             </Button>
