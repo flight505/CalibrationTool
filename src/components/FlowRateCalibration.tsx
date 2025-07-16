@@ -15,7 +15,12 @@ const YoloFlowCalibration = () => {
   const [result, setResult] = useState<number | null>(null);
 
   const calculate = () => {
-    const newFlowRatio = flowRatioOld + modifier;
+    // Auto-detect format: if input > 10, assume percentage and convert to decimal
+    let currentFlowNum = flowRatioOld;
+    if (currentFlowNum > 10) {
+      currentFlowNum = currentFlowNum / 100;
+    }
+    const newFlowRatio = currentFlowNum + modifier;
     setResult(newFlowRatio);
   };
 
@@ -52,6 +57,14 @@ const YoloFlowCalibration = () => {
               onChange={(e) => setFlowRatioOld(parseFloat(e.target.value) || 0)}
               placeholder="0.98"
             />
+            <p className="text-xs text-muted-foreground">
+              Enter as decimal (e.g., 0.98 not 98%). Values > 10 will be auto-converted.
+            </p>
+            {flowRatioOld > 10 && (
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                ⚠️ Auto-converting {flowRatioOld} to {(flowRatioOld / 100).toFixed(3)} (percentage → decimal)
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">

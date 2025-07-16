@@ -55,7 +55,11 @@ const OrcaFlowCalibration = () => {
       avgFlowPercent = thickFlowPercent || thinFlowPercent || 100;
     }
 
-    const currentFlowNum = parseFloat(currentFlow) || 1.00;
+    // Auto-detect format: if input > 10, assume percentage and convert to decimal
+    let currentFlowNum = parseFloat(currentFlow) || 1.00;
+    if (currentFlowNum > 10) {
+      currentFlowNum = currentFlowNum / 100;
+    }
     const newFlowRatio = (currentFlowNum * avgFlowPercent) / 100;
 
     setResults({
@@ -82,7 +86,7 @@ const OrcaFlowCalibration = () => {
 =====================================
 Date: ${new Date().toLocaleString()}
 Nozzle Size: ${nozzleSize}mm
-Current Flow Ratio: ${currentFlow}
+Current Flow Ratio: ${currentFlow} ${parseFloat(currentFlow) > 10 ? '(converted from percentage)' : ''}
 
 Thin Wall Measurements (Upper): ${singleWallMeasurements.filter(m => m).join(', ')}mm
 Thin Wall Average: ${results.singleWallAvg?.toFixed(3) || 'N/A'}mm
@@ -235,6 +239,14 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
                 placeholder="1.00"
                 pattern="[0-9]*\.?[0-9]+"
               />
+              <p className="text-xs text-muted-foreground">
+                Enter as decimal (e.g., 0.98 not 98%). Values > 10 will be auto-converted.
+              </p>
+              {parseFloat(currentFlow) > 10 && (
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  ⚠️ Auto-converting {currentFlow} to {(parseFloat(currentFlow) / 100).toFixed(3)} (percentage → decimal)
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
