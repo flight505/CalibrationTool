@@ -3,9 +3,23 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Overview
-This is a comprehensive 3D printing calibration suite for Orca Slicer, implemented as a React web application. The suite provides multiple calibration tools including temperature analysis, flow rate calibration, pressure advance calculation, retraction testing, and maximum volumetric speed determination.
+This is a comprehensive 3D printing calibration suite for Orca Slicer, implemented as a React web application. The suite provides multiple calibration tools including temperature analysis, flow ratio calibration, pressure advance calculation, retraction testing, and maximum volumetric speed determination.
 
-## Recent Updates (2025-01-16)
+## Recent Updates (2025-01-16) - Flow Calibration Improvements
+- Fixed Flow Calibration terminology and format issues:
+  - Changed all references from "Flow Rate" to "Flow Ratio" to match OrcaSlicer
+  - Converted from percentage format (100%) to decimal format (1.00)
+  - Added clear location instructions: "Material settings → Filament → Flow ratio and Pressure Advance → Flow ratio"
+  - Added comprehensive print settings guide with exact menu locations
+- Fixed thin wall slicing issue:
+  - Changed "Detect Thin Walls" from Disabled to Enabled
+  - Updated documentation to explain dual-wall design (thick walls with 2 perimeters, thin walls with 1 perimeter)
+- Implemented smart format auto-detection:
+  - Auto-converts percentage inputs (e.g., 98) to decimal format (0.98)
+  - Added validation warnings for format conversion
+  - Improved UI with clear helper text and examples
+
+## Recent Updates (2025-01-16) - Recommendations System
 - Enhanced recommendations page with problem-solving interface:
   - Added Quick Fix buttons for 8 common 3D printing problems (stringing, warping, corners, adhesion, etc.)
   - Implemented Material Quick Switch with color-coded badges for easy material filtering
@@ -78,7 +92,7 @@ public/
 │   └── orca-slicer/
 │       ├── calibration/         # All calibration documentation
 │       │   ├── retraction-calibration.md  # Comprehensive retraction guide
-│       │   ├── flow-rate-calibration.md   # Flow rate calibration guide
+│       │   ├── flow-rate-calibration.md   # Flow ratio calibration guide
 │       │   └── ...              # Other calibration docs
 │       └── images/              # Documentation images
 └── templates/                   # STL templates
