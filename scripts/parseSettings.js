@@ -64,7 +64,7 @@ function parseMarkdownTable(markdown) {
           example: cells[3] || '',
           reference: cells[4] || '',
           tags: parseArray(cells[5] || ''),
-          printers: parseArray(cells[6] || ''),
+          printerTypes: parseArray(cells[6] || ''),
           materials: parseArray(cells[7] || ''),
           related: parseArray(cells[8] || ''),
           critical: cells[9]?.replace('Critical:', '').trim().toLowerCase() === 'yes',

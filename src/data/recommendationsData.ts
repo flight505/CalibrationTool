@@ -1,5 +1,5 @@
 // Auto-generated from OrcaSlicer Comprehensive Settings.md
-// Generated on: 2025-07-16T08:58:32.458Z
+// Generated on: 2025-07-16T09:50:22.149Z
 // Total settings: 119
 
 export interface Setting {
@@ -34,7 +34,7 @@ export const recommendations: Setting[] = [
     "speed",
     "performance"
   ],
-  "printers": [
+  "printerTypes": [
     "CoreXY",
     "Cartesian"
   ],
@@ -65,7 +65,7 @@ export const recommendations: Setting[] = [
     "speed",
     "quality"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -95,7 +95,7 @@ export const recommendations: Setting[] = [
     "speed",
     "time-saving"
   ],
-  "printers": [
+  "printerTypes": [
     "CoreXY",
     "Cartesian"
   ],
@@ -128,7 +128,7 @@ export const recommendations: Setting[] = [
     "calibration",
     "quality"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -162,7 +162,7 @@ export const recommendations: Setting[] = [
     "surface-finish",
     "calibration"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -195,7 +195,7 @@ export const recommendations: Setting[] = [
     "speed",
     "strength"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -226,7 +226,7 @@ export const recommendations: Setting[] = [
     "first-layer",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -257,7 +257,7 @@ export const recommendations: Setting[] = [
     "precision",
     "klipper"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -290,7 +290,7 @@ export const recommendations: Setting[] = [
     "corners",
     "quality"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -322,7 +322,7 @@ export const recommendations: Setting[] = [
     "corners",
     "surface-finish"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -355,7 +355,7 @@ export const recommendations: Setting[] = [
     "corners",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "Direct Drive",
     "Bowden"
   ],
@@ -392,7 +392,7 @@ export const recommendations: Setting[] = [
     "quality",
     "klipper"
   ],
-  "printers": [
+  "printerTypes": [
     "Klipper"
   ],
   "materials": [
@@ -422,7 +422,7 @@ export const recommendations: Setting[] = [
     "stringing",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "Direct Drive",
     "Bowden"
   ],
@@ -456,7 +456,7 @@ export const recommendations: Setting[] = [
     "calibration",
     "stringing"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -490,7 +490,7 @@ export const recommendations: Setting[] = [
     "collision-avoidance",
     "quality"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -522,7 +522,7 @@ export const recommendations: Setting[] = [
     "fundamental",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -552,7 +552,7 @@ export const recommendations: Setting[] = [
     "adhesion",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -583,7 +583,7 @@ export const recommendations: Setting[] = [
     "corners",
     "klipper"
   ],
-  "printers": [
+  "printerTypes": [
     "Klipper"
   ],
   "materials": [
@@ -616,7 +616,7 @@ export const recommendations: Setting[] = [
     "corners",
     "advanced"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -650,7 +650,7 @@ export const recommendations: Setting[] = [
     "klipper",
     "calibration"
   ],
-  "printers": [
+  "printerTypes": [
     "Klipper"
   ],
   "materials": [
@@ -681,7 +681,7 @@ export const recommendations: Setting[] = [
     "resonance",
     "klipper"
   ],
-  "printers": [
+  "printerTypes": [
     "Klipper"
   ],
   "materials": [
@@ -709,7 +709,7 @@ export const recommendations: Setting[] = [
     "calibration",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -745,7 +745,7 @@ export const recommendations: Setting[] = [
     "calibration",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -780,7 +780,7 @@ export const recommendations: Setting[] = [
     "warping",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -815,7 +815,7 @@ export const recommendations: Setting[] = [
     "calibration",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "Direct Drive"
   ],
   "materials": [
@@ -847,7 +847,7 @@ export const recommendations: Setting[] = [
     "warping",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -884,7 +884,7 @@ export const recommendations: Setting[] = [
     "advanced",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -916,7 +916,7 @@ export const recommendations: Setting[] = [
     "first-layer",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -951,7 +951,7 @@ export const recommendations: Setting[] = [
     "temperature",
     "adhesion"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -983,7 +983,7 @@ export const recommendations: Setting[] = [
     "adhesion",
     "warping"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1016,7 +1016,7 @@ export const recommendations: Setting[] = [
     "warping",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1049,7 +1049,7 @@ export const recommendations: Setting[] = [
     "temperature",
     "adhesion"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1082,7 +1082,7 @@ export const recommendations: Setting[] = [
     "warping",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1119,7 +1119,7 @@ export const recommendations: Setting[] = [
     "advanced",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1152,7 +1152,7 @@ export const recommendations: Setting[] = [
     "warping",
     "advanced"
   ],
-  "printers": [
+  "printerTypes": [
     "Enclosed"
   ],
   "materials": [
@@ -1189,7 +1189,7 @@ export const recommendations: Setting[] = [
     "quality",
     "bridging"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1225,7 +1225,7 @@ export const recommendations: Setting[] = [
     "cooling",
     "bonding"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1260,7 +1260,7 @@ export const recommendations: Setting[] = [
     "warping",
     "bonding"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1293,7 +1293,7 @@ export const recommendations: Setting[] = [
     "cooling",
     "bonding"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1327,7 +1327,7 @@ export const recommendations: Setting[] = [
     "warping",
     "strength"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1361,7 +1361,7 @@ export const recommendations: Setting[] = [
     "critical",
     "warping"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1393,7 +1393,7 @@ export const recommendations: Setting[] = [
     "first-layer",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1428,7 +1428,7 @@ export const recommendations: Setting[] = [
     "quality",
     "calibration"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1462,7 +1462,7 @@ export const recommendations: Setting[] = [
     "bridging",
     "quality"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1496,7 +1496,7 @@ export const recommendations: Setting[] = [
     "quality",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1529,7 +1529,7 @@ export const recommendations: Setting[] = [
     "extrusion",
     "calibration"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1564,7 +1564,7 @@ export const recommendations: Setting[] = [
     "extrusion",
     "calibration"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1599,7 +1599,7 @@ export const recommendations: Setting[] = [
     "extrusion",
     "calibration"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1631,7 +1631,7 @@ export const recommendations: Setting[] = [
     "extrusion",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "Direct Drive"
   ],
   "materials": [
@@ -1665,7 +1665,7 @@ export const recommendations: Setting[] = [
     "speed",
     "extrusion"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1699,7 +1699,7 @@ export const recommendations: Setting[] = [
     "extrusion",
     "advanced"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1731,7 +1731,7 @@ export const recommendations: Setting[] = [
     "material-prep",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1762,7 +1762,7 @@ export const recommendations: Setting[] = [
   "tags": [
     "material-property"
   ],
-  "printers": [
+  "printerTypes": [
     "Direct Drive"
   ],
   "materials": [
@@ -1791,7 +1791,7 @@ export const recommendations: Setting[] = [
     "multi-material",
     "material-usage"
   ],
-  "printers": [
+  "printerTypes": [
     "AMS",
     "MMU",
     "IDEX"
@@ -1822,7 +1822,7 @@ export const recommendations: Setting[] = [
     "multi-material",
     "temperature"
   ],
-  "printers": [
+  "printerTypes": [
     "AMS",
     "MMU",
     "IDEX"
@@ -1858,7 +1858,7 @@ export const recommendations: Setting[] = [
     "speed",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1890,7 +1890,7 @@ export const recommendations: Setting[] = [
     "first-layer",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1922,7 +1922,7 @@ export const recommendations: Setting[] = [
     "quality",
     "extrusion"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1951,7 +1951,7 @@ export const recommendations: Setting[] = [
     "first-layer",
     "quality"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -1981,7 +1981,7 @@ export const recommendations: Setting[] = [
     "precision",
     "surface-finish"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2013,7 +2013,7 @@ export const recommendations: Setting[] = [
     "strength",
     "speed"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2048,7 +2048,7 @@ export const recommendations: Setting[] = [
     "surface-finish",
     "precision"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2078,7 +2078,7 @@ export const recommendations: Setting[] = [
     "speed",
     "infill"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2108,7 +2108,7 @@ export const recommendations: Setting[] = [
     "strength",
     "speed"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2139,7 +2139,7 @@ export const recommendations: Setting[] = [
     "support",
     "removal"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2171,7 +2171,7 @@ export const recommendations: Setting[] = [
     "seam",
     "surface-finish"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2205,7 +2205,7 @@ export const recommendations: Setting[] = [
     "surface-finish",
     "advanced"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2234,7 +2234,7 @@ export const recommendations: Setting[] = [
     "seam",
     "calibration"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2267,7 +2267,7 @@ export const recommendations: Setting[] = [
     "strength",
     "quality"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2298,7 +2298,7 @@ export const recommendations: Setting[] = [
     "quality",
     "speed"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2334,7 +2334,7 @@ export const recommendations: Setting[] = [
     "speed",
     "travel"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2365,7 +2365,7 @@ export const recommendations: Setting[] = [
     "quality",
     "stringing"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2398,7 +2398,7 @@ export const recommendations: Setting[] = [
     "quality",
     "surface-finish"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2427,7 +2427,7 @@ export const recommendations: Setting[] = [
     "quality",
     "tolerance"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2458,7 +2458,7 @@ export const recommendations: Setting[] = [
     "curves",
     "advanced"
   ],
-  "printers": [
+  "printerTypes": [
     "Marlin",
     "RepRap"
   ],
@@ -2491,7 +2491,7 @@ export const recommendations: Setting[] = [
     "tolerance",
     "calibration"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2522,7 +2522,7 @@ export const recommendations: Setting[] = [
     "tolerance",
     "mechanical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2554,7 +2554,7 @@ export const recommendations: Setting[] = [
     "quality",
     "tolerance"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2588,7 +2588,7 @@ export const recommendations: Setting[] = [
     "surface-finish",
     "calibration"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2619,7 +2619,7 @@ export const recommendations: Setting[] = [
     "speed",
     "time-saving"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2648,7 +2648,7 @@ export const recommendations: Setting[] = [
     "speed",
     "time-saving"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2680,7 +2680,7 @@ export const recommendations: Setting[] = [
     "first-layer",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2715,7 +2715,7 @@ export const recommendations: Setting[] = [
     "bridging",
     "quality"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2750,7 +2750,7 @@ export const recommendations: Setting[] = [
     "overhangs",
     "quality"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2781,7 +2781,7 @@ export const recommendations: Setting[] = [
     "overhangs",
     "quality"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2814,7 +2814,7 @@ export const recommendations: Setting[] = [
     "overhangs",
     "quality"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2846,7 +2846,7 @@ export const recommendations: Setting[] = [
     "bridging",
     "quality"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2877,7 +2877,7 @@ export const recommendations: Setting[] = [
     "speed",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "Direct Drive"
   ],
   "materials": [
@@ -2908,7 +2908,7 @@ export const recommendations: Setting[] = [
     "speed",
     "advanced"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2939,7 +2939,7 @@ export const recommendations: Setting[] = [
     "quality",
     "structure"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -2972,7 +2972,7 @@ export const recommendations: Setting[] = [
     "precision",
     "surface-finish"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3004,7 +3004,7 @@ export const recommendations: Setting[] = [
     "surface-finish",
     "advanced"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3041,7 +3041,7 @@ export const recommendations: Setting[] = [
     "quality",
     "surface-finish"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3074,7 +3074,7 @@ export const recommendations: Setting[] = [
     "first-layer",
     "walls"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3108,7 +3108,7 @@ export const recommendations: Setting[] = [
     "material-usage",
     "time-saving"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3139,7 +3139,7 @@ export const recommendations: Setting[] = [
     "pattern",
     "structure"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3170,7 +3170,7 @@ export const recommendations: Setting[] = [
     "lightweight",
     "advanced"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3199,7 +3199,7 @@ export const recommendations: Setting[] = [
     "strength",
     "bonding"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3230,7 +3230,7 @@ export const recommendations: Setting[] = [
     "bonding",
     "surface-finish"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3259,7 +3259,7 @@ export const recommendations: Setting[] = [
     "overhangs",
     "quality"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3289,7 +3289,7 @@ export const recommendations: Setting[] = [
     "support",
     "removal"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3318,7 +3318,7 @@ export const recommendations: Setting[] = [
     "quality",
     "removal"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3349,7 +3349,7 @@ export const recommendations: Setting[] = [
     "quality",
     "surface-finish"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3384,7 +3384,7 @@ export const recommendations: Setting[] = [
     "quality",
     "internal"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3418,7 +3418,7 @@ export const recommendations: Setting[] = [
     "bridging",
     "advanced"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3447,7 +3447,7 @@ export const recommendations: Setting[] = [
     "aesthetic",
     "advanced"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3477,7 +3477,7 @@ export const recommendations: Setting[] = [
     "surface-finish",
     "aesthetic"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3508,7 +3508,7 @@ export const recommendations: Setting[] = [
     "quality",
     "time-consuming"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3543,7 +3543,7 @@ export const recommendations: Setting[] = [
     "advanced",
     "adaptive"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3574,7 +3574,7 @@ export const recommendations: Setting[] = [
     "surface-finish",
     "top-surface"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3607,7 +3607,7 @@ export const recommendations: Setting[] = [
     "klipper",
     "calibration"
   ],
-  "printers": [
+  "printerTypes": [
     "Klipper"
   ],
   "materials": [
@@ -3638,7 +3638,7 @@ export const recommendations: Setting[] = [
     "batch",
     "advanced"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3670,7 +3670,7 @@ export const recommendations: Setting[] = [
     "multi-material",
     "quality"
   ],
-  "printers": [
+  "printerTypes": [
     "AMS",
     "MMU",
     "IDEX"
@@ -3702,7 +3702,7 @@ export const recommendations: Setting[] = [
     "quality",
     "travel"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3739,7 +3739,7 @@ export const recommendations: Setting[] = [
     "quality",
     "critical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3775,7 +3775,7 @@ export const recommendations: Setting[] = [
     "quality",
     "resonance"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3808,7 +3808,7 @@ export const recommendations: Setting[] = [
     "tolerance",
     "mechanical"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3840,7 +3840,7 @@ export const recommendations: Setting[] = [
     "quality",
     "speed"
   ],
-  "printers": [
+  "printerTypes": [
     "All"
   ],
   "materials": [
@@ -3873,7 +3873,7 @@ export const recommendations: Setting[] = [
     "klipper",
     "resonance"
   ],
-  "printers": [
+  "printerTypes": [
     "Klipper",
     "Marlin"
   ],

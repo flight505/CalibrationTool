@@ -68,11 +68,9 @@ export default function RecommendationCard({ setting, onNavigate }: Recommendati
               {setting.problemKeywords.slice(0, 3).map(problem => {
                 const Icon = problemIcons[problem];
                 return Icon ? (
-                  <Icon 
-                    key={problem} 
-                    className="w-4 h-4 text-muted-foreground" 
-                    title={`Fixes ${problem}`}
-                  />
+                  <span key={problem} title={`Fixes ${problem}`}>
+                    <Icon className="w-4 h-4 text-muted-foreground" />
+                  </span>
                 ) : null;
               })}
             </div>

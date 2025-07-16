@@ -20,8 +20,8 @@ interface RecommendationSearchProps {
   onTagToggle: (tag: string) => void;
   selectedPrinterType: string;
   onPrinterTypeChange: (value: string) => void;
-  selectedMaterial: string;
-  onMaterialChange: (value: string) => void;
+  selectedMaterial?: string;
+  onMaterialChange?: (value: string) => void;
   filterOptions: FilterOptions;
   onClearFilters: () => void;
   hasActiveFilters: boolean;
@@ -36,8 +36,6 @@ export default function RecommendationSearch({
   onTagToggle,
   selectedPrinterType,
   onPrinterTypeChange,
-  selectedMaterial,
-  onMaterialChange,
   filterOptions,
   onClearFilters,
   hasActiveFilters,
