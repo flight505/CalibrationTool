@@ -1,4 +1,11 @@
-# Flow Rate Calibration
+# Flow Ratio Calibration
+
+## Flow Ratio Setting Location
+
+The Flow Ratio setting is located in OrcaSlicer at:
+**Material settings → Filament → Flow ratio and Pressure Advance → Flow ratio**
+
+This value is entered as a decimal (e.g., 0.98) not a percentage.
 
 The Flow Ratio determines how much filament is extruded and plays a key role in achieving high-quality prints. A properly calibrated flow ratio ensures consistent layer adhesion and accurate dimensions. If the flow ratio is too low, under-extrusion may occur, leading to gaps, weak layers, and poor structural integrity. On the other hand, a flow ratio that is too high can cause over-extrusion, resulting in excess material, rough surfaces, and dimensional inaccuracies.
 
@@ -13,9 +20,24 @@ The Flow Ratio determines how much filament is extruded and plays a key role in 
 
 ![flow-calibration](../images/flow-rate/flow-calibration.gif)
 
+## Required Print Settings
+
+Before running the flow ratio test, configure these settings in OrcaSlicer:
+
+| Setting | Location | Value |
+|---------|----------|-------|
+| Line Width | Quality → Line Width | 0.4mm (100%) |
+| Wall Loops | Quality → Strength | 2 |
+| Infill Density | Quality → Strength | 0% |
+| Wall Generator | Quality → Wall Generator | Classic |
+| Detect Thin Walls | Quality → Strength | Enabled |
+| Layer Height | Quality → Layer Height | 0.2mm |
+
+**Note:** The flow calibration cube has two sections: thick walls (1.2mm) that print with 2 perimeters, and thin walls (0.4mm) that print with 1 perimeter. Enabling "Detect Thin Walls" allows the slicer to properly handle the thin wall section.
+
 ## Calibration Process
 
-Calibrating the flow rate involves a two-step process.
+Calibrating the flow ratio involves a two-step process.
 
 ### Pass 1
 
@@ -33,6 +55,8 @@ Calibrating the flow rate involves a two-step process.
    
    **Example:** If your previous flow ratio was `0.98` and you selected the block with a flow rate modifier of `+5`, the new value should be calculated as follows: `0.98x(100+5)/100 = 1.029`. 
    
+   **Location:** Material settings → Filament → Flow ratio and Pressure Advance → Flow ratio
+   
    **Remember** to save the filament profile.
 
 ### Pass 2
@@ -42,6 +66,8 @@ Calibrating the flow rate involves a two-step process.
 7. Repeat steps 4 and 5. 
    
    **Example:** If your previous flow ratio was 1.029 and you selected the block with a flow rate modifier of -6, the new value should be calculated as follows: `1.029x(100-6)/100 = 0.96726`. 
+   
+   **Location:** Material settings → Filament → Flow ratio and Pressure Advance → Flow ratio
    
    **Remember** to save the filament profile.
 

@@ -15,13 +15,13 @@ interface CalibrationResults {
   singleFlowPercent: number | null;
   doubleFlowPercent: number | null;
   avgFlowPercent: number;
-  newFlowRate: string;
+  newFlowRatio: string;
   adjustment: string;
 }
 
 const OrcaFlowCalibration = () => {
   const [nozzleSize, setNozzleSize] = useState('0.4');
-  const [currentFlow, setCurrentFlow] = useState(100);
+  const [currentFlow, setCurrentFlow] = useState('1.00');
   const [singleWallMeasurements, setSingleWallMeasurements] = useState(['', '', '', '']);
   const [doubleWallMeasurements, setDoubleWallMeasurements] = useState(['', '', '', '']);
   const [results, setResults] = useState<CalibrationResults | null>(null);
@@ -55,7 +55,8 @@ const OrcaFlowCalibration = () => {
       avgFlowPercent = thickFlowPercent || thinFlowPercent || 100;
     }
 
-    const newFlowRate = (currentFlow * avgFlowPercent) / 100;
+    const currentFlowNum = parseFloat(currentFlow) || 1.00;
+    const newFlowRatio = (currentFlowNum * avgFlowPercent) / 100;
 
     setResults({
       singleWallAvg: singleAvg,
@@ -63,7 +64,7 @@ const OrcaFlowCalibration = () => {
       singleFlowPercent: thickFlowPercent,
       doubleFlowPercent: thinFlowPercent,
       avgFlowPercent,
-      newFlowRate: newFlowRate.toFixed(2),
+      newFlowRatio: newFlowRatio.toFixed(3),
       adjustment: ((avgFlowPercent - 100)).toFixed(2)
     });
   };
@@ -81,7 +82,7 @@ const OrcaFlowCalibration = () => {
 =====================================
 Date: ${new Date().toLocaleString()}
 Nozzle Size: ${nozzleSize}mm
-Current Flow Rate: ${currentFlow}%
+Current Flow Ratio: ${currentFlow}
 
 Thin Wall Measurements (Upper): ${singleWallMeasurements.filter(m => m).join(', ')}mm
 Thin Wall Average: ${results.singleWallAvg?.toFixed(3) || 'N/A'}mm
@@ -92,7 +93,7 @@ Thick Wall Average: ${results.doubleWallAvg?.toFixed(3) || 'N/A'}mm
 Thick Wall Flow %: ${results.singleFlowPercent?.toFixed(2) || 'N/A'}%
 
 Overall Average Flow %: ${results.avgFlowPercent.toFixed(2)}%
-Recommended New Flow Rate: ${results.newFlowRate}%
+Recommended New Flow Ratio: ${results.newFlowRatio}
 Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment}%`;
 
     const blob = new Blob([data], { type: 'text/plain' });
@@ -123,13 +124,23 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold flex items-center justify-center gap-3">
             <Calculator className="w-8 h-8" />
-            Flow Rate Calibration
+            Flow Ratio Calibration
           </CardTitle>
           <CardDescription className="text-base">
-            Precision flow rate calibration using dual-wall measurement cube
+            Precision flow ratio calibration using dual-wall measurement cube
           </CardDescription>
         </CardHeader>
       </Card>
+
+      <Alert className="mb-4">
+        <Info className="h-4 w-4" />
+        <AlertTitle>Flow Ratio Setting Location</AlertTitle>
+        <AlertDescription>
+          The Flow Ratio setting is located in: <strong>Material settings → Filament → Flow ratio and Pressure Advance → Flow ratio</strong>
+          <br />
+          This value is entered as a decimal (e.g., 0.98) not a percentage.
+        </AlertDescription>
+      </Alert>
 
       <Accordion type="single" collapsible defaultValue="instructions" className="w-full">
         <AccordionItem value="instructions">
@@ -147,12 +158,12 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                   <ul className="space-y-1">
-                    <li>• Set line width to exactly {nozzleSize}mm</li>
-                    <li>• Use 2 perimeters, 0% infill</li>
-                    <li>• Set "Wall Generator" to Classic</li>
-                    <li>• Disable "Detect thin walls"</li>
-                    <li>• Set layer height to 0.2mm</li>
-                    <li>• Print the calibration cube STL</li>
+                    <li>• <strong>Line Width:</strong> Set to {nozzleSize}mm (Quality → Line Width)</li>
+                    <li>• <strong>Wall Loops:</strong> Set to 2 (Quality → Strength)</li>
+                    <li>• <strong>Infill Density:</strong> Set to 0% (Quality → Strength)</li>
+                    <li>• <strong>Wall Generator:</strong> Set to Classic (Quality → Wall Generator)</li>
+                    <li>• <strong>Detect Thin Walls:</strong> Enabled (Quality → Strength)</li>
+                    <li>• <strong>Layer Height:</strong> Set to 0.2mm (Quality → Layer Height)</li>
                   </ul>
                 </CardContent>
               </Card>
@@ -179,7 +190,7 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
               <AlertTitle>Pro Tip</AlertTitle>
               <AlertDescription>
                 The calibration cube has a solid base (0.8mm), thick walls (1.2mm) in the lower section, 
-                and thin walls (0.4mm) in the upper section. The thin wall will be printed with 2 perimeters for accurate flow testing.
+                and thin walls (0.4mm) in the upper section. The thick walls print with 2 perimeters, while the thin walls print with 1 perimeter due to their 0.4mm thickness.
               </AlertDescription>
             </Alert>
 
@@ -215,13 +226,14 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="current-flow">Current Flow Rate (%)</Label>
+              <Label htmlFor="current-flow">Current Flow Ratio</Label>
               <Input
                 id="current-flow"
-                type="number"
+                type="text"
                 value={currentFlow}
-                onChange={(e) => setCurrentFlow(parseFloat(e.target.value) || 100)}
-                placeholder="100"
+                onChange={(e) => setCurrentFlow(e.target.value)}
+                placeholder="1.00"
+                pattern="[0-9]*\.?[0-9]+"
               />
             </div>
           </CardContent>
@@ -266,7 +278,7 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
               <Ruler className="w-5 h-5" />
               Thin Wall Measurements (Upper Section)
             </CardTitle>
-            <CardDescription>Target: {nozzleSize}mm (printed with 2 perimeters)</CardDescription>
+            <CardDescription>Target: {nozzleSize}mm (printed with 1 perimeter)</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
@@ -331,7 +343,7 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
           disabled={singleWallMeasurements.every(m => !m) && doubleWallMeasurements.every(m => !m)}
         >
           <Calculator className="mr-2 h-5 w-5" />
-          Calculate Flow Rate
+          Calculate Flow Ratio
         </Button>
         
         <Button onClick={resetCalculator} size="lg" variant="outline">
@@ -388,9 +400,14 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
             </div>
             
             <Alert className="bg-green-100 border-green-300 dark:bg-green-900/50">
-              <AlertTitle className="text-lg">Set your Flow Rate in Orca Slicer to:</AlertTitle>
-              <AlertDescription className="text-3xl font-bold text-green-900 dark:text-green-100">
-                {results.newFlowRate}%
+              <AlertTitle className="text-lg">Update your Flow Ratio in OrcaSlicer:</AlertTitle>
+              <AlertDescription className="space-y-2">
+                <p className="text-3xl font-bold text-green-900 dark:text-green-100">
+                  {results.newFlowRatio}
+                </p>
+                <p className="text-sm text-green-800 dark:text-green-200">
+                  Location: Material settings → Filament → Flow ratio and Pressure Advance → Flow ratio
+                </p>
               </AlertDescription>
             </Alert>
           </CardContent>
@@ -412,8 +429,8 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
             This tool uses the formula: <code className="bg-muted px-2 py-1 rounded text-xs">New Flow = Current Flow × (Expected / Measured)</code>
           </p>
           <p>
-            The calibration cube tests flow in two ways: the lower section has thick walls (1.2mm) to test bulk extrusion, 
-            while the upper section has thin walls (0.4mm, printed with 2 perimeters) to test precise thin wall printing. The algorithm averages both results for optimal accuracy.
+            The calibration cube tests flow in two ways: the lower section has thick walls (1.2mm) to test multi-perimeter extrusion, 
+            while the upper section has thin walls (0.4mm, printed with 1 perimeter) to test single-perimeter precision. The algorithm averages both results for optimal accuracy.
           </p>
         </CardContent>
       </Card>

@@ -91,6 +91,7 @@ const YoloFlowCalibration = () => {
             <li>• Gaps between lines = increase modifier</li>
             <li>• Over-extrusion ridges = decrease modifier</li>
             <li>• Test takes only 10 minutes</li>
+            <li>• Update in: Material settings → Filament → Flow ratio</li>
           </ul>
         </div>
       </CardContent>
@@ -111,14 +112,14 @@ const FlowRateCalibration: React.FC<FlowRateCalibrationProps> = ({ onNavigate })
             <div className="absolute right-4 top-4">
               <HelpButton 
                 docPath="/docs/orca-slicer/calibration/flow-rate-calibration.md"
-                tooltip="View flow rate calibration documentation"
+                tooltip="View flow ratio calibration documentation"
                 onNavigate={onNavigate}
               />
             </div>
           )}
           <CardTitle className="text-3xl font-bold flex items-center justify-center gap-3">
             <Calculator className="w-8 h-8" />
-            Flow Rate Calibration
+            Flow Ratio Calibration
           </CardTitle>
           <CardDescription className="text-base">
             Choose between precise cube measurement or quick YOLO mode
@@ -127,6 +128,16 @@ const FlowRateCalibration: React.FC<FlowRateCalibrationProps> = ({ onNavigate })
       </Card>
 
       <Alert>
+        <Info className="h-4 w-4" />
+        <AlertTitle>Flow Ratio Setting Location</AlertTitle>
+        <AlertDescription>
+          The Flow Ratio setting is located in: <strong>Material settings → Filament → Flow ratio and Pressure Advance → Flow ratio</strong>
+          <br />
+          This value is entered as a decimal (e.g., 0.98) not a percentage.
+        </AlertDescription>
+      </Alert>
+
+      <Alert className="mt-4">
         <Info className="h-4 w-4" />
         <AlertTitle>Two Methods Available</AlertTitle>
         <AlertDescription>
