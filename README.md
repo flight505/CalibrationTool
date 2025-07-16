@@ -41,7 +41,7 @@ This tool suite provides interactive calculators and guides for calibrating vari
    - Material-specific adjustments
 
 6. **OrcaSlicer Settings Recommendations** 🆕
-   - 107+ curated settings with detailed explanations
+   - 119 curated settings with detailed explanations
    - Problem-solving interface with Quick Fix buttons
    - Smart search with problem phrase detection
    - Material and printer-specific filtering

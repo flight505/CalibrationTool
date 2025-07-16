@@ -12,9 +12,10 @@ This is a comprehensive 3D printing calibration suite for Orca Slicer, implement
   - Created Calibration-First view toggle to group settings by calibration tool
   - Added visual problem indicators to settings cards (using Lucide icons)
   - Smart search with problem phrase detection and synonym recognition
-  - Updated parser to capture all 107 settings from OrcaSlicer Comprehensive Settings.md
+  - Updated parser to capture all 119 settings from OrcaSlicer Comprehensive Settings.md
   - Fixed critical field parsing (28 critical settings now properly identified)
   - Converted Quick Fix buttons to compact badges to reduce vertical space
+  - Added 12 new settings: Line Width variations, Seam control, Precise Z Height, Wall/Infill configurations
 
 ## Recent Updates (2025-01-14)
 - Enhanced retraction calibration documentation with comprehensive guide including:
@@ -61,7 +62,7 @@ src/
 │   ├── CalibrationViewToggle.tsx # Toggle between settings/calibration views
 │   └── HelpButton.tsx           # Documentation link helper component
 ├── data/
-│   └── recommendationsData.ts   # Generated settings database (107 settings)
+│   └── recommendationsData.ts   # Generated settings database (119 settings)
 ├── utils/
 │   └── stlGenerator.ts          # Three.js-based STL file generation
 ├── App.tsx                      # Main app with routing and theme
@@ -70,7 +71,7 @@ src/
 scripts/
 └── parseSettings.js             # Markdown parser for settings table
 
-OrcaSlicer Comprehensive Settings.md  # Source data for recommendations (107 settings)
+OrcaSlicer Comprehensive Settings.md  # Source data for recommendations (119 settings)
 
 public/
 ├── docs/
@@ -116,14 +117,14 @@ public/
 5. **Responsive Design** - Works on desktop, tablet, and mobile
 6. **High Precision Calculations** - Decimal precision matching original Orca calculators
 7. **Interactive UI** - Hover effects, animations, and visual feedback
-8. **Comprehensive Settings Database** - 107+ curated OrcaSlicer settings with problem-solving interface
+8. **Comprehensive Settings Database** - 119 curated OrcaSlicer settings with problem-solving interface
 
 ### Recommendations System
 The recommendations page provides a comprehensive database of OrcaSlicer settings with advanced filtering and problem-solving features:
 
 #### Data Source
 - Settings are parsed from `OrcaSlicer Comprehensive Settings.md` using `scripts/parseSettings.js`
-- Contains 107 settings across 3 categories: Printer Settings (21), Filament Settings (34), Process Settings (52)
+- Contains 119 settings across 3 categories: Printer Settings, Filament Settings, Process Settings
 - 28 critical settings marked for essential configuration
 - Each setting includes: recommended values, detailed notes, examples, references, tags, and relationships
 

@@ -1,6 +1,6 @@
 // Auto-generated from OrcaSlicer Comprehensive Settings.md
-// Generated on: 2025-07-16T08:15:34.895Z
-// Total settings: 107
+// Generated on: 2025-07-16T08:58:32.458Z
+// Total settings: 119
 
 export interface Setting {
   id: string;
@@ -2038,6 +2038,129 @@ export const recommendations: Setting[] = [
   ]
 },
   {
+  "name": "Line Width Top Surface",
+  "recommendedValue": "100-105%",
+  "notes": "Controls line width for top surfaces in mm or as percentage of nozzle size. Lower values provide most precision for smooth top surfaces. Higher values may cause over-extrusion on visible surfaces.",
+  "example": "0.4mm nozzle: 0.42mm",
+  "reference": "https://github.com/SoftFever/OrcaSlicer/wiki/quality_settings_line_width",
+  "tags": [
+    "quality",
+    "surface-finish",
+    "precision"
+  ],
+  "printers": [
+    "All"
+  ],
+  "materials": [
+    "All"
+  ],
+  "critical": false,
+  "category": "Process Settings",
+  "subCategory": "Quality Settings",
+  "id": "line-width-top-surface",
+  "problemKeywords": [
+    "accuracy"
+  ],
+  "fixes": [],
+  "impact": 3,
+  "relatedSettings": [
+    "top-shells",
+    "ironing"
+  ]
+},
+  {
+  "name": "Line Width Sparse Infill",
+  "recommendedValue": "120-125%",
+  "notes": "Line width for sparse infill patterns. Wider lines allow faster infill with same density by increasing spacing between lines. Balances speed with material usage.",
+  "example": "0.4mm nozzle: 0.5mm",
+  "reference": "https://github.com/SoftFever/OrcaSlicer/wiki/quality_settings_line_width",
+  "tags": [
+    "speed",
+    "infill"
+  ],
+  "printers": [
+    "All"
+  ],
+  "materials": [
+    "All"
+  ],
+  "critical": false,
+  "category": "Process Settings",
+  "subCategory": "Quality Settings",
+  "id": "line-width-sparse-infill",
+  "problemKeywords": [
+    "speed"
+  ],
+  "fixes": [],
+  "impact": 3,
+  "relatedSettings": [
+    "infill-density",
+    "infill-pattern"
+  ]
+},
+  {
+  "name": "Line Width Internal Solid Infill",
+  "recommendedValue": "120-125%",
+  "notes": "Line width for internal solid infill areas. Can be wider for faster printing since not visible. Affects bonding between solid infill areas and part strength.",
+  "example": "0.4mm nozzle: 0.5mm",
+  "reference": "https://github.com/SoftFever/OrcaSlicer/wiki/quality_settings_line_width",
+  "tags": [
+    "strength",
+    "speed"
+  ],
+  "printers": [
+    "All"
+  ],
+  "materials": [
+    "All"
+  ],
+  "critical": false,
+  "category": "Process Settings",
+  "subCategory": "Quality Settings",
+  "id": "line-width-internal-solid-infill",
+  "problemKeywords": [
+    "speed",
+    "strength"
+  ],
+  "fixes": [],
+  "impact": 3,
+  "relatedSettings": [
+    "infill-wall-overlap",
+    "topbottom-shells"
+  ]
+},
+  {
+  "name": "Line Width Support",
+  "recommendedValue": "95-105%",
+  "notes": "Line width for support structures. Lower values make supports weaker and easier to remove by reducing layer adhesion. Balance removability with support effectiveness.",
+  "example": "0.4mm nozzle: 0.38mm",
+  "reference": "https://github.com/SoftFever/OrcaSlicer/wiki/quality_settings_line_width",
+  "tags": [
+    "support",
+    "removal"
+  ],
+  "printers": [
+    "All"
+  ],
+  "materials": [
+    "All"
+  ],
+  "critical": false,
+  "category": "Process Settings",
+  "subCategory": "Quality Settings",
+  "id": "line-width-support",
+  "problemKeywords": [
+    "adhesion",
+    "strength"
+  ],
+  "fixes": [],
+  "impact": 3,
+  "relatedSettings": [
+    "support-distance",
+    "support-type"
+  ]
+},
+  {
   "name": "Seam Position",
   "recommendedValue": "Aligned/Back/Scarf",
   "notes": "Controls where layer changes occur. Aligned creates straight vertical line, Back hides seam, Scarf eliminates seam visibility through overlapping transitions. Most important for surface finish.",
@@ -2131,6 +2254,166 @@ export const recommendations: Setting[] = [
   "relatedSettings": [
     "flow-ratio",
     "pressure-advance"
+  ]
+},
+  {
+  "name": "Staggered Inner Seams",
+  "recommendedValue": "Enable",
+  "notes": "Shifts inner wall seams backward based on depth, forming zigzag pattern. Prevents all seams aligning vertically, creating stronger parts and better water resistance. Essential for mechanical strength.",
+  "example": "Enable for stronger parts",
+  "reference": "https://github.com/SoftFever/OrcaSlicer/wiki/quality_settings_seam",
+  "tags": [
+    "seam",
+    "strength",
+    "quality"
+  ],
+  "printers": [
+    "All"
+  ],
+  "materials": [
+    "All"
+  ],
+  "critical": false,
+  "category": "Process Settings",
+  "subCategory": "Seam Settings",
+  "id": "staggered-inner-seams",
+  "problemKeywords": [],
+  "fixes": [
+    "all seams aligning vertically, creating stronger parts and better water resistance"
+  ],
+  "impact": 5,
+  "relatedSettings": [
+    "seam-position",
+    "wall-count"
+  ]
+},
+  {
+  "name": "Role-based Wipe Speed",
+  "recommendedValue": "Enable",
+  "notes": "Controls wipe motion speed based on printed feature speed. Ensures nozzle wipes at same speed as feature was printed for consistent results. Reduces seam artifacts and stringing.",
+  "example": "Enable for better seams",
+  "reference": "https://github.com/SoftFever/OrcaSlicer/wiki/quality_settings_seam#wipe-speed",
+  "tags": [
+    "seam",
+    "quality",
+    "speed"
+  ],
+  "printers": [
+    "All"
+  ],
+  "materials": [
+    "All"
+  ],
+  "critical": false,
+  "category": "Process Settings",
+  "subCategory": "Seam Settings",
+  "id": "role-based-wipe-speed",
+  "problemKeywords": [
+    "stringing",
+    "quality",
+    "speed"
+  ],
+  "fixes": [
+    "seam artifacts and stringing",
+    "nozzle wipes at same speed as feature was printed for consistent results"
+  ],
+  "impact": 3,
+  "relatedSettings": [
+    "wipe-speed",
+    "outer-wall-speed"
+  ]
+},
+  {
+  "name": "Wipe Speed",
+  "recommendedValue": "80-100% of travel",
+  "notes": "Absolute wipe speed or percentage of travel speed when role-based disabled. Controls how fast nozzle moves over printed area to clean before travel. Too fast may damage surface.",
+  "example": "100mm/s or 80% travel",
+  "reference": "https://github.com/SoftFever/OrcaSlicer/wiki/quality_settings_seam#wipe-speed",
+  "tags": [
+    "seam",
+    "speed",
+    "travel"
+  ],
+  "printers": [
+    "All"
+  ],
+  "materials": [
+    "All"
+  ],
+  "critical": false,
+  "category": "Process Settings",
+  "subCategory": "Seam Settings",
+  "id": "wipe-speed",
+  "problemKeywords": [
+    "speed"
+  ],
+  "fixes": [],
+  "impact": 3,
+  "relatedSettings": [
+    "travel-speed",
+    "role-based-wipe-speed"
+  ]
+},
+  {
+  "name": "Wipe on Loop",
+  "recommendedValue": "Enable (Off with Scarf)",
+  "notes": "Moves nozzle slightly inward when finishing loop to tuck seam end into part. Reduces seam visibility and cleans nozzle before travel. Disable when using scarf seams.",
+  "example": "Enable for traditional seams",
+  "reference": "https://github.com/SoftFever/OrcaSlicer/wiki/quality_settings_seam#wipe-on-loopinward-movement",
+  "tags": [
+    "seam",
+    "quality",
+    "stringing"
+  ],
+  "printers": [
+    "All"
+  ],
+  "materials": [
+    "All"
+  ],
+  "critical": false,
+  "category": "Process Settings",
+  "subCategory": "Seam Settings",
+  "id": "wipe-on-loop",
+  "problemKeywords": [
+    "stringing"
+  ],
+  "fixes": [
+    "seam visibility and cleans nozzle before travel"
+  ],
+  "impact": 3,
+  "relatedSettings": [
+    "scarf-seam",
+    "seam-gap"
+  ]
+},
+  {
+  "name": "Wipe Before External",
+  "recommendedValue": "Enable (Off with Scarf)",
+  "notes": "Performs de-retraction inside model before starting external perimeter. Hides potential over-extrusion from outer surface. Critical for clean visible surfaces.",
+  "example": "Enable for better surface",
+  "reference": "https://github.com/SoftFever/OrcaSlicer/wiki/quality_settings_seam#wipe-before-external",
+  "tags": [
+    "seam",
+    "quality",
+    "surface-finish"
+  ],
+  "printers": [
+    "All"
+  ],
+  "materials": [
+    "All"
+  ],
+  "critical": false,
+  "category": "Process Settings",
+  "subCategory": "Seam Settings",
+  "id": "wipe-before-external",
+  "problemKeywords": [],
+  "fixes": [],
+  "impact": 5,
+  "relatedSettings": [
+    "retraction",
+    "outer-wall-speed"
   ]
 },
   {
@@ -2258,6 +2541,39 @@ export const recommendations: Setting[] = [
   "relatedSettings": [
     "xy-compensation",
     "hole-expansion"
+  ]
+},
+  {
+  "name": "Precise Z Height",
+  "recommendedValue": "Enable",
+  "notes": "Adjusts layer height of last 5 layers to match exact object height. Prevents rounding errors where object height doesn't divide evenly by layer height. Essential for precise dimensional parts.",
+  "example": "20.1mm object = 20.1mm print",
+  "reference": "https://github.com/SoftFever/OrcaSlicer/wiki/precise-z-height",
+  "tags": [
+    "precision",
+    "quality",
+    "tolerance"
+  ],
+  "printers": [
+    "All"
+  ],
+  "materials": [
+    "All"
+  ],
+  "critical": false,
+  "category": "Process Settings",
+  "subCategory": "Precision Settings",
+  "id": "precise-z-height",
+  "problemKeywords": [
+    "accuracy"
+  ],
+  "fixes": [
+    "rounding errors where object height doesn't divide evenly by layer height"
+  ],
+  "impact": 5,
+  "relatedSettings": [
+    "layer-height",
+    "first-layer-height"
   ]
 },
   {
@@ -2748,6 +3064,40 @@ export const recommendations: Setting[] = [
   ]
 },
   {
+  "name": "First Layer Minimum Wall Width",
+  "recommendedValue": "Match nozzle diameter",
+  "notes": "Minimum wall width for first layer only. Matching nozzle diameter improves adhesion and ensures stable base walls. Wider first layer walls bridge bed irregularities better.",
+  "example": "0.4mm nozzle: 0.4mm",
+  "reference": "https://github.com/SoftFever/OrcaSlicer/wiki/quality_settings_wall_generator#first-layer-minimum-wall-width",
+  "tags": [
+    "adhesion",
+    "first-layer",
+    "walls"
+  ],
+  "printers": [
+    "All"
+  ],
+  "materials": [
+    "All"
+  ],
+  "critical": false,
+  "category": "Process Settings",
+  "subCategory": "Wall Configuration",
+  "id": "first-layer-minimum-wall-width",
+  "problemKeywords": [
+    "adhesion"
+  ],
+  "fixes": [
+    "adhesion and ensures stable base walls",
+    "stable base walls"
+  ],
+  "impact": 3,
+  "relatedSettings": [
+    "first-layer-height",
+    "line-width-first-layer"
+  ]
+},
+  {
   "name": "Infill Density",
   "recommendedValue": "15-30%",
   "notes": "Balances strength, weight, and print time. Higher density increases strength but uses more material and time. Consider application requirements - decorative vs functional parts.",
@@ -2867,6 +3217,35 @@ export const recommendations: Setting[] = [
   "relatedSettings": [
     "wall-count",
     "flow-ratio"
+  ]
+},
+  {
+  "name": "Top Solid Infill/Wall Overlap",
+  "recommendedValue": "25-30%",
+  "notes": "Top solid infill enlarged to overlap walls for better bonding and minimize pinholes. Percentage relative to sparse infill line width. Too high causes over-extrusion, too low leaves gaps.",
+  "example": "Standard: 25%",
+  "reference": "https://github.com/SoftFever/OrcaSlicer/wiki/strength_settings_top_bottom_shells#top-and-bottom-shells",
+  "tags": [
+    "quality",
+    "bonding",
+    "surface-finish"
+  ],
+  "printers": [
+    "All"
+  ],
+  "materials": [
+    "All"
+  ],
+  "critical": false,
+  "category": "Process Settings",
+  "subCategory": "Infill Configuration",
+  "id": "top-solid-infillwall-overlap",
+  "problemKeywords": [],
+  "fixes": [],
+  "impact": 3,
+  "relatedSettings": [
+    "infill-wall-overlap",
+    "top-shells"
   ]
 },
   {
