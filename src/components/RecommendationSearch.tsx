@@ -108,21 +108,6 @@ export default function RecommendationSearch({
           </SelectContent>
         </Select>
 
-        {/* Material Filter */}
-        <Select value={selectedMaterial} onValueChange={onMaterialChange}>
-          <SelectTrigger className="w-[120px]">
-            <SelectValue placeholder="Material" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Materials</SelectItem>
-            {filterOptions.materials.map((material) => (
-              <SelectItem key={material} value={material}>
-                {material}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
         {/* Clear Filters Button */}
         {hasActiveFilters && (
           <Button

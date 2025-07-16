@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ExternalLink, Copy, Check, ArrowRight } from 'lucide-react';
+import { ChevronDown, ExternalLink, Copy, Check, ArrowRight, AlertCircle, Zap } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -33,6 +33,7 @@ export default function RecommendationCard({ setting, onNavigate }: Recommendati
     return colorMap[tag] || 'bg-muted text-muted-foreground';
   };
 
+
   return (
     <Card className="overflow-hidden transition-all duration-200 hover:shadow-md">
       <div
@@ -47,6 +48,18 @@ export default function RecommendationCard({ setting, onNavigate }: Recommendati
             )}
           />
           <h3 className="font-medium text-base">{setting.name}</h3>
+          
+          
+          {/* Impact indicator */}
+          {setting.impact && setting.impact >= 4 && (
+            <div className="flex items-center gap-1" title={`Impact level: ${setting.impact}/5`}>
+              {setting.impact === 5 ? (
+                <AlertCircle className="w-4 h-4 text-red-500" />
+              ) : (
+                <Zap className="w-4 h-4 text-orange-500" />
+              )}
+            </div>
+          )}
         </div>
         
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -89,6 +102,21 @@ export default function RecommendationCard({ setting, onNavigate }: Recommendati
                 {setting.notes}
               </p>
             </div>
+
+            {/* Fixes */}
+            {setting.fixes && setting.fixes.length > 0 && (
+              <div className="bg-green-500/5 border border-green-500/20 rounded-lg p-3">
+                <h4 className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">This setting helps fix:</h4>
+                <ul className="text-sm text-muted-foreground space-y-0.5">
+                  {setting.fixes.map((fix, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-green-600 dark:text-green-400">•</span>
+                      <span>{fix}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Example */}
             {setting.example && (
