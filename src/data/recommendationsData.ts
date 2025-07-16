@@ -1,5 +1,5 @@
 // Auto-generated from OrcaSlicer Comprehensive Settings.md
-// Generated on: 2025-07-16T01:48:33.855Z
+// Generated on: 2025-07-16T08:15:34.895Z
 // Total settings: 107
 
 export interface Setting {
@@ -134,7 +134,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "All"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Printer Settings",
   "subCategory": "Acceleration Settings",
   "id": "normal-printing-accel",
@@ -145,7 +145,7 @@ export const recommendations: Setting[] = [
   "fixes": [
     "print time but may cause ringing, layer shifting, or poor surface quality"
   ],
-  "impact": 3,
+  "impact": 5,
   "relatedSettings": [
     "input-shaping",
     "xy-jerk"
@@ -168,7 +168,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "All"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Printer Settings",
   "subCategory": "Acceleration Settings",
   "id": "outer-wall-accel",
@@ -232,7 +232,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "All"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Printer Settings",
   "subCategory": "Acceleration Settings",
   "id": "first-layer-accel",
@@ -362,7 +362,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "All"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Printer Settings",
   "subCategory": "Extruder Configuration",
   "id": "pressure-advance",
@@ -429,7 +429,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "All"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Printer Settings",
   "subCategory": "Extruder Configuration",
   "id": "retraction-length",
@@ -528,7 +528,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "All"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Printer Settings",
   "subCategory": "Fundamental Calibration",
   "id": "e-stepsrotation-distance",
@@ -558,7 +558,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "All"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Printer Settings",
   "subCategory": "Fundamental Calibration",
   "id": "z-offset",
@@ -715,7 +715,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "PLA"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Filament Settings",
   "subCategory": "Temperature Control",
   "id": "nozzle-temp-pla",
@@ -751,7 +751,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "PETG"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Filament Settings",
   "subCategory": "Temperature Control",
   "id": "nozzle-temp-petg",
@@ -787,7 +787,7 @@ export const recommendations: Setting[] = [
     "ABS",
     "ASA"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Filament Settings",
   "subCategory": "Temperature Control",
   "id": "nozzle-temp-absasa",
@@ -821,7 +821,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "TPU"
   ],
-  "critical": false,
+  "critical": true,
   "new": "2.3.0",
   "category": "Filament Settings",
   "subCategory": "Temperature Control",
@@ -853,7 +853,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "Nylon"
   ],
-  "critical": false,
+  "critical": true,
   "new": "2.3.0",
   "category": "Filament Settings",
   "subCategory": "Temperature Control",
@@ -890,7 +890,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "PC"
   ],
-  "critical": false,
+  "critical": true,
   "new": "2.3.0",
   "category": "Filament Settings",
   "subCategory": "Temperature Control",
@@ -922,7 +922,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "All"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Filament Settings",
   "subCategory": "Temperature Control",
   "id": "first-layer-temp",
@@ -1023,7 +1023,7 @@ export const recommendations: Setting[] = [
     "ABS",
     "ASA"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Filament Settings",
   "subCategory": "Temperature Control",
   "id": "bed-temp-absasa",
@@ -1088,7 +1088,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "Nylon"
   ],
-  "critical": false,
+  "critical": true,
   "new": "2.3.0",
   "category": "Filament Settings",
   "subCategory": "Temperature Control",
@@ -1125,7 +1125,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "PC"
   ],
-  "critical": false,
+  "critical": true,
   "new": "2.3.0",
   "category": "Filament Settings",
   "subCategory": "Temperature Control",
@@ -1367,7 +1367,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "PC"
   ],
-  "critical": false,
+  "critical": true,
   "new": "2.3.0",
   "category": "Filament Settings",
   "subCategory": "Cooling Configuration",
@@ -1399,7 +1399,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "All"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Filament Settings",
   "subCategory": "Cooling Configuration",
   "id": "first-layer-fan",
@@ -1502,7 +1502,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "All"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Filament Settings",
   "subCategory": "Flow and Extrusion",
   "id": "flow-ratio",
@@ -1637,7 +1637,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "TPU"
   ],
-  "critical": false,
+  "critical": true,
   "new": "2.3.0",
   "category": "Filament Settings",
   "subCategory": "Flow and Extrusion",
@@ -1737,7 +1737,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "Nylon"
   ],
-  "critical": false,
+  "critical": true,
   "new": "2.3.0",
   "category": "Filament Settings",
   "subCategory": "Material-Specific Settings",
@@ -1864,7 +1864,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "All"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Process Settings",
   "subCategory": "Quality Settings",
   "id": "layer-height",
@@ -1896,7 +1896,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "All"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Process Settings",
   "subCategory": "Quality Settings",
   "id": "first-layer-height",
@@ -2278,7 +2278,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "All"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Process Settings",
   "subCategory": "Speed Settings",
   "id": "outer-wall-speed",
@@ -2370,7 +2370,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "All"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Process Settings",
   "subCategory": "Speed Settings",
   "id": "first-layer-speed",
@@ -2567,7 +2567,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "TPU"
   ],
-  "critical": false,
+  "critical": true,
   "new": "2.3.0",
   "category": "Process Settings",
   "subCategory": "Speed Settings",
@@ -3366,7 +3366,7 @@ export const recommendations: Setting[] = [
   "materials": [
     "All"
   ],
-  "critical": false,
+  "critical": true,
   "category": "Process Settings",
   "subCategory": "Calibration Tests",
   "id": "temperature-tower-test",

@@ -5,6 +5,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Overview
 This is a comprehensive 3D printing calibration suite for Orca Slicer, implemented as a React web application. The suite provides multiple calibration tools including temperature analysis, flow rate calibration, pressure advance calculation, retraction testing, and maximum volumetric speed determination.
 
+## Recent Updates (2025-01-16)
+- Enhanced recommendations page with problem-solving interface:
+  - Added Quick Fix buttons for 8 common 3D printing problems (stringing, warping, corners, adhesion, etc.)
+  - Implemented Material Quick Switch with color-coded badges for easy material filtering
+  - Created Calibration-First view toggle to group settings by calibration tool
+  - Added visual problem indicators to settings cards (using Lucide icons)
+  - Smart search with problem phrase detection and synonym recognition
+  - Updated parser to capture all 107 settings from OrcaSlicer Comprehensive Settings.md
+  - Fixed critical field parsing (28 critical settings now properly identified)
+  - Converted Quick Fix buttons to compact badges to reduce vertical space
+
 ## Recent Updates (2025-01-14)
 - Enhanced retraction calibration documentation with comprehensive guide including:
   - Detailed cause-and-effect relationships between print issues and retraction settings
@@ -29,7 +40,11 @@ This is a comprehensive 3D printing calibration suite for Orca Slicer, implement
 ```
 src/
 ├── components/
-│   ├── ui/                      # shadcn/ui components (buttons, cards, alerts, etc.)
+│   ├── ui/                      # shadcn/ui components
+│   │   ├── badge.tsx            # Badge component for compact labels
+│   │   ├── toggle.tsx           # Toggle component
+│   │   ├── toggle-group.tsx     # Toggle group for view switching
+│   │   └── ...                  # (buttons, cards, alerts, etc.)
 │   ├── CalibrationGuide.tsx     # Main guide with calibration sequence
 │   ├── DocumentationLayout.tsx  # Documentation navigation and structure
 │   ├── DocumentationViewer.tsx  # Markdown documentation renderer
@@ -40,11 +55,22 @@ src/
 │   ├── PressureAdvance.tsx      # PA value calculator
 │   ├── RetractionTest.tsx       # Retraction length calculator with STL generation
 │   ├── MaxVolumetricSpeed.tsx   # Hotend capacity testing
+│   ├── Recommendations.tsx      # Settings recommendations with filtering
+│   ├── QuickFixButtons.tsx      # Problem-based quick filters
+│   ├── MaterialQuickSwitch.tsx  # Material filter badges
+│   ├── CalibrationViewToggle.tsx # Toggle between settings/calibration views
 │   └── HelpButton.tsx           # Documentation link helper component
+├── data/
+│   └── recommendationsData.ts   # Generated settings database (107 settings)
 ├── utils/
 │   └── stlGenerator.ts          # Three.js-based STL file generation
 ├── App.tsx                      # Main app with routing and theme
 └── main.tsx                     # Entry point
+
+scripts/
+└── parseSettings.js             # Markdown parser for settings table
+
+OrcaSlicer Comprehensive Settings.md  # Source data for recommendations (107 settings)
 
 public/
 ├── docs/
@@ -90,6 +116,33 @@ public/
 5. **Responsive Design** - Works on desktop, tablet, and mobile
 6. **High Precision Calculations** - Decimal precision matching original Orca calculators
 7. **Interactive UI** - Hover effects, animations, and visual feedback
+8. **Comprehensive Settings Database** - 107+ curated OrcaSlicer settings with problem-solving interface
+
+### Recommendations System
+The recommendations page provides a comprehensive database of OrcaSlicer settings with advanced filtering and problem-solving features:
+
+#### Data Source
+- Settings are parsed from `OrcaSlicer Comprehensive Settings.md` using `scripts/parseSettings.js`
+- Contains 107 settings across 3 categories: Printer Settings (21), Filament Settings (34), Process Settings (52)
+- 28 critical settings marked for essential configuration
+- Each setting includes: recommended values, detailed notes, examples, references, tags, and relationships
+
+#### Problem-Solving Interface
+- **Quick Fix Buttons**: 8 common problem badges (stringing, warping, corners, adhesion, overhangs, surface, speed, accuracy)
+- **Material Quick Switch**: Color-coded material badges with temperature ranges
+- **Smart Search**: Detects problem phrases and synonyms (e.g., "strings" finds stringing-related settings)
+- **Visual Indicators**: Icons show which problems each setting helps fix
+- **Impact Levels**: Critical settings marked with alert icons
+
+#### View Modes
+- **Settings View**: Traditional category/subcategory organization
+- **Calibration View**: Groups settings by calibration tool (flow, temperature, pressure advance, etc.)
+
+#### Filtering Capabilities
+- Search by setting name or description
+- Filter by category, printer type, material
+- Quick problem-based filtering
+- Tag-based filtering (critical, calibration, quality, speed, etc.)
 
 ## Development Setup
 The project is set up with Vite, React, TypeScript, and shadcn/ui for a modern development experience.

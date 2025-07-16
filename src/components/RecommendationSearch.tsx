@@ -50,6 +50,7 @@ export default function RecommendationSearch({
     { value: 'adhesion', label: 'Adhesion', color: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
     { value: 'stringing', label: 'Stringing', color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' },
     { value: 'first-layer', label: 'First Layer', color: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' },
+    { value: 'new', label: 'New', color: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20' },
   ];
 
   return (
@@ -58,6 +59,8 @@ export default function RecommendationSearch({
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
         <Input
+          id="search-settings"
+          name="search-settings"
           type="text"
           placeholder="Search settings..."
           value={searchTerm}
@@ -79,7 +82,7 @@ export default function RecommendationSearch({
       {/* Filter Row */}
       <div className="flex flex-wrap gap-2">
         {/* Category Filter */}
-        <Select value={selectedCategory} onValueChange={onCategoryChange}>
+        <Select name="category-filter" value={selectedCategory} onValueChange={onCategoryChange}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
@@ -94,7 +97,7 @@ export default function RecommendationSearch({
         </Select>
 
         {/* Printer Type Filter */}
-        <Select value={selectedPrinterType} onValueChange={onPrinterTypeChange}>
+        <Select name="printer-filter" value={selectedPrinterType} onValueChange={onPrinterTypeChange}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Printer Type" />
           </SelectTrigger>

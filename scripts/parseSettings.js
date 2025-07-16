@@ -45,14 +45,18 @@ function parseMarkdownTable(markdown) {
         continue;
       }
       
-      // Check if this is a subcategory header (bold text)
-      if (cells.length === 1 || (cells[0].startsWith('**') && cells[0].endsWith('**'))) {
-        currentSubCategory = cells[0].replace(/\*\*/g, '');
-        continue;
+      // Check if this is a subcategory header (bold text in first cell, all others empty)
+      if (cells[0].startsWith('**') && cells[0].endsWith('**')) {
+        // Check if all other cells are empty (subcategory header pattern)
+        const isSubcategoryHeader = cells.slice(1).every(cell => cell === '' || cell === ' ');
+        if (isSubcategoryHeader) {
+          currentSubCategory = cells[0].replace(/\*\*/g, '');
+          continue;
+        }
       }
       
-      // Parse settings row - must have at least 10 cells
-      if (cells.length >= 10) {
+      // Parse settings row - must have at least 11 cells (including New: column)
+      if (cells.length >= 11) {
         const setting = {
           name: cells[0],
           recommendedValue: cells[1] || '',
@@ -63,7 +67,7 @@ function parseMarkdownTable(markdown) {
           printers: parseArray(cells[6] || ''),
           materials: parseArray(cells[7] || ''),
           related: parseArray(cells[8] || ''),
-          critical: (cells[9] || '').trim().toLowerCase() === 'yes',
+          critical: cells[9]?.replace('Critical:', '').trim().toLowerCase() === 'yes',
           new: cells[10] || undefined,
           category: currentCategory,
           subCategory: currentSubCategory

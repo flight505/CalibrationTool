@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { 
   Network, 
@@ -29,7 +30,7 @@ const problemButtons = [
 
 export default function QuickFixButtons({ selectedProblem, onProblemSelect }: QuickFixButtonsProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium">Quick Problem Fixes</h3>
         {selectedProblem && (
@@ -37,29 +38,34 @@ export default function QuickFixButtons({ selectedProblem, onProblemSelect }: Qu
             variant="ghost"
             size="sm"
             onClick={() => onProblemSelect(null)}
-            className="text-xs"
+            className="text-xs h-7 px-2"
           >
             Clear
           </Button>
         )}
       </div>
       
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+      <div className="flex flex-wrap gap-2">
         {problemButtons.map((problem) => (
-          <Button
+          <button
             key={problem.id}
-            variant={selectedProblem === problem.id ? 'default' : 'outline'}
-            size="sm"
             onClick={() => onProblemSelect(selectedProblem === problem.id ? null : problem.id)}
-            className={cn(
-              "h-auto py-3 px-3 flex flex-col items-center gap-1 text-center whitespace-normal",
-              selectedProblem === problem.id && "ring-2 ring-primary"
-            )}
+            className="rounded-full"
             title={problem.description}
           >
-            <problem.Icon className="w-5 h-5" />
-            <span className="text-xs font-medium">{problem.label}</span>
-          </Button>
+            <Badge
+              variant="outline"
+              className={cn(
+                "gap-1.5 px-3 py-1 cursor-pointer transition-all",
+                selectedProblem === problem.id 
+                  ? "bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20 dark:hover:bg-primary/30" 
+                  : "hover:bg-accent hover:text-accent-foreground"
+              )}
+            >
+              <problem.Icon className="w-3.5 h-3.5" />
+              {problem.label}
+            </Badge>
+          </button>
         ))}
       </div>
     </div>

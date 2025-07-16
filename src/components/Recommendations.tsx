@@ -103,9 +103,18 @@ export default function Recommendations({ onNavigate }: RecommendationsProps) {
         return false;
       }
 
-      // Tag filter
-      if (selectedTags.length > 0 && !selectedTags.some((tag) => setting.tags.includes(tag))) {
-        return false;
+      // Tag filter (special handling for "new" tag)
+      if (selectedTags.length > 0) {
+        const hasMatchingTag = selectedTags.some((tag) => {
+          if (tag === 'new') {
+            // For "new" tag, check if setting has a new field with version info
+            return setting.new && setting.new.trim() !== '';
+          }
+          return setting.tags.includes(tag);
+        });
+        if (!hasMatchingTag) {
+          return false;
+        }
       }
 
       // Printer type filter

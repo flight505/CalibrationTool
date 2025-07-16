@@ -1,6 +1,6 @@
 # Orca Slicer Calibration Suite
 
-A comprehensive web-based calibration tool suite for Orca Slicer users to optimize their 3D printing settings through systematic testing and calculation.
+A comprehensive web-based calibration tool suite for Orca Slicer users to optimize their 3D printing settings through systematic testing, calculation, and intelligent recommendations.
 
 ![Calibration Suite](https://img.shields.io/badge/Orca_Slicer-Calibration-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-blue)
@@ -40,6 +40,14 @@ This tool suite provides interactive calculators and guides for calibrating vari
    - Prevent under-extrusion at high speeds
    - Material-specific adjustments
 
+6. **OrcaSlicer Settings Recommendations** 🆕
+   - 107+ curated settings with detailed explanations
+   - Problem-solving interface with Quick Fix buttons
+   - Smart search with problem phrase detection
+   - Material and printer-specific filtering
+   - Calibration tool integration
+   - Visual indicators for critical settings
+
 ### Additional Features
 
 - 🌓 Dark/Light theme support (defaults to dark mode)
@@ -47,6 +55,9 @@ This tool suite provides interactive calculators and guides for calibrating vari
 - 📱 Responsive design for all devices
 - 📊 Step-by-step calibration guide
 - 🎯 Recommended calibration sequence
+- 🔍 Advanced filtering and search capabilities
+- 🏷️ Tag-based organization
+- 🎨 Material-specific recommendations
 
 ## 🚀 Getting Started
 
@@ -59,7 +70,7 @@ This tool suite provides interactive calculators and guides for calibrating vari
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/orca-calibration-tool.git
+git clone https://github.com/flight505/CalibrationTool.git
 cd CalibrationTool
 ```
 
@@ -101,6 +112,29 @@ The built files will be in the `dist` directory.
 3. **Pressure Advance** - Fine-tune corner quality
 4. **Retraction Settings** - Eliminate stringing
 5. **Max Volumetric Speed** - Optimize for high-speed printing
+
+### Using the Recommendations System
+
+The recommendations page helps you find the right settings for your specific problems:
+
+#### Quick Problem Fixes
+- Click problem badges to instantly filter relevant settings
+- Common problems: Stringing, Warping, Poor Corners, Bad Adhesion, etc.
+- Each setting shows which problems it helps solve
+
+#### Material Filtering
+- Use the color-coded material badges to filter settings
+- Shows temperature ranges for each material
+- Quickly switch between PLA, PETG, ABS, TPU, and more
+
+#### View Modes
+- **Settings View**: Browse by category (Printer, Filament, Process)
+- **Calibration View**: Group settings by calibration tool
+
+#### Smart Search
+- Type problem descriptions (e.g., "corners lifting", "strings")
+- Automatically finds related settings
+- Searches names, descriptions, and tags
 
 ### Flow Calibration Methods
 

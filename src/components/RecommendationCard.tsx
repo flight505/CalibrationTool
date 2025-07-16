@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { ChevronDown, ExternalLink, Copy, Check, ArrowRight, AlertCircle, Zap } from 'lucide-react';
+import { ChevronDown, ExternalLink, Copy, Check, ArrowRight, AlertCircle, Zap, Network, Flame, Square, Target, Mountain, Wind, Wrench, Shield } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { Setting } from '@/data/recommendationsData';
+import type { LucideIcon } from 'lucide-react';
 
 interface RecommendationCardProps {
   setting: Setting;
@@ -33,6 +34,18 @@ export default function RecommendationCard({ setting, onNavigate }: Recommendati
     return colorMap[tag] || 'bg-muted text-muted-foreground';
   };
 
+  const problemIcons: Record<string, LucideIcon> = {
+    stringing: Network,
+    warping: Flame,
+    corners: Square,
+    adhesion: Target,
+    quality: Mountain,
+    surface: Wind,
+    speed: Zap,
+    accuracy: Wrench,
+    strength: Shield
+  };
+
 
   return (
     <Card className="overflow-hidden transition-all duration-200 hover:shadow-md">
@@ -49,6 +62,21 @@ export default function RecommendationCard({ setting, onNavigate }: Recommendati
           />
           <h3 className="font-medium text-base">{setting.name}</h3>
           
+          {/* Problem indicators */}
+          {setting.problemKeywords && setting.problemKeywords.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              {setting.problemKeywords.slice(0, 3).map(problem => {
+                const Icon = problemIcons[problem];
+                return Icon ? (
+                  <Icon 
+                    key={problem} 
+                    className="w-4 h-4 text-muted-foreground" 
+                    title={`Fixes ${problem}`}
+                  />
+                ) : null;
+              })}
+            </div>
+          )}
           
           {/* Impact indicator */}
           {setting.impact && setting.impact >= 4 && (
@@ -76,6 +104,12 @@ export default function RecommendationCard({ setting, onNavigate }: Recommendati
           {setting.calibrationTool && (
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-500 border border-blue-500/20">
               Calibration Available
+            </span>
+          )}
+          
+          {setting.new && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">
+              New ({setting.new})
             </span>
           )}
           
