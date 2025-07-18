@@ -12,4 +12,5 @@ eza . --tree --git-ignore
 README.md
 CLAUDE.md
 OrcaRAG.md
+OrcaSlicerChatbotPlan.md
 > Dont do anything else.

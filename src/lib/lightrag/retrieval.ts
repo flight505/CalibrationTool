@@ -108,7 +108,6 @@ export class DualLevelRetrieval {
       }
       
       // Find entities related to concepts using graph traversal
-      const conceptsParam = concepts.map((_, i) => `$${i + 1}`).join(',');
       const entityQuery = `
         WITH RECURSIVE related_entities AS (
           -- Start with entities matching concepts

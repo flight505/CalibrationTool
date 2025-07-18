@@ -193,3 +193,11 @@
     @apply bg-muted/30;
   }
 }
+
+/* Animated AI Chat styles */
+.lab-bg::before {
+  overflow: hidden;
+  max-width: 100vw;
+  max-height: 100vh;
+  box-sizing: border-box;
+}

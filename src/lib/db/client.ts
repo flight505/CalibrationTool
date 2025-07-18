@@ -1,4 +1,4 @@
-import { Client, Pool } from 'pg';
+import { Pool } from 'pg';
 
 // Create a connection pool for better performance
 const pool = new Pool({

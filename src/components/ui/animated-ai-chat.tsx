@@ -1,17 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useTransition } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
-    ImageIcon,
-    FileUp,
-    Figma,
-    MonitorIcon,
-    CircleUserRound,
-    ArrowUpIcon,
+    Calculator,
+    Thermometer,
+    Move3D,
+    RotateCcw,
     Paperclip,
-    PlusIcon,
     SendIcon,
     XIcon,
     LoaderIcon,
@@ -19,6 +16,7 @@ import {
     Command,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useChat } from 'ai/react';
 import * as React from "react"
 
 interface UseAutoResizeTextareaProps {
@@ -135,13 +133,20 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 Textarea.displayName = "Textarea"
 
 export function AnimatedAIChat() {
-    const [value, setValue] = useState("");
+    const { messages, input, handleInputChange, handleSubmit: handleChatSubmit, isLoading, setInput } = useChat({
+        api: '/api/chat',
+        initialMessages: [
+            {
+                id: 'welcome',
+                role: 'assistant',
+                content: 'Hello! I\'m your OrcaSlicer calibration assistant. I can help you with flow ratio calibration, temperature tuning, pressure advance, and more. What would you like to calibrate today?'
+            }
+        ],
+    });
+    
     const [attachments, setAttachments] = useState<string[]>([]);
-    const [isTyping, setIsTyping] = useState(false);
-    const [isPending, startTransition] = useTransition();
     const [activeSuggestion, setActiveSuggestion] = useState<number>(-1);
     const [showCommandPalette, setShowCommandPalette] = useState(false);
-    const [recentCommand, setRecentCommand] = useState<string | null>(null);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const { textareaRef, adjustHeight } = useAutoResizeTextarea({
         minHeight: 60,
@@ -149,40 +154,41 @@ export function AnimatedAIChat() {
     });
     const [inputFocused, setInputFocused] = useState(false);
     const commandPaletteRef = useRef<HTMLDivElement>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const commandSuggestions: CommandSuggestion[] = [
         { 
-            icon: <ImageIcon className="w-4 h-4" />, 
-            label: "Clone UI", 
-            description: "Generate a UI from a screenshot", 
-            prefix: "/clone" 
+            icon: <Calculator className="w-4 h-4" />, 
+            label: "Flow Calibration", 
+            description: "Calibrate flow ratio for accurate extrusion", 
+            prefix: "/flow" 
         },
         { 
-            icon: <Figma className="w-4 h-4" />, 
-            label: "Import Figma", 
-            description: "Import a design from Figma", 
-            prefix: "/figma" 
+            icon: <Thermometer className="w-4 h-4" />, 
+            label: "Temperature Tower", 
+            description: "Find optimal printing temperature", 
+            prefix: "/temperature" 
         },
         { 
-            icon: <MonitorIcon className="w-4 h-4" />, 
-            label: "Create Page", 
-            description: "Generate a new web page", 
-            prefix: "/page" 
+            icon: <Move3D className="w-4 h-4" />, 
+            label: "Pressure Advance", 
+            description: "Tune pressure advance for sharp corners", 
+            prefix: "/pressure" 
         },
         { 
-            icon: <Sparkles className="w-4 h-4" />, 
-            label: "Improve", 
-            description: "Improve existing UI design", 
-            prefix: "/improve" 
+            icon: <RotateCcw className="w-4 h-4" />, 
+            label: "Retraction Test", 
+            description: "Eliminate stringing and oozing", 
+            prefix: "/retraction" 
         },
     ];
 
     useEffect(() => {
-        if (value.startsWith('/') && !value.includes(' ')) {
+        if (input.startsWith('/') && !input.includes(' ')) {
             setShowCommandPalette(true);
             
             const matchingSuggestionIndex = commandSuggestions.findIndex(
-                (cmd) => cmd.prefix.startsWith(value)
+                (cmd) => cmd.prefix.startsWith(input)
             );
             
             if (matchingSuggestionIndex >= 0) {
@@ -193,7 +199,11 @@ export function AnimatedAIChat() {
         } else {
             setShowCommandPalette(false);
         }
-    }, [value]);
+    }, [input]);
+    
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -240,11 +250,14 @@ export function AnimatedAIChat() {
                 e.preventDefault();
                 if (activeSuggestion >= 0) {
                     const selectedCommand = commandSuggestions[activeSuggestion];
-                    setValue(selectedCommand.prefix + ' ');
+                    const query = getQueryForCommand(selectedCommand.prefix);
+                    setInput(query);
                     setShowCommandPalette(false);
                     
-                    setRecentCommand(selectedCommand.label);
-                    setTimeout(() => setRecentCommand(null), 3500);
+                    // Auto-submit the command
+                    setTimeout(() => {
+                        handleChatSubmit(new Event('submit') as any);
+                    }, 100);
                 }
             } else if (e.key === 'Escape') {
                 e.preventDefault();
@@ -252,28 +265,73 @@ export function AnimatedAIChat() {
             }
         } else if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            if (value.trim()) {
-                handleSendMessage();
+            if (input.trim()) {
+                handleChatSubmit(e as any);
             }
         }
     };
 
-    const handleSendMessage = () => {
-        if (value.trim()) {
-            startTransition(() => {
-                setIsTyping(true);
-                setTimeout(() => {
-                    setIsTyping(false);
-                    setValue("");
-                    adjustHeight(true);
-                }, 3000);
-            });
+    const getQueryForCommand = (prefix: string): string => {
+        switch (prefix) {
+            case '/flow':
+                return 'How do I calibrate flow ratio in OrcaSlicer? What are the steps?';
+            case '/temperature':
+                return 'What is the temperature tower calibration process? How do I find the optimal temperature?';
+            case '/pressure':
+                return 'Explain pressure advance calibration. How do I tune it for sharp corners?';
+            case '/retraction':
+                return 'How to perform a retraction test to eliminate stringing?';
+            default:
+                return prefix + ' ';
         }
     };
 
-    const handleAttachFile = () => {
-        const mockFileName = `file-${Math.floor(Math.random() * 1000)}.pdf`;
-        setAttachments(prev => [...prev, mockFileName]);
+    const handleAttachFile = async () => {
+        // Create file input element
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json,.stl,.png,.jpg,.jpeg,.gif,.bmp';
+        
+        input.onchange = async (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (!file) return;
+            
+            // Add to attachments list temporarily
+            setAttachments(prev => [...prev, file.name]);
+            
+            // Upload file
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: {
+                        'x-session-id': messages[0]?.id || 'default-session',
+                    },
+                    body: formData,
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Upload failed');
+                }
+                
+                const result = await response.json();
+                
+                // Add context about the uploaded file to the chat
+                if (result.extractedContent) {
+                    const fileContext = `\n\n[File uploaded: ${result.filename}]\n${result.extractedContent}`;
+                    setInput(prev => prev + fileContext);
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                // Remove from attachments on error
+                setAttachments(prev => prev.filter(name => name !== file.name));
+                alert('Failed to upload file. Please try again.');
+            }
+        };
+        
+        input.click();
     };
 
     const removeAttachment = (index: number) => {
@@ -282,58 +340,96 @@ export function AnimatedAIChat() {
     
     const selectCommandSuggestion = (index: number) => {
         const selectedCommand = commandSuggestions[index];
-        setValue(selectedCommand.prefix + ' ');
+        const query = getQueryForCommand(selectedCommand.prefix);
+        setInput(query);
         setShowCommandPalette(false);
         
-        setRecentCommand(selectedCommand.label);
-        setTimeout(() => setRecentCommand(null), 2000);
+        // Auto-submit the command
+        setTimeout(() => {
+            handleChatSubmit(new Event('submit') as any);
+        }, 100);
     };
 
     return (
-        <div className="min-h-screen flex flex-col w-full items-center justify-center bg-transparent text-white p-6 relative overflow-hidden">
-        <div className="absolute inset-0 w-full h-full overflow-hidden">
+        <div className="min-h-screen flex flex-col w-full bg-transparent text-white relative overflow-hidden">
+            {/* Background effects */}
+            <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
                 <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full mix-blend-normal filter blur-[128px] animate-pulse" />
                 <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full mix-blend-normal filter blur-[128px] animate-pulse delay-700" />
                 <div className="absolute top-1/4 right-1/3 w-64 h-64 bg-fuchsia-500/10 rounded-full mix-blend-normal filter blur-[96px] animate-pulse delay-1000" />
             </div>
-            <div className="w-full max-w-2xl mx-auto relative">
+
+            {/* Main content */}
+            <div className="flex-1 flex flex-col max-w-2xl w-full mx-auto px-4 relative z-10">
+                {/* Header */}
                 <motion.div 
-                    className="relative z-10 space-y-12"
-                    initial={{ opacity: 0, y: 20 }}
+                    className="text-center py-8"
+                    initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    transition={{ duration: 0.6 }}
                 >
-                    <div className="text-center space-y-3">
+                    <h1 className="text-3xl font-medium tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white/90 to-white/40 pb-1">
+                        OrcaSlicer Calibration Assistant
+                    </h1>
+                    <p className="text-sm text-white/40 mt-2">
+                        Ask about calibration, settings, or troubleshooting
+                    </p>
+                </motion.div>
+
+                {/* Messages area */}
+                <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
+                    {messages.map((message) => (
+                        <motion.div
+                            key={message.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={cn(
+                                'flex gap-3',
+                                message.role === 'user' ? 'justify-end' : 'justify-start'
+                            )}
+                        >
+                            {message.role === 'assistant' && (
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                                    <Sparkles className="w-4 h-4 text-white" />
+                                </div>
+                            )}
+                            <div
+                                className={cn(
+                                    'max-w-[80%] rounded-2xl px-4 py-3',
+                                    message.role === 'user'
+                                        ? 'bg-white/10 backdrop-blur-lg text-white border border-white/10'
+                                        : 'bg-gradient-to-br from-purple-900/20 to-blue-900/20 backdrop-blur-lg text-white border border-white/10'
+                                )}
+                            >
+                                <div className="whitespace-pre-wrap text-sm">{message.content}</div>
+                            </div>
+                        </motion.div>
+                    ))}
+                    
+                    {isLoading && (
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2, duration: 0.5 }}
-                            className="inline-block"
+                            className="flex gap-3"
                         >
-                            <h1 className="text-3xl font-medium tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white/90 to-white/40 pb-1">
-                                How can I help today?
-                            </h1>
-                            <motion.div 
-                                className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                                initial={{ width: 0, opacity: 0 }}
-                                animate={{ width: "100%", opacity: 1 }}
-                                transition={{ delay: 0.5, duration: 0.8 }}
-                            />
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                                <Sparkles className="w-4 h-4 text-white" />
+                            </div>
+                            <div className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 backdrop-blur-lg rounded-2xl px-4 py-3 border border-white/10">
+                                <TypingDots />
+                            </div>
                         </motion.div>
-                        <motion.p 
-                            className="text-sm text-white/40"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.3 }}
-                        >
-                            Type a command or ask a question
-                        </motion.p>
-                    </div>
+                    )}
+                    
+                    <div ref={messagesEndRef} />
+                </div>
 
+                {/* Input area */}
+                <div className="px-4 pb-6">
                     <motion.div 
                         className="relative backdrop-blur-2xl bg-white/[0.02] rounded-2xl border border-white/[0.05] shadow-2xl"
-                        initial={{ scale: 0.98 }}
-                        animate={{ scale: 1 }}
+                        initial={{ scale: 0.98, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
                         transition={{ delay: 0.1 }}
                     >
                         <AnimatePresence>
@@ -378,15 +474,15 @@ export function AnimatedAIChat() {
                         <div className="p-4">
                             <Textarea
                                 ref={textareaRef}
-                                value={value}
+                                value={input}
                                 onChange={(e) => {
-                                    setValue(e.target.value);
+                                    handleInputChange(e);
                                     adjustHeight();
                                 }}
                                 onKeyDown={handleKeyDown}
                                 onFocus={() => setInputFocused(true)}
                                 onBlur={() => setInputFocused(false)}
-                                placeholder="Ask zap a question..."
+                                placeholder="Ask about OrcaSlicer calibration..."
                                 containerClassName="w-full"
                                 className={cn(
                                     "w-full px-4 py-3",
@@ -434,7 +530,7 @@ export function AnimatedAIChat() {
                             )}
                         </AnimatePresence>
 
-                        <div className="p-4 border-t border-white/[0.05] flex items-center justify-between gap-4">
+                        <div className="p-4 pt-0 border-t border-white/[0.05] flex items-center justify-between gap-4">
                             <div className="flex items-center gap-3">
                                 <motion.button
                                     type="button"
@@ -471,19 +567,19 @@ export function AnimatedAIChat() {
                             
                             <motion.button
                                 type="button"
-                                onClick={handleSendMessage}
+                                onClick={(e) => handleChatSubmit(e as any)}
                                 whileHover={{ scale: 1.01 }}
                                 whileTap={{ scale: 0.98 }}
-                                disabled={isTyping || !value.trim()}
+                                disabled={isLoading || !input.trim()}
                                 className={cn(
                                     "px-4 py-2 rounded-lg text-sm font-medium transition-all",
                                     "flex items-center gap-2",
-                                    value.trim()
+                                    input.trim()
                                         ? "bg-white text-[#0A0A0B] shadow-lg shadow-white/10"
                                         : "bg-white/[0.05] text-white/40"
                                 )}
                             >
-                                {isTyping ? (
+                                {isLoading ? (
                                     <LoaderIcon className="w-4 h-4 animate-[spin_2s_linear_infinite]" />
                                 ) : (
                                     <SendIcon className="w-4 h-4" />
@@ -493,7 +589,13 @@ export function AnimatedAIChat() {
                         </div>
                     </motion.div>
 
-                    <div className="flex flex-wrap items-center justify-center gap-2">
+                    {/* Command suggestions */}
+                    <motion.div 
+                        className="flex flex-wrap items-center justify-center gap-2 mt-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                    >
                         {commandSuggestions.map((suggestion, index) => (
                             <motion.button
                                 key={suggestion.prefix}
@@ -519,30 +621,9 @@ export function AnimatedAIChat() {
                                 />
                             </motion.button>
                         ))}
-                    </div>
-                </motion.div>
-            </div>
-
-            <AnimatePresence>
-                {isTyping && (
-                    <motion.div 
-                        className="fixed bottom-8 mx-auto transform -translate-x-1/2 backdrop-blur-2xl bg-white/[0.02] rounded-full px-4 py-2 shadow-lg border border-white/[0.05]"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-7 rounded-full bg-white/[0.05] flex items-center justify-center text-center">
-                                <span className="text-xs font-medium text-white/90 mb-0.5">zap</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-white/70">
-                                <span>Thinking</span>
-                                <TypingDots />
-                            </div>
-                        </div>
                     </motion.div>
-                )}
-            </AnimatePresence>
+                </div>
+            </div>
 
             {inputFocused && (
                 <motion.div 
@@ -587,50 +668,6 @@ function TypingDots() {
                 />
             ))}
         </div>
-    );
-}
-
-interface ActionButtonProps {
-    icon: React.ReactNode;
-    label: string;
-}
-
-function ActionButton({ icon, label }: ActionButtonProps) {
-    const [isHovered, setIsHovered] = useState(false);
-    
-    return (
-        <motion.button
-            type="button"
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.97 }}
-            onHoverStart={() => setIsHovered(true)}
-            onHoverEnd={() => setIsHovered(false)}
-            className="flex items-center gap-2 px-4 py-2 bg-neutral-900 hover:bg-neutral-800 rounded-full border border-neutral-800 text-neutral-400 hover:text-white transition-all relative overflow-hidden group"
-        >
-            <div className="relative z-10 flex items-center gap-2">
-                {icon}
-                <span className="text-xs relative z-10">{label}</span>
-            </div>
-            
-            <AnimatePresence>
-                {isHovered && (
-                    <motion.div 
-                        className="absolute inset-0 bg-gradient-to-r from-violet-500/10 to-indigo-500/10"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                    />
-                )}
-            </AnimatePresence>
-            
-            <motion.span 
-                className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-violet-500 to-indigo-500"
-                initial={{ width: 0 }}
-                whileHover={{ width: "100%" }}
-                transition={{ duration: 0.3 }}
-            />
-        </motion.button>
     );
 }
 

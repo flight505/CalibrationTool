@@ -74,21 +74,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       [currentSessionId, 'user', lastMessage.content]
     );
     
-    // Simple text search for context (since we don't have pgvector)
-    const searchResults = await client.query(
-      `SELECT title, content, metadata 
-       FROM documents 
-       WHERE to_tsvector('english', title || ' ' || content) @@ plainto_tsquery('english', $1)
-       LIMIT 5`,
-      [lastMessage.content]
-    );
-    
-    // Build context from search results
+    // Hybrid search for better context retrieval
     let context = '';
-    if (searchResults.rows.length > 0) {
-      context = 'Relevant information:\n\n';
-      for (const result of searchResults.rows) {
-        context += `${result.title}\n${result.content.substring(0, 500)}...\n\n`;
+    try {
+      // Try to use hybrid search if embeddings are available
+      const { hybridSearch } = await import('../src/lib/utils/vectorSearch');
+      const searchResults = await hybridSearch(lastMessage.content, 5);
+      
+      if (searchResults.length > 0) {
+        context = 'Relevant information:\n\n';
+        for (const result of searchResults) {
+          context += `${result.title}\n${result.content.substring(0, 500)}...\n\n`;
+        }
+      }
+    } catch (error) {
+      console.log('Hybrid search failed, falling back to text search:', error);
+      
+      // Fallback to simple text search
+      const searchResults = await client.query(
+        `SELECT title, content, metadata 
+         FROM documents 
+         WHERE to_tsvector('english', title || ' ' || content) @@ plainto_tsquery('english', $1)
+         LIMIT 5`,
+        [lastMessage.content]
+      );
+      
+      if (searchResults.rows.length > 0) {
+        context = 'Relevant information:\n\n';
+        for (const result of searchResults.rows) {
+          context += `${result.title}\n${result.content.substring(0, 500)}...\n\n`;
+        }
       }
     }
     

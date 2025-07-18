@@ -1,6 +1,6 @@
 I'll create a comprehensive, detailed markdown checklist for building the OrcaSlicer RAG chatbot. Let me think through every implementation detail to ensure nothing is missed.
 
-# OrcaSlicer RAG Chatbot Implementation Checklist
+# OrcaSlicer RAG chat page Implementation Checklist
 
 ## Project Setup and Configuration
 
