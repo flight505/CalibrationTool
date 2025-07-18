@@ -11,4 +11,5 @@ eza . --tree --git-ignore
 > list of files:
 README.md
 CLAUDE.md
+OrcaRAG.md
 > Dont do anything else.

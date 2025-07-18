@@ -58,7 +58,7 @@ const YoloFlowCalibration = () => {
               placeholder="0.98"
             />
             <p className="text-xs text-muted-foreground">
-              Enter as decimal (e.g., 0.98 not 98%). Values > 10 will be auto-converted.
+              Enter as decimal (e.g., 0.98 not 98%). Values {'>'} 10 will be auto-converted.
             </p>
             {flowRatioOld > 10 && (
               <p className="text-xs text-amber-600 dark:text-amber-400">

@@ -29,6 +29,10 @@ I'll create a comprehensive, detailed markdown checklist for building the OrcaSl
 - [ ] Install streaming utilities: `pnpm add eventsource-parser`
 - [ ] Install validation: `pnpm add zod`
 
+### Link to LightRAG github repo:
+https://github.com/HKUDS/LightRAG 
+use the latest version of LightRAG and study the README on the repo to understand the usage and how to use it.
+
 ### Environment Configuration
 - [ ] Create `.env.local` file with:
   ```

@@ -1,7 +1,9 @@
-import React from 'react';
-import { Printer, Calculator, Thermometer, Move3D, RotateCcw, FileText, Github, Gauge, BookOpen, Settings } from 'lucide-react';
+import React, { useState } from 'react';
+import { Printer, Calculator, Thermometer, Move3D, RotateCcw, FileText, Github, Gauge, BookOpen, Settings, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { Chatbot } from '@/components/Chatbot';
+import { cn } from '@/lib/utils';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -20,6 +22,8 @@ const tools = [
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children, currentTool, onToolChange }) => {
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -30,6 +34,15 @@ const Layout: React.FC<LayoutProps> = ({ children, currentTool, onToolChange }) 
             <h1 className="text-2xl font-bold">Orca Slicer Calibration Suite</h1>
           </div>
           <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setIsChatbotOpen(!isChatbotOpen)}
+              title="OrcaSlicer Assistant"
+              className={cn(isChatbotOpen && "bg-accent")}
+            >
+              <MessageCircle className="w-5 h-5" />
+            </Button>
             <Button 
               variant="ghost" 
               size="icon"
@@ -111,6 +124,9 @@ const Layout: React.FC<LayoutProps> = ({ children, currentTool, onToolChange }) 
           </div>
         </div>
       </footer>
+      
+      {/* Chatbot */}
+      <Chatbot isOpen={isChatbotOpen} onClose={() => setIsChatbotOpen(false)} />
     </div>
   );
 };

@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.31">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>orcaslicerchatbotplan</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="OrcaSlicerChatbotPlan_files/libs/clipboard/clipboard.min.js"></script>
+<script src="OrcaSlicerChatbotPlan_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="OrcaSlicerChatbotPlan_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="OrcaSlicerChatbotPlan_files/libs/quarto-html/popper.min.js"></script>
+<script src="OrcaSlicerChatbotPlan_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="OrcaSlicerChatbotPlan_files/libs/quarto-html/anchor.min.js"></script>
+<link href="OrcaSlicerChatbotPlan_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="OrcaSlicerChatbotPlan_files/libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="OrcaSlicerChatbotPlan_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="OrcaSlicerChatbotPlan_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="OrcaSlicerChatbotPlan_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+
+
+
+<section id="orcaslicer-chatbot-implementation-plan" class="level1">
+<h1>OrcaSlicer Chatbot Implementation Plan</h1>
+<section id="quick-start-guide" class="level2">
+<h2 class="anchored" data-anchor-id="quick-start-guide">Quick Start Guide</h2>
+<section id="immediate-actions-required" class="level3">
+<h3 class="anchored" data-anchor-id="immediate-actions-required">Immediate Actions Required:</h3>
+<ol type="1">
+<li><p><strong>Pull Vercel Environment Variables</strong> (5 minutes)</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">vercel</span> env pull .env.local</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Add API Keys to .env.local</strong> (2 minutes)</p>
+<ul>
+<li>Add your OpenAI API key</li>
+<li>Add your Firecrawl API key</li>
+</ul></li>
+<li><p><strong>Enable pgvector in Vercel Postgres</strong> (5 minutes)</p>
+<ul>
+<li>Go to Vercel Dashboard → Storage → Your Database</li>
+<li>Click “Query” tab</li>
+<li>Run: <code>CREATE EXTENSION IF NOT EXISTS vector;</code></li>
+</ul></li>
+<li><p><strong>Install Core Dependencies</strong> (5 minutes)</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install openai @vercel/postgres pgvector ai @ai-sdk/openai drizzle-orm drizzle-kit @mendable/firecrawl-js zod formidable sharp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ol>
+</section>
+</section>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>This document provides a comprehensive plan for implementing an AI-powered chatbot for the OrcaSlicer Calibration Tool web application. The chatbot will use OpenAI for language models and embeddings, Vercel Postgres with pgvector for storage, LightRAG for GraphRAG capabilities, and Firecrawl for documentation scraping.</p>
+</section>
+<section id="architecture-overview" class="level2">
+<h2 class="anchored" data-anchor-id="architecture-overview">Architecture Overview</h2>
+<ul>
+<li><strong>Frontend</strong>: React component integrated into existing header</li>
+<li><strong>Backend</strong>: Vercel serverless functions with streaming responses</li>
+<li><strong>Database</strong>: Vercel Postgres with pgvector extension</li>
+<li><strong>AI/ML</strong>: OpenAI GPT-4 and embeddings</li>
+<li><strong>RAG System</strong>: LightRAG for knowledge graph management</li>
+<li><strong>Data Ingestion</strong>: Firecrawl for web scraping</li>
+</ul>
+</section>
+<section id="prerequisites-setup" class="level2">
+<h2 class="anchored" data-anchor-id="prerequisites-setup">Prerequisites Setup</h2>
+<section id="vercel-postgres-setup-guide" class="level3">
+<h3 class="anchored" data-anchor-id="vercel-postgres-setup-guide">Vercel Postgres Setup Guide</h3>
+<section id="step-1-creating-a-postgres-database-in-vercel" class="level4">
+<h4 class="anchored" data-anchor-id="step-1-creating-a-postgres-database-in-vercel">Step 1: Creating a Postgres Database in Vercel</h4>
+<ul class="task-list">
+<li><label><input type="checkbox">Log into your Vercel dashboard at https://vercel.com/dashboard</label></li>
+<li><label><input type="checkbox">Navigate to the “Storage” tab in your project or account settings</label></li>
+<li><label><input type="checkbox">Click “Create Database” and select “Postgres”</label></li>
+<li><label><input type="checkbox">Choose your database region (select closest to your users)</label></li>
+<li><label><input type="checkbox">Name your database (e.g., “orcaslicer-chatbot-db”)</label></li>
+<li><label><input type="checkbox">Click “Create” and wait for provisioning</label></li>
+</ul>
+</section>
+<section id="step-2-retrieving-database-credentials" class="level4">
+<h4 class="anchored" data-anchor-id="step-2-retrieving-database-credentials">Step 2: Retrieving Database Credentials</h4>
+<p>Once your database is created, Vercel will automatically generate all necessary environment variables:</p>
+<ol type="1">
+<li><p><strong>From Vercel Dashboard</strong>:</p>
+<ul class="task-list">
+<li><label><input type="checkbox">Go to your project settings</label></li>
+<li><label><input type="checkbox">Navigate to “Environment Variables” tab</label></li>
+<li><label><input type="checkbox">You’ll find these auto-generated variables:</label>
+<ul>
+<li><code>POSTGRES_URL</code> - Full connection string with pooling</li>
+<li><code>POSTGRES_PRISMA_URL</code> - Connection string for Prisma</li>
+<li><code>POSTGRES_URL_NO_SSL</code> - Connection string without SSL</li>
+<li><code>POSTGRES_URL_NON_POOLING</code> - Direct connection string</li>
+<li><code>POSTGRES_USER</code> - Database username</li>
+<li><code>POSTGRES_HOST</code> - Database host</li>
+<li><code>POSTGRES_PASSWORD</code> - Database password</li>
+<li><code>POSTGRES_DATABASE</code> - Database name</li>
+</ul></li>
+</ul></li>
+<li><p><strong>Using Vercel CLI</strong>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pull environment variables to local .env file</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">vercel</span> env pull .env.local</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ol>
+</section>
+<section id="step-3-enable-pgvector-extension" class="level4">
+<h4 class="anchored" data-anchor-id="step-3-enable-pgvector-extension">Step 3: Enable pgvector Extension</h4>
+<ul class="task-list">
+<li><label><input type="checkbox">Connect to your database using Vercel’s query interface or a PostgreSQL client</label></li>
+<li><label><input type="checkbox">Run the following SQL command: <code>sql  CREATE EXTENSION IF NOT EXISTS vector;</code></label></li>
+</ul>
+</section>
+</section>
+<section id="api-keys-setup" class="level3">
+<h3 class="anchored" data-anchor-id="api-keys-setup">API Keys Setup</h3>
+<ul class="task-list">
+<li><label><input type="checkbox">Obtain OpenAI API key from https://platform.openai.com/api-keys</label></li>
+<li><label><input type="checkbox">Obtain Firecrawl API key from https://www.firecrawl.dev/</label></li>
+<li><label><input type="checkbox">Store both keys securely (ready to add to .env.local)</label></li>
+</ul>
+</section>
+</section>
+<section id="detailed-implementation-plan" class="level2">
+<h2 class="anchored" data-anchor-id="detailed-implementation-plan">Detailed Implementation Plan</h2>
+</section>
+<section id="lightrag-implementation-strategy" class="level2">
+<h2 class="anchored" data-anchor-id="lightrag-implementation-strategy">LightRAG Implementation Strategy</h2>
+<p>Since LightRAG is primarily a Python implementation, we have several options:</p>
+<section id="option-1-typescript-implementation-recommended" class="level3">
+<h3 class="anchored" data-anchor-id="option-1-typescript-implementation-recommended">Option 1: TypeScript Implementation (Recommended)</h3>
+<p>We’ll implement the core LightRAG concepts in TypeScript: - Entity extraction using OpenAI function calling - Relationship mapping with graph algorithms - Dual-level retrieval (low-level for specific entities, high-level for concepts) - PostgreSQL with pgvector for storage</p>
+</section>
+<section id="option-2-python-microservice" class="level3">
+<h3 class="anchored" data-anchor-id="option-2-python-microservice">Option 2: Python Microservice</h3>
+<p>Run LightRAG as a separate Python service and communicate via API: - Pros: Use official LightRAG implementation - Cons: Additional infrastructure complexity</p>
+</section>
+<section id="option-3-hybrid-approach" class="level3">
+<h3 class="anchored" data-anchor-id="option-3-hybrid-approach">Option 3: Hybrid Approach</h3>
+<p>Use TypeScript for main logic with Python scripts for batch processing: - TypeScript API for real-time queries - Python scripts for document ingestion and graph building</p>
+<p><strong>Decision</strong>: We’ll go with Option 1 (TypeScript Implementation) for better integration with our Vercel stack.</p>
+</section>
+</section>
+<section id="lightrag-typescript-implementation" class="level2">
+<h2 class="anchored" data-anchor-id="lightrag-typescript-implementation">LightRAG TypeScript Implementation</h2>
+<section id="core-components-to-implement" class="level3">
+<h3 class="anchored" data-anchor-id="core-components-to-implement">Core Components to Implement</h3>
+<section id="entity-extraction-module" class="level4">
+<h4 class="anchored" data-anchor-id="entity-extraction-module">1. Entity Extraction Module</h4>
+<div class="sourceCode" id="cb4"><pre class="sourceCode typescript code-with-copy"><code class="sourceCode typescript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> Entity {</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  id<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  name<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  type<span class="op">:</span> <span class="dt">string</span><span class="op">;</span> <span class="co">// 'tool', 'material', 'setting', 'problem', 'solution'</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  description<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  embedding<span class="op">:</span> <span class="dt">number</span>[]<span class="op">;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  metadata<span class="op">:</span> <span class="bu">Record</span><span class="op">&lt;</span><span class="dt">string</span><span class="op">,</span> <span class="dt">any</span><span class="op">&gt;;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> Relationship {</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  id<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  sourceId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  targetId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  type<span class="op">:</span> <span class="dt">string</span><span class="op">;</span> <span class="co">// 'requires', 'solves', 'relates_to', 'causes'</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  weight<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  metadata<span class="op">:</span> <span class="bu">Record</span><span class="op">&lt;</span><span class="dt">string</span><span class="op">,</span> <span class="dt">any</span><span class="op">&gt;;</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="dual-level-retrieval" class="level4">
+<h4 class="anchored" data-anchor-id="dual-level-retrieval">2. Dual-Level Retrieval</h4>
+<ul>
+<li><strong>Low-Level</strong>: Direct entity and relationship queries</li>
+<li><strong>High-Level</strong>: Conceptual understanding and broader topics</li>
+</ul>
+</section>
+<section id="graph-operations" class="level4">
+<h4 class="anchored" data-anchor-id="graph-operations">3. Graph Operations</h4>
+<ul>
+<li>Entity insertion without full rebuild</li>
+<li>Relationship discovery</li>
+<li>Path finding for related concepts</li>
+<li>Subgraph extraction for context</li>
+</ul>
+</section>
+</section>
+<section id="phase-1-project-setup-and-configuration" class="level3">
+<h3 class="anchored" data-anchor-id="phase-1-project-setup-and-configuration">Phase 1: Project Setup and Configuration</h3>
+<section id="environment-setup" class="level4">
+<h4 class="anchored" data-anchor-id="environment-setup">1.1 Environment Setup</h4>
+<ul class="task-list">
+<li><p><label><input type="checkbox">Create <code>.env.local</code> file in project root</label></p></li>
+<li><p><label><input type="checkbox">Add all required environment variables:</label></p>
+<pre class="env"><code># OpenAI
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Firecrawl
+FIRECRAWL_API_KEY=your_firecrawl_api_key_here
+
+# Vercel Postgres (auto-populated by vercel env pull)
+POSTGRES_URL=
+POSTGRES_PRISMA_URL=
+POSTGRES_URL_NO_SSL=
+POSTGRES_URL_NON_POOLING=
+POSTGRES_USER=
+POSTGRES_HOST=
+POSTGRES_PASSWORD=
+POSTGRES_DATABASE=</code></pre></li>
+</ul>
+</section>
+<section id="dependencies-installation" class="level4">
+<h4 class="anchored" data-anchor-id="dependencies-installation">1.2 Dependencies Installation</h4>
+<ul class="task-list">
+<li><p><label><input type="checkbox">Install core dependencies:</label></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install openai @vercel/postgres pgvector</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><label><input type="checkbox">Install Vercel AI SDK:</label></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install ai @ai-sdk/openai</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><label><input type="checkbox">Install database ORM:</label></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install drizzle-orm drizzle-kit</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><label><input type="checkbox">Install Firecrawl:</label></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install @mendable/firecrawl-js</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><label><input type="checkbox">Install utility libraries:</label></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install zod uuid crypto-js</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><label><input type="checkbox">Install file handling libraries:</label></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install formidable @types/formidable</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install sharp <span class="co"># for image processing</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install pdf-parse <span class="co"># for PDF parsing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul>
+</section>
+<section id="lightrag-setup" class="level4">
+<h4 class="anchored" data-anchor-id="lightrag-setup">1.3 LightRAG Setup</h4>
+<ul class="task-list">
+<li><p><label><input type="checkbox">Clone LightRAG repository to understand latest implementation:</label></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/HKUDS/LightRAG.git temp-lightrag</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><label><input type="checkbox">Study the README and examples</label></p></li>
+<li><p><label><input type="checkbox">Create TypeScript wrapper for LightRAG integration</label></p></li>
+<li><p><label><input type="checkbox">Note: LightRAG requires specific setup - we’ll create a custom implementation</label></p></li>
+</ul>
+</section>
+</section>
+<section id="phase-2-database-schema-and-setup" class="level3">
+<h3 class="anchored" data-anchor-id="phase-2-database-schema-and-setup">Phase 2: Database Schema and Setup</h3>
+<section id="database-schema-creation" class="level4">
+<h4 class="anchored" data-anchor-id="database-schema-creation">2.1 Database Schema Creation</h4>
+<ul class="task-list">
+<li><p><label><input type="checkbox">Create <code>src/lib/db/schema.sql</code>:</label></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Enable pgvector extension</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> EXTENSION <span class="cf">IF</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> vector;</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">-- Main documents table for RAG</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> <span class="cf">IF</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> documents (</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span> SERIAL <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  title TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  content TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  url TEXT,</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  source_type <span class="dt">VARCHAR</span>(<span class="dv">50</span>), <span class="co">-- 'wiki', 'blog', 'manual', etc.</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  embedding vector(<span class="dv">1536</span>), <span class="co">-- OpenAI embedding dimension</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  metadata JSONB <span class="kw">DEFAULT</span> <span class="st">'{}'</span>,</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  created_at <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span>,</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>  updated_at <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">-- Chat sessions table</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> <span class="cf">IF</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> chat_sessions (</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span> UUID <span class="kw">PRIMARY</span> <span class="kw">KEY</span> <span class="kw">DEFAULT</span> gen_random_uuid(),</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>  created_at <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span>,</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>  updated_at <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span>,</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>  metadata JSONB <span class="kw">DEFAULT</span> <span class="st">'{}'</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="co">-- Chat messages table</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> <span class="cf">IF</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> chat_messages (</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span> SERIAL <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>  session_id UUID <span class="kw">REFERENCES</span> chat_sessions(<span class="kw">id</span>),</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>  <span class="kw">role</span> <span class="dt">VARCHAR</span>(<span class="dv">20</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>, <span class="co">-- 'user', 'assistant', 'system'</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>  content TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>  metadata JSONB <span class="kw">DEFAULT</span> <span class="st">'{}'</span>, <span class="co">-- for storing file references, etc.</span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>  created_at <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a><span class="co">-- File uploads table</span></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> <span class="cf">IF</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> file_uploads (</span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span> UUID <span class="kw">PRIMARY</span> <span class="kw">KEY</span> <span class="kw">DEFAULT</span> gen_random_uuid(),</span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>  session_id UUID <span class="kw">REFERENCES</span> chat_sessions(<span class="kw">id</span>),</span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>  filename TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>  mime_type <span class="dt">VARCHAR</span>(<span class="dv">100</span>),</span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>  size_bytes <span class="dt">INTEGER</span>,</span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>  storage_url TEXT,</span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>  content_extracted TEXT, <span class="co">-- extracted text/data from files</span></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>  metadata JSONB <span class="kw">DEFAULT</span> <span class="st">'{}'</span>,</span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>  created_at <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span></span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a><span class="co">-- Knowledge graph entities (for LightRAG)</span></span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> <span class="cf">IF</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> kg_entities (</span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span> SERIAL <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a>  name TEXT <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">UNIQUE</span>,</span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>  entity_type <span class="dt">VARCHAR</span>(<span class="dv">100</span>),</span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a>  description TEXT,</span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a>  embedding vector(<span class="dv">1536</span>),</span>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a>  metadata JSONB <span class="kw">DEFAULT</span> <span class="st">'{}'</span>,</span>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a>  created_at <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span></span>
+<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a><span class="co">-- Knowledge graph relationships</span></span>
+<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> <span class="cf">IF</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> kg_relationships (</span>
+<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span> SERIAL <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a>  source_entity_id <span class="dt">INTEGER</span> <span class="kw">REFERENCES</span> kg_entities(<span class="kw">id</span>),</span>
+<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a>  target_entity_id <span class="dt">INTEGER</span> <span class="kw">REFERENCES</span> kg_entities(<span class="kw">id</span>),</span>
+<span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a>  relationship_type <span class="dt">VARCHAR</span>(<span class="dv">100</span>),</span>
+<span id="cb13-65"><a href="#cb13-65" aria-hidden="true" tabindex="-1"></a>  weight <span class="dt">FLOAT</span> <span class="kw">DEFAULT</span> <span class="fl">1.0</span>,</span>
+<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a>  metadata JSONB <span class="kw">DEFAULT</span> <span class="st">'{}'</span>,</span>
+<span id="cb13-67"><a href="#cb13-67" aria-hidden="true" tabindex="-1"></a>  created_at <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span></span>
+<span id="cb13-68"><a href="#cb13-68" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb13-69"><a href="#cb13-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-70"><a href="#cb13-70" aria-hidden="true" tabindex="-1"></a><span class="co">-- Create indexes for performance</span></span>
+<span id="cb13-71"><a href="#cb13-71" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_documents_embedding <span class="kw">ON</span> documents </span>
+<span id="cb13-72"><a href="#cb13-72" aria-hidden="true" tabindex="-1"></a>  <span class="kw">USING</span> ivfflat (embedding vector_cosine_ops) <span class="kw">WITH</span> (lists <span class="op">=</span> <span class="dv">100</span>);</span>
+<span id="cb13-73"><a href="#cb13-73" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_kg_entities_embedding <span class="kw">ON</span> kg_entities </span>
+<span id="cb13-74"><a href="#cb13-74" aria-hidden="true" tabindex="-1"></a>  <span class="kw">USING</span> ivfflat (embedding vector_cosine_ops) <span class="kw">WITH</span> (lists <span class="op">=</span> <span class="dv">100</span>);</span>
+<span id="cb13-75"><a href="#cb13-75" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_documents_source <span class="kw">ON</span> documents(source_type);</span>
+<span id="cb13-76"><a href="#cb13-76" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_messages_session <span class="kw">ON</span> chat_messages(session_id);</span>
+<span id="cb13-77"><a href="#cb13-77" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_uploads_session <span class="kw">ON</span> file_uploads(session_id);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul>
+</section>
+<section id="drizzle-orm-setup" class="level4">
+<h4 class="anchored" data-anchor-id="drizzle-orm-setup">2.2 Drizzle ORM Setup</h4>
+<ul class="task-list">
+<li><label><input type="checkbox">Create <code>src/lib/db/schema.ts</code> with TypeScript types</label></li>
+<li><label><input type="checkbox">Configure Drizzle connection</label></li>
+<li><label><input type="checkbox">Create migration scripts</label></li>
+</ul>
+</section>
+</section>
+<section id="phase-3-data-ingestion-system" class="level3">
+<h3 class="anchored" data-anchor-id="phase-3-data-ingestion-system">Phase 3: Data Ingestion System</h3>
+<section id="web-scraping-setup" class="level4">
+<h4 class="anchored" data-anchor-id="web-scraping-setup">3.1 Web Scraping Setup</h4>
+<ul class="task-list">
+<li><p><label><input type="checkbox">Create <code>scripts/scrape-docs.ts</code> for documentation scraping:</label></p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode typescript code-with-copy"><code class="sourceCode typescript"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Target sources:</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 1. OrcaSlicer Wiki: https://github.com/SoftFever/OrcaSlicer/wiki/</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co">// 2. Obico Blog: https://www.obico.io/blog/</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co">// 3. Bambu Lab Wiki: https://wiki.bambulab.com/en/knowledge-sharing/</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co">// 4. FLSUN Wiki: https://wiki.flsun3d.com/en/</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><label><input type="checkbox">Implement crawling logic with rate limiting</label></p></li>
+<li><p><label><input type="checkbox">Create content chunking strategy (max 1000 tokens per chunk)</label></p></li>
+<li><p><label><input type="checkbox">Generate embeddings for each chunk</label></p></li>
+<li><p><label><input type="checkbox">Store in database with proper metadata</label></p></li>
+</ul>
+</section>
+<section id="lightrag-integration" class="level4">
+<h4 class="anchored" data-anchor-id="lightrag-integration">3.2 LightRAG Integration</h4>
+<ul class="task-list">
+<li><label><input type="checkbox">Implement entity extraction from documents</label></li>
+<li><label><input type="checkbox">Build knowledge graph relationships</label></li>
+<li><label><input type="checkbox">Create graph traversal queries</label></li>
+<li><label><input type="checkbox">Implement hybrid search (vector + graph)</label></li>
+</ul>
+</section>
+</section>
+<section id="phase-4-backend-api-implementation" class="level3">
+<h3 class="anchored" data-anchor-id="phase-4-backend-api-implementation">Phase 4: Backend API Implementation</h3>
+<section id="chat-api-endpoint" class="level4">
+<h4 class="anchored" data-anchor-id="chat-api-endpoint">4.1 Chat API Endpoint</h4>
+<ul class="task-list">
+<li><label><input type="checkbox">Create <code>src/app/api/chat/route.ts</code>:</label>
+<ul>
+<li>Handle streaming responses</li>
+<li>Implement context retrieval</li>
+<li>Support file uploads</li>
+<li>Rate limiting per session</li>
+</ul></li>
+</ul>
+</section>
+<section id="file-upload-handling" class="level4">
+<h4 class="anchored" data-anchor-id="file-upload-handling">4.2 File Upload Handling</h4>
+<ul class="task-list">
+<li><label><input type="checkbox">Create <code>src/app/api/upload/route.ts</code>:</label>
+<ul>
+<li>Support JSON (printer/filament settings)</li>
+<li>Support images (print failures, quality issues)</li>
+<li>Support STL files (ASCII format)</li>
+<li>Extract and process content</li>
+</ul></li>
+</ul>
+</section>
+<section id="rag-pipeline" class="level4">
+<h4 class="anchored" data-anchor-id="rag-pipeline">4.3 RAG Pipeline</h4>
+<ul class="task-list">
+<li><label><input type="checkbox">Implement retrieval logic:</label>
+<ol type="1">
+<li>Semantic search using embeddings</li>
+<li>Knowledge graph traversal</li>
+<li>Hybrid ranking algorithm</li>
+<li>Context assembly</li>
+</ol></li>
+</ul>
+</section>
+</section>
+<section id="phase-5-frontend-integration" class="level3">
+<h3 class="anchored" data-anchor-id="phase-5-frontend-integration">Phase 5: Frontend Integration</h3>
+<section id="chat-component-implementation" class="level4">
+<h4 class="anchored" data-anchor-id="chat-component-implementation">5.1 Chat Component Implementation</h4>
+<ul class="task-list">
+<li><label><input type="checkbox">Use the provided AnimatedAIChat component from OrcaRAG.md</label></li>
+<li><label><input type="checkbox">Integrate with existing header navigation</label></li>
+<li><label><input type="checkbox">Add file upload capabilities</label></li>
+<li><label><input type="checkbox">Implement streaming message display</label></li>
+</ul>
+</section>
+<section id="uiux-enhancements" class="level4">
+<h4 class="anchored" data-anchor-id="uiux-enhancements">5.2 UI/UX Enhancements</h4>
+<ul class="task-list">
+<li><label><input type="checkbox">Add chatbot button to header (before Recommendations)</label></li>
+<li><label><input type="checkbox">Create modal/slide-out chat interface</label></li>
+<li><label><input type="checkbox">Implement file preview for uploads</label></li>
+<li><label><input type="checkbox">Add typing indicators and loading states</label></li>
+</ul>
+</section>
+</section>
+<section id="phase-6-multimodal-capabilities" class="level3">
+<h3 class="anchored" data-anchor-id="phase-6-multimodal-capabilities">Phase 6: Multimodal Capabilities</h3>
+<section id="json-file-analysis" class="level4">
+<h4 class="anchored" data-anchor-id="json-file-analysis">6.1 JSON File Analysis</h4>
+<ul class="task-list">
+<li><label><input type="checkbox">Parse OrcaSlicer setting files:</label>
+<ul>
+<li>Printer profiles</li>
+<li>Filament settings</li>
+<li>Process parameters</li>
+</ul></li>
+<li><label><input type="checkbox">Identify potential issues:</label>
+<ul>
+<li>Incompatible settings</li>
+<li>Suboptimal configurations</li>
+<li>Missing calibrations</li>
+</ul></li>
+</ul>
+</section>
+<section id="image-analysis" class="level4">
+<h4 class="anchored" data-anchor-id="image-analysis">6.2 Image Analysis</h4>
+<ul class="task-list">
+<li><label><input type="checkbox">Use OpenAI Vision API for:</label>
+<ul>
+<li>Print quality assessment</li>
+<li>Failure diagnosis</li>
+<li>Layer adhesion issues</li>
+<li>Stringing/oozing detection</li>
+</ul></li>
+</ul>
+</section>
+<section id="stl-file-support" class="level4">
+<h4 class="anchored" data-anchor-id="stl-file-support">6.3 STL File Support</h4>
+<ul class="task-list">
+<li><label><input type="checkbox">Parse ASCII STL format</label></li>
+<li><label><input type="checkbox">Extract geometry information</label></li>
+<li><label><input type="checkbox">Provide printability feedback</label></li>
+<li><label><input type="checkbox">Suggest orientation/support</label></li>
+</ul>
+</section>
+</section>
+<section id="phase-7-testing-and-optimization" class="level3">
+<h3 class="anchored" data-anchor-id="phase-7-testing-and-optimization">Phase 7: Testing and Optimization</h3>
+<section id="performance-testing" class="level4">
+<h4 class="anchored" data-anchor-id="performance-testing">7.1 Performance Testing</h4>
+<ul class="task-list">
+<li><label><input type="checkbox">Test response times</label></li>
+<li><label><input type="checkbox">Optimize database queries</label></li>
+<li><label><input type="checkbox">Implement caching strategies</label></li>
+<li><label><input type="checkbox">Monitor token usage</label></li>
+</ul>
+</section>
+<section id="quality-assurance" class="level4">
+<h4 class="anchored" data-anchor-id="quality-assurance">7.2 Quality Assurance</h4>
+<ul class="task-list">
+<li><label><input type="checkbox">Test with various file types</label></li>
+<li><label><input type="checkbox">Verify answer accuracy</label></li>
+<li><label><input type="checkbox">Test edge cases</label></li>
+<li><label><input type="checkbox">Implement fallback responses</label></li>
+</ul>
+</section>
+</section>
+<section id="phase-8-deployment" class="level3">
+<h3 class="anchored" data-anchor-id="phase-8-deployment">Phase 8: Deployment</h3>
+<section id="vercel-deployment-setup" class="level4">
+<h4 class="anchored" data-anchor-id="vercel-deployment-setup">8.1 Vercel Deployment Setup</h4>
+<ul class="task-list">
+<li><label><input type="checkbox">Configure build settings</label></li>
+<li><label><input type="checkbox">Set environment variables</label></li>
+<li><label><input type="checkbox">Configure serverless function limits</label></li>
+<li><label><input type="checkbox">Set up monitoring</label></li>
+</ul>
+</section>
+<section id="cost-management" class="level4">
+<h4 class="anchored" data-anchor-id="cost-management">8.2 Cost Management</h4>
+<ul class="task-list">
+<li><label><input type="checkbox">Implement usage tracking</label></li>
+<li><label><input type="checkbox">Set up OpenAI usage limits</label></li>
+<li><label><input type="checkbox">Monitor database storage</label></li>
+<li><label><input type="checkbox">Create usage dashboard</label></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="technical-implementation-details" class="level2">
+<h2 class="anchored" data-anchor-id="technical-implementation-details">Technical Implementation Details</h2>
+<section id="openai-configuration" class="level3">
+<h3 class="anchored" data-anchor-id="openai-configuration">OpenAI Configuration</h3>
+<div class="sourceCode" id="cb15"><pre class="sourceCode typescript code-with-copy"><code class="sourceCode typescript"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> openai <span class="op">=</span> <span class="kw">new</span> <span class="fu">OpenAI</span>({</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  apiKey<span class="op">:</span> <span class="bu">process</span><span class="op">.</span><span class="at">env</span><span class="op">.</span><span class="at">OPENAI_API_KEY</span><span class="op">,</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co">// For embeddings</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> embeddingModel <span class="op">=</span> <span class="st">"text-embedding-3-small"</span><span class="op">;</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> embeddingDimension <span class="op">=</span> <span class="dv">1536</span><span class="op">;</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="co">// For chat</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> chatModel <span class="op">=</span> <span class="st">"gpt-4-turbo-preview"</span><span class="op">;</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> visionModel <span class="op">=</span> <span class="st">"gpt-4-vision-preview"</span><span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="vercel-postgres-connection" class="level3">
+<h3 class="anchored" data-anchor-id="vercel-postgres-connection">Vercel Postgres Connection</h3>
+<div class="sourceCode" id="cb16"><pre class="sourceCode typescript code-with-copy"><code class="sourceCode typescript"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { sql } <span class="im">from</span> <span class="st">'@vercel/postgres'</span><span class="op">;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { drizzle } <span class="im">from</span> <span class="st">'drizzle-orm/vercel-postgres'</span><span class="op">;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> db <span class="op">=</span> <span class="fu">drizzle</span>(sql)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="file-size-limits" class="level3">
+<h3 class="anchored" data-anchor-id="file-size-limits">File Size Limits</h3>
+<ul>
+<li>JSON files: 10MB max</li>
+<li>Images: 20MB max</li>
+<li>STL files: 50MB max</li>
+<li>Total storage per session: 100MB</li>
+</ul>
+</section>
+<section id="rate-limiting" class="level3">
+<h3 class="anchored" data-anchor-id="rate-limiting">Rate Limiting</h3>
+<ul>
+<li>10 requests per minute per session</li>
+<li>100 requests per hour per IP</li>
+<li>1000 tokens per request average</li>
+</ul>
+</section>
+</section>
+<section id="security-considerations" class="level2">
+<h2 class="anchored" data-anchor-id="security-considerations">Security Considerations</h2>
+<ul class="task-list">
+<li><label><input type="checkbox">Sanitize all file uploads</label></li>
+<li><label><input type="checkbox">Validate JSON schema for settings files</label></li>
+<li><label><input type="checkbox">Implement CORS properly</label></li>
+<li><label><input type="checkbox">Use secure session management</label></li>
+<li><label><input type="checkbox">Encrypt sensitive data in database</label></li>
+</ul>
+</section>
+<section id="monitoring-and-analytics" class="level2">
+<h2 class="anchored" data-anchor-id="monitoring-and-analytics">Monitoring and Analytics</h2>
+<ul class="task-list">
+<li><label><input type="checkbox">Track query types and frequency</label></li>
+<li><label><input type="checkbox">Monitor response accuracy</label></li>
+<li><label><input type="checkbox">Log error rates</label></li>
+<li><label><input type="checkbox">Track file upload patterns</label></li>
+<li><label><input type="checkbox">Measure user satisfaction</label></li>
+</ul>
+</section>
+<section id="future-enhancements" class="level2">
+<h2 class="anchored" data-anchor-id="future-enhancements">Future Enhancements</h2>
+<ol type="1">
+<li>Support for G-code analysis</li>
+<li>Integration with slicer software APIs</li>
+<li>Collaborative troubleshooting features</li>
+<li>Print history tracking</li>
+<li>Community knowledge sharing</li>
+</ol>
+</section>
+<section id="resources-and-references" class="level2">
+<h2 class="anchored" data-anchor-id="resources-and-references">Resources and References</h2>
+<ul>
+<li><a href="https://github.com/HKUDS/LightRAG">LightRAG Documentation</a></li>
+<li><a href="https://vercel.com/docs/storage/vercel-postgres">Vercel Postgres Docs</a></li>
+<li><a href="https://platform.openai.com/docs">OpenAI API Reference</a></li>
+<li><a href="https://docs.firecrawl.dev/">Firecrawl Documentation</a></li>
+<li><a href="https://github.com/pgvector/pgvector">pgvector Documentation</a></li>
+</ul>
+</section>
+<section id="implementation-code-examples" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-code-examples">Implementation Code Examples</h2>
+<section id="lightrag-entity-extraction" class="level3">
+<h3 class="anchored" data-anchor-id="lightrag-entity-extraction">LightRAG Entity Extraction</h3>
+<div class="sourceCode" id="cb17"><pre class="sourceCode typescript code-with-copy"><code class="sourceCode typescript"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">// src/lib/lightrag/entityExtractor.ts</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { OpenAI } <span class="im">from</span> <span class="st">'openai'</span><span class="op">;</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">class</span> EntityExtractor {</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> openai<span class="op">:</span> OpenAI<span class="op">;</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">constructor</span>() {</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">openai</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">OpenAI</span>({</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>      apiKey<span class="op">:</span> <span class="bu">process</span><span class="op">.</span><span class="at">env</span><span class="op">.</span><span class="at">OPENAI_API_KEY</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">extractEntities</span>(text<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Entity[]<span class="op">&gt;</span> {</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> completion <span class="op">=</span> <span class="cf">await</span> <span class="kw">this</span><span class="op">.</span><span class="at">openai</span><span class="op">.</span><span class="at">chat</span><span class="op">.</span><span class="at">completions</span><span class="op">.</span><span class="fu">create</span>({</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>      model<span class="op">:</span> <span class="st">"gpt-4-turbo-preview"</span><span class="op">,</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>      messages<span class="op">:</span> [</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>        {</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>          role<span class="op">:</span> <span class="st">"system"</span><span class="op">,</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>          content<span class="op">:</span> <span class="vs">`Extract entities related to 3D printing from the text.</span></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a><span class="vs">          Categories: tool, material, setting, problem, solution, component, process.</span></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a><span class="vs">          Return JSON array of entities with name, type, and description.`</span></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>        }<span class="op">,</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>        {</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>          role<span class="op">:</span> <span class="st">"user"</span><span class="op">,</span></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>          content<span class="op">:</span> text</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>      ]<span class="op">,</span></span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>      response_format<span class="op">:</span> { type<span class="op">:</span> <span class="st">"json_object"</span> }<span class="op">,</span></span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>      temperature<span class="op">:</span> <span class="fl">0.1</span></span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> result <span class="op">=</span> <span class="bu">JSON</span><span class="op">.</span><span class="fu">parse</span>(completion<span class="op">.</span><span class="at">choices</span>[<span class="dv">0</span>]<span class="op">.</span><span class="at">message</span><span class="op">.</span><span class="at">content</span> <span class="op">||</span> <span class="st">'{"entities": []}'</span>)<span class="op">;</span></span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result<span class="op">.</span><span class="at">entities</span><span class="op">;</span></span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">extractRelationships</span>(entities<span class="op">:</span> Entity[]<span class="op">,</span> context<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Relationship[]<span class="op">&gt;</span> {</span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Extract relationships between entities</span></span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> entityNames <span class="op">=</span> entities<span class="op">.</span><span class="fu">map</span>(e <span class="kw">=&gt;</span> e<span class="op">.</span><span class="at">name</span>)<span class="op">.</span><span class="fu">join</span>(<span class="st">', '</span>)<span class="op">;</span></span>
+<span id="cb17-39"><a href="#cb17-39" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-40"><a href="#cb17-40" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> completion <span class="op">=</span> <span class="cf">await</span> <span class="kw">this</span><span class="op">.</span><span class="at">openai</span><span class="op">.</span><span class="at">chat</span><span class="op">.</span><span class="at">completions</span><span class="op">.</span><span class="fu">create</span>({</span>
+<span id="cb17-41"><a href="#cb17-41" aria-hidden="true" tabindex="-1"></a>      model<span class="op">:</span> <span class="st">"gpt-4-turbo-preview"</span><span class="op">,</span></span>
+<span id="cb17-42"><a href="#cb17-42" aria-hidden="true" tabindex="-1"></a>      messages<span class="op">:</span> [</span>
+<span id="cb17-43"><a href="#cb17-43" aria-hidden="true" tabindex="-1"></a>        {</span>
+<span id="cb17-44"><a href="#cb17-44" aria-hidden="true" tabindex="-1"></a>          role<span class="op">:</span> <span class="st">"system"</span><span class="op">,</span></span>
+<span id="cb17-45"><a href="#cb17-45" aria-hidden="true" tabindex="-1"></a>          content<span class="op">:</span> <span class="vs">`Given these entities: </span><span class="sc">${</span>entityNames<span class="sc">}</span></span>
+<span id="cb17-46"><a href="#cb17-46" aria-hidden="true" tabindex="-1"></a><span class="vs">          Extract relationships between them from the context.</span></span>
+<span id="cb17-47"><a href="#cb17-47" aria-hidden="true" tabindex="-1"></a><span class="vs">          Relationship types: requires, solves, causes, prevents, improves, relates_to.</span></span>
+<span id="cb17-48"><a href="#cb17-48" aria-hidden="true" tabindex="-1"></a><span class="vs">          Return JSON array of relationships.`</span></span>
+<span id="cb17-49"><a href="#cb17-49" aria-hidden="true" tabindex="-1"></a>        }<span class="op">,</span></span>
+<span id="cb17-50"><a href="#cb17-50" aria-hidden="true" tabindex="-1"></a>        {</span>
+<span id="cb17-51"><a href="#cb17-51" aria-hidden="true" tabindex="-1"></a>          role<span class="op">:</span> <span class="st">"user"</span><span class="op">,</span></span>
+<span id="cb17-52"><a href="#cb17-52" aria-hidden="true" tabindex="-1"></a>          content<span class="op">:</span> context</span>
+<span id="cb17-53"><a href="#cb17-53" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb17-54"><a href="#cb17-54" aria-hidden="true" tabindex="-1"></a>      ]<span class="op">,</span></span>
+<span id="cb17-55"><a href="#cb17-55" aria-hidden="true" tabindex="-1"></a>      response_format<span class="op">:</span> { type<span class="op">:</span> <span class="st">"json_object"</span> }<span class="op">,</span></span>
+<span id="cb17-56"><a href="#cb17-56" aria-hidden="true" tabindex="-1"></a>      temperature<span class="op">:</span> <span class="fl">0.1</span></span>
+<span id="cb17-57"><a href="#cb17-57" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span>
+<span id="cb17-58"><a href="#cb17-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-59"><a href="#cb17-59" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> result <span class="op">=</span> <span class="bu">JSON</span><span class="op">.</span><span class="fu">parse</span>(completion<span class="op">.</span><span class="at">choices</span>[<span class="dv">0</span>]<span class="op">.</span><span class="at">message</span><span class="op">.</span><span class="at">content</span> <span class="op">||</span> <span class="st">'{"relationships": []}'</span>)<span class="op">;</span></span>
+<span id="cb17-60"><a href="#cb17-60" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result<span class="op">.</span><span class="at">relationships</span><span class="op">;</span></span>
+<span id="cb17-61"><a href="#cb17-61" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb17-62"><a href="#cb17-62" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="dual-level-retrieval-implementation" class="level3">
+<h3 class="anchored" data-anchor-id="dual-level-retrieval-implementation">Dual-Level Retrieval Implementation</h3>
+<div class="sourceCode" id="cb18"><pre class="sourceCode typescript code-with-copy"><code class="sourceCode typescript"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">// src/lib/lightrag/retrieval.ts</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">class</span> DualLevelRetrieval {</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">lowLevelRetrieve</span>(query<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> topK<span class="op">:</span> <span class="dt">number</span> <span class="op">=</span> <span class="dv">5</span>) {</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Direct entity search</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> queryEmbedding <span class="op">=</span> <span class="cf">await</span> <span class="kw">this</span><span class="op">.</span><span class="fu">generateEmbedding</span>(query)<span class="op">;</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> sql <span class="op">=</span> <span class="vs">`</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="vs">      SELECT e.*, </span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="vs">        1 - (e.embedding &lt;=&gt; $1::vector) as similarity</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="vs">      FROM kg_entities e</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="vs">      WHERE 1 - (e.embedding &lt;=&gt; $1::vector) &gt; 0.7</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="vs">      ORDER BY similarity DESC</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="vs">      LIMIT $2</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a><span class="vs">    `</span><span class="op">;</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">await</span> db<span class="op">.</span><span class="fu">query</span>(sql<span class="op">,</span> [queryEmbedding<span class="op">,</span> topK])<span class="op">;</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">highLevelRetrieve</span>(query<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> topK<span class="op">:</span> <span class="dt">number</span> <span class="op">=</span> <span class="dv">5</span>) {</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Conceptual search with graph traversal</span></span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> concepts <span class="op">=</span> <span class="cf">await</span> <span class="kw">this</span><span class="op">.</span><span class="fu">extractConcepts</span>(query)<span class="op">;</span></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Find entities related to concepts</span></span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> sql <span class="op">=</span> <span class="vs">`</span></span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a><span class="vs">      WITH RECURSIVE related_entities AS (</span></span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a><span class="vs">        -- Start with entities matching concepts</span></span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a><span class="vs">        SELECT e.id, e.name, e.embedding, 0 as depth</span></span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a><span class="vs">        FROM kg_entities e</span></span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a><span class="vs">        WHERE e.name ILIKE ANY($1::text[])</span></span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a><span class="vs">        </span></span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a><span class="vs">        UNION</span></span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a><span class="vs">        </span></span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a><span class="vs">        -- Traverse relationships</span></span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a><span class="vs">        SELECT e.id, e.name, e.embedding, re.depth + 1</span></span>
+<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a><span class="vs">        FROM kg_entities e</span></span>
+<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a><span class="vs">        JOIN kg_relationships r ON e.id = r.target_entity_id</span></span>
+<span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a><span class="vs">        JOIN related_entities re ON r.source_entity_id = re.id</span></span>
+<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a><span class="vs">        WHERE re.depth &lt; 2</span></span>
+<span id="cb18-39"><a href="#cb18-39" aria-hidden="true" tabindex="-1"></a><span class="vs">      )</span></span>
+<span id="cb18-40"><a href="#cb18-40" aria-hidden="true" tabindex="-1"></a><span class="vs">      SELECT DISTINCT * FROM related_entities</span></span>
+<span id="cb18-41"><a href="#cb18-41" aria-hidden="true" tabindex="-1"></a><span class="vs">      ORDER BY depth, name</span></span>
+<span id="cb18-42"><a href="#cb18-42" aria-hidden="true" tabindex="-1"></a><span class="vs">      LIMIT $2</span></span>
+<span id="cb18-43"><a href="#cb18-43" aria-hidden="true" tabindex="-1"></a><span class="vs">    `</span><span class="op">;</span></span>
+<span id="cb18-44"><a href="#cb18-44" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb18-45"><a href="#cb18-45" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">await</span> db<span class="op">.</span><span class="fu">query</span>(sql<span class="op">,</span> [concepts<span class="op">,</span> topK])<span class="op">;</span></span>
+<span id="cb18-46"><a href="#cb18-46" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb18-47"><a href="#cb18-47" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="chat-api-with-lightrag-integration" class="level3">
+<h3 class="anchored" data-anchor-id="chat-api-with-lightrag-integration">Chat API with LightRAG Integration</h3>
+<div class="sourceCode" id="cb19"><pre class="sourceCode typescript code-with-copy"><code class="sourceCode typescript"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">// src/app/api/chat/route.ts</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { DualLevelRetrieval } <span class="im">from</span> <span class="st">'@/lib/lightrag/retrieval'</span><span class="op">;</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { streamText } <span class="im">from</span> <span class="st">'ai'</span><span class="op">;</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { openai } <span class="im">from</span> <span class="st">'@ai-sdk/openai'</span><span class="op">;</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">POST</span>(req<span class="op">:</span> Request) {</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> { messages<span class="op">,</span> sessionId<span class="op">,</span> files } <span class="op">=</span> <span class="cf">await</span> req<span class="op">.</span><span class="fu">json</span>()<span class="op">;</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> retrieval <span class="op">=</span> <span class="kw">new</span> <span class="fu">DualLevelRetrieval</span>()<span class="op">;</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Get user's query</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> lastMessage <span class="op">=</span> messages[messages<span class="op">.</span><span class="at">length</span> <span class="op">-</span> <span class="dv">1</span>]<span class="op">.</span><span class="at">content</span><span class="op">;</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Perform dual-level retrieval</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> [lowLevel<span class="op">,</span> highLevel] <span class="op">=</span> <span class="cf">await</span> <span class="bu">Promise</span><span class="op">.</span><span class="fu">all</span>([</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    retrieval<span class="op">.</span><span class="fu">lowLevelRetrieve</span>(lastMessage)<span class="op">,</span></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    retrieval<span class="op">.</span><span class="fu">highLevelRetrieve</span>(lastMessage)</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>  ])<span class="op">;</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Process uploaded files if any</span></span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> fileContext <span class="op">=</span> <span class="st">''</span><span class="op">;</span></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (files <span class="op">&amp;&amp;</span> files<span class="op">.</span><span class="at">length</span> <span class="op">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>    fileContext <span class="op">=</span> <span class="cf">await</span> <span class="fu">processUploadedFiles</span>(files)<span class="op">;</span></span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Build context</span></span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> context <span class="op">=</span> <span class="vs">`</span></span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a><span class="vs">    Direct Information:</span></span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a><span class="vs">    </span><span class="sc">${</span>lowLevel<span class="op">.</span><span class="fu">map</span>(e <span class="kw">=&gt;</span> <span class="vs">`- </span><span class="sc">${</span>e<span class="op">.</span><span class="at">name</span><span class="sc">}</span><span class="vs">: </span><span class="sc">${</span>e<span class="op">.</span><span class="at">description</span><span class="sc">}</span><span class="vs">`</span>)<span class="op">.</span><span class="fu">join</span>(<span class="st">'</span><span class="sc">\n</span><span class="st">'</span>)<span class="sc">}</span></span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a><span class="vs">    </span></span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a><span class="vs">    Related Concepts:</span></span>
+<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a><span class="vs">    </span><span class="sc">${</span>highLevel<span class="op">.</span><span class="fu">map</span>(e <span class="kw">=&gt;</span> <span class="vs">`- </span><span class="sc">${</span>e<span class="op">.</span><span class="at">name</span><span class="sc">}</span><span class="vs">: </span><span class="sc">${</span>e<span class="op">.</span><span class="at">description</span><span class="sc">}</span><span class="vs">`</span>)<span class="op">.</span><span class="fu">join</span>(<span class="st">'</span><span class="sc">\n</span><span class="st">'</span>)<span class="sc">}</span></span>
+<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a><span class="vs">    </span></span>
+<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a><span class="vs">    </span><span class="sc">${</span>fileContext <span class="op">?</span> <span class="vs">`User Files:</span><span class="sc">\n${</span>fileContext<span class="sc">}</span><span class="vs">`</span> <span class="op">:</span> <span class="st">''</span><span class="sc">}</span></span>
+<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a><span class="vs">  `</span><span class="op">;</span></span>
+<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-36"><a href="#cb19-36" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Stream response</span></span>
+<span id="cb19-37"><a href="#cb19-37" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> result <span class="op">=</span> <span class="cf">await</span> <span class="fu">streamText</span>({</span>
+<span id="cb19-38"><a href="#cb19-38" aria-hidden="true" tabindex="-1"></a>    model<span class="op">:</span> <span class="fu">openai</span>(<span class="st">'gpt-4-turbo-preview'</span>)<span class="op">,</span></span>
+<span id="cb19-39"><a href="#cb19-39" aria-hidden="true" tabindex="-1"></a>    messages<span class="op">:</span> [</span>
+<span id="cb19-40"><a href="#cb19-40" aria-hidden="true" tabindex="-1"></a>      {</span>
+<span id="cb19-41"><a href="#cb19-41" aria-hidden="true" tabindex="-1"></a>        role<span class="op">:</span> <span class="st">'system'</span><span class="op">,</span></span>
+<span id="cb19-42"><a href="#cb19-42" aria-hidden="true" tabindex="-1"></a>        content<span class="op">:</span> <span class="vs">`You are an expert OrcaSlicer assistant. Use the provided context to answer questions about 3D printing calibration, troubleshooting, and settings.</span></span>
+<span id="cb19-43"><a href="#cb19-43" aria-hidden="true" tabindex="-1"></a><span class="vs">        </span></span>
+<span id="cb19-44"><a href="#cb19-44" aria-hidden="true" tabindex="-1"></a><span class="vs">        Context:</span></span>
+<span id="cb19-45"><a href="#cb19-45" aria-hidden="true" tabindex="-1"></a><span class="vs">        </span><span class="sc">${</span>context<span class="sc">}</span><span class="vs">`</span></span>
+<span id="cb19-46"><a href="#cb19-46" aria-hidden="true" tabindex="-1"></a>      }<span class="op">,</span></span>
+<span id="cb19-47"><a href="#cb19-47" aria-hidden="true" tabindex="-1"></a>      <span class="op">...</span>messages</span>
+<span id="cb19-48"><a href="#cb19-48" aria-hidden="true" tabindex="-1"></a>    ]<span class="op">,</span></span>
+<span id="cb19-49"><a href="#cb19-49" aria-hidden="true" tabindex="-1"></a>    temperature<span class="op">:</span> <span class="fl">0.3</span><span class="op">,</span></span>
+<span id="cb19-50"><a href="#cb19-50" aria-hidden="true" tabindex="-1"></a>    maxTokens<span class="op">:</span> <span class="dv">2000</span><span class="op">,</span></span>
+<span id="cb19-51"><a href="#cb19-51" aria-hidden="true" tabindex="-1"></a>  })<span class="op">;</span></span>
+<span id="cb19-52"><a href="#cb19-52" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-53"><a href="#cb19-53" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result<span class="op">.</span><span class="fu">toAIStreamResponse</span>()<span class="op">;</span></span>
+<span id="cb19-54"><a href="#cb19-54" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="development-timeline" class="level2">
+<h2 class="anchored" data-anchor-id="development-timeline">Development Timeline</h2>
+<ul>
+<li>Week 1: Setup and database configuration</li>
+<li>Week 2: Data ingestion and RAG implementation</li>
+<li>Week 3: Backend API development</li>
+<li>Week 4: Frontend integration and testing</li>
+<li>Week 5: Multimodal features and optimization</li>
+<li>Week 6: Deployment and monitoring setup</li>
+</ul>
+</section>
+<section id="success-metrics" class="level2">
+<h2 class="anchored" data-anchor-id="success-metrics">Success Metrics</h2>
+<ul>
+<li>Response time &lt; 2 seconds</li>
+<li>Accuracy rate &gt; 90%</li>
+<li>User satisfaction &gt; 4.5/5</li>
+<li>Zero security incidents</li>
+<li>&lt; $100/month operational cost</li>
+</ul>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
