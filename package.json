@@ -13,6 +13,8 @@
     "preview": "vite preview",
     "setup-db": "tsx scripts/setup-database-simple.ts",
     "ingest-docs": "tsx scripts/ingest-docs.ts",
+    "ingest-local-wiki": "tsx scripts/ingest-local-wiki.ts",
+    "ingest-wiki-batch": "tsx scripts/ingest-local-wiki-batch.ts",
     "update-embeddings": "tsx scripts/update-embeddings.ts"
   },
   "dependencies": {
