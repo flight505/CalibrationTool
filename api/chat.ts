@@ -46,7 +46,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const client = await getDbClient();
+  // Check for API key
+  if (!process.env.OPENAI_API_KEY) {
+    console.error('OpenAI API key not configured');
+    return res.status(500).json({ error: 'OpenAI API key not configured' });
+  }
+
+  let client;
+  try {
+    client = await getDbClient();
+  } catch (error) {
+    console.error('Database connection error:', error);
+    return res.status(500).json({ error: 'Database connection failed' });
+  }
   
   try {
     const body = req.body;
