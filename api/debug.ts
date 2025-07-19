@@ -1,7 +1,6 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
 import { Client } from 'pg';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: Request) {
   const debug = {
     method: req.method,
     hasOpenAIKey: !!process.env.OPENAI_API_KEY,
@@ -34,5 +33,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  res.status(200).json(debug);
+  return new Response(JSON.stringify(debug), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    },
+  });
 }

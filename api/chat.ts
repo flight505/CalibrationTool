@@ -1,16 +1,8 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
 import { streamText } from 'ai';
-import { openai as openaiProvider } from '@ai-sdk/openai';
-import { z } from 'zod';
+import { openai } from '@ai-sdk/openai';
 import { Client } from 'pg';
-import OpenAI from 'openai';
 
-// Initialize OpenAI
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// Database connection
+// Database connection helper
 async function getDbClient() {
   const client = new Client({
     connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL,
@@ -19,92 +11,78 @@ async function getDbClient() {
   return client;
 }
 
-// Request schema validation
-const requestSchema = z.object({
-  messages: z.array(z.object({
-    role: z.enum(['user', 'assistant', 'system']),
-    content: z.string()
-  })),
-  sessionId: z.string().uuid().optional(),
-});
-
-// Enable CORS
-const setCorsHeaders = (res: VercelResponse) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-};
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  setCorsHeaders(res);
-  
+export default async function handler(req: Request) {
+  // Handle CORS
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    });
   }
-  
+
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   // Check for API key
   if (!process.env.OPENAI_API_KEY) {
     console.error('OpenAI API key not configured');
-    return res.status(500).json({ error: 'OpenAI API key not configured' });
+    return new Response(JSON.stringify({ error: 'OpenAI API key not configured' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
-  let client;
+  let client: Client | null = null;
+
   try {
+    // Parse request body
+    const { messages } = await req.json();
+
+    // Get database client
     client = await getDbClient();
-  } catch (error) {
-    console.error('Database connection error:', error);
-    return res.status(500).json({ error: 'Database connection failed' });
-  }
-  
-  try {
-    const body = req.body;
-    const { messages, sessionId } = requestSchema.parse(body);
-    
-    // Create or get session
-    let currentSessionId = sessionId;
-    if (!currentSessionId) {
-      const sessionResult = await client.query(
-        'INSERT INTO chat_sessions (metadata) VALUES ($1) RETURNING id',
-        [JSON.stringify({ startTime: new Date().toISOString() })]
-      );
-      currentSessionId = sessionResult.rows[0].id;
-    }
-    
+
     // Get the last user message
     const lastMessage = messages[messages.length - 1];
-    if (lastMessage.role !== 'user') {
-      return res.status(400).json({ error: 'Last message must be from user' });
+    if (!lastMessage || lastMessage.role !== 'user') {
+      throw new Error('No user message found');
     }
+
+    // Create or get session
+    let sessionId = messages[0]?.id || 'default-session';
     
     // Store user message
     await client.query(
       'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
-      [currentSessionId, 'user', lastMessage.content]
+      [sessionId, 'user', lastMessage.content]
     );
-    
-    // Hybrid search for better context retrieval
+
+    // Hybrid search for context
     let context = '';
     try {
-      // Try to use hybrid search if embeddings are available
-      const { hybridSearch } = await import('../src/lib/utils/vectorSearch');
+      // Try vector search first
+      const { hybridSearch } = await import('../src/lib/utils/vectorSearch.js');
       const searchResults = await hybridSearch(lastMessage.content, 5);
       
       if (searchResults.length > 0) {
-        context = 'Relevant information:\n\n';
+        context = 'Relevant information from OrcaSlicer documentation:\n\n';
         for (const result of searchResults) {
-          context += `${result.title}\n${result.content.substring(0, 500)}...\n\n`;
+          context += `${result.title}:\n${result.content.substring(0, 500)}...\n\n`;
         }
       }
     } catch (error) {
-      console.log('Hybrid search failed, falling back to text search:', error);
+      console.log('Vector search failed, using text search:', error);
       
-      // Fallback to simple text search
+      // Fallback to text search
       const searchResults = await client.query(
-        `SELECT title, content, metadata 
+        `SELECT title, content 
          FROM documents 
          WHERE to_tsvector('english', title || ' ' || content) @@ plainto_tsquery('english', $1)
          LIMIT 5`,
@@ -112,13 +90,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       );
       
       if (searchResults.rows.length > 0) {
-        context = 'Relevant information:\n\n';
+        context = 'Relevant information from OrcaSlicer documentation:\n\n';
         for (const result of searchResults.rows) {
-          context += `${result.title}\n${result.content.substring(0, 500)}...\n\n`;
+          context += `${result.title}:\n${result.content.substring(0, 500)}...\n\n`;
         }
       }
     }
-    
+
     // System prompt
     const systemPrompt = `You are an expert OrcaSlicer assistant specializing in 3D printing calibration, troubleshooting, and settings optimization. 
     You provide accurate, helpful information based on the context provided and your knowledge of 3D printing.
@@ -138,53 +116,79 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     - Mention relevant calibration tests when appropriate
     - If unsure, acknowledge limitations rather than guessing
     - Keep responses concise but comprehensive`;
-    
-    // Generate streaming response
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...messages
-      ],
+
+    // Use GPT-4o-mini for cost efficiency and speed
+    const result = streamText({
+      model: openai('gpt-4o-mini'),
+      system: systemPrompt,
+      messages,
       temperature: 0.3,
-      max_tokens: 2000,
-      stream: true,
+      maxTokens: 2000,
     });
-    
-    // Set up SSE headers
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.setHeader('X-Session-ID', currentSessionId);
-    
-    let fullResponse = '';
-    
-    // Stream the response
-    for await (const chunk of response) {
-      const content = chunk.choices[0]?.delta?.content || '';
-      if (content) {
-        fullResponse += content;
-        res.write(`data: ${JSON.stringify({ content })}\n\n`);
+
+    // Store the response in database asynchronously
+    (async () => {
+      try {
+        let fullResponse = '';
+        const reader = result.textStream.getReader();
+        
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (value) fullResponse += value;
+        }
+        
+        if (fullResponse && client) {
+          await client.query(
+            'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
+            [sessionId, 'assistant', fullResponse]
+          );
+        }
+      } catch (error) {
+        console.error('Error storing assistant response:', error);
+      } finally {
+        // Clean up database connection
+        if (client) {
+          try {
+            await client.end();
+          } catch (error) {
+            console.error('Error closing client:', error);
+          }
+        }
       }
-    }
-    
-    // Store assistant response
-    await client.query(
-      'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
-      [currentSessionId, 'assistant', fullResponse]
-    );
-    
-    res.write('data: [DONE]\n\n');
-    res.end();
-    
+    })();
+
+    // Return the streaming response
+    return result.toDataStreamResponse({
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+
   } catch (error) {
     console.error('Chat API error:', error);
     
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid request format', details: error.errors });
+    // Clean up database connection on error
+    if (client) {
+      try {
+        await client.end();
+      } catch (error) {
+        console.error('Error closing client:', error);
+      }
     }
-    
-    return res.status(500).json({ error: 'Internal server error' });
-  } finally {
-    await client.end();
+
+    return new Response(
+      JSON.stringify({ 
+        error: 'Failed to process chat request',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }), 
+      {
+        status: 500,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      }
+    );
   }
 }
