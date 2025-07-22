@@ -83,21 +83,57 @@ DATABASE_URL=postgresql://user:password@host:5432/dbname?pgbouncer=true&connecti
 ## Troubleshooting
 
 ### Database Connection Issues
-1. Check connection with diagnostic tool:
+
+#### Common Errors and Solutions
+
+**"Failed to connect to upstream database. Please contact Prisma support"**
+- This error often occurs with Prisma Accelerate URLs (db.prisma.io)
+- Solution: Use a standard PostgreSQL connection string instead
+- Alternative: Consider using Vercel Postgres, Supabase, or Neon
+
+**SSL Connection Errors**
+- Add `?sslmode=require` to your connection string
+- Or use the test endpoint to find the right SSL configuration
+
+**Connection Timeout**
+- Increase connection timeout in pool configuration
+- Ensure database allows connections from Vercel's IP ranges
+
+#### Diagnostic Steps
+
+1. Test locally with diagnostic script:
    ```bash
    npm run test-db
    ```
 
-2. Common fixes:
-   - Ensure SSL is enabled for production databases
-   - Use connection pooling for serverless environments
-   - Check firewall rules allow connections from Vercel IPs
+2. Check deployed endpoints:
+   - Visit `https://your-app.vercel.app/api/test-db` for detailed diagnostics
+   - Visit `https://your-app.vercel.app/api/debug` for basic checks
+
+3. Common database providers that work well:
+   - **Vercel Postgres (Neon)**: Built for serverless, automatic pooling
+   - **Supabase**: Good free tier, built-in pooling
+   - **Railway PostgreSQL**: Simple setup, good for small projects
+   - **Render PostgreSQL**: Reliable with connection pooling
+
+4. Database URL formats by provider:
+   ```bash
+   # Neon (Vercel Postgres)
+   POSTGRES_URL=postgres://user:pass@host.neon.tech:5432/db?sslmode=require
+   
+   # Supabase
+   DATABASE_URL=postgresql://user:pass@db.supabase.co:5432/postgres
+   
+   # Railway
+   DATABASE_URL=postgresql://user:pass@containers-us-west-123.railway.app:5432/railway
+   ```
 
 ### API Errors
-Visit `/api/debug` endpoint to check:
-- Database connectivity
-- Environment variable presence
-- Document count in database
+Visit these endpoints to diagnose issues:
+- `/api/debug` - Basic environment and database check
+- `/api/test-db` - Detailed database connection diagnostics with multiple SSL configurations
+
+The test-db endpoint will try different connection configurations and show which one works.
 
 ### Build Errors
 - Ensure Node.js 18+ is used

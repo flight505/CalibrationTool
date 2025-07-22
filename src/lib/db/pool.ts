@@ -11,20 +11,33 @@ export function getPool(): Pool {
       throw new Error('Database connection string not found');
     }
 
+    // Log connection details (without password)
+    const url = new URL(connectionString);
+    console.log('Database connection:', {
+      host: url.hostname,
+      port: url.port || '5432',
+      database: url.pathname.slice(1),
+      ssl: url.searchParams.get('sslmode'),
+      isPrismaAccelerate: url.hostname.includes('prisma.io'),
+    });
+
     // Parse connection string to add pgbouncer support if needed
     let poolConfig: any = {
       connectionString,
-      max: 5, // Reduced for serverless
-      idleTimeoutMillis: 10000, // Reduced for serverless
-      connectionTimeoutMillis: 10000, // Increased for cold starts
+      max: 3, // Further reduced for serverless
+      idleTimeoutMillis: 10000,
+      connectionTimeoutMillis: 15000, // Increased for cold starts
       statement_timeout: 25000,
       query_timeout: 25000,
       keepAlive: true,
       keepAliveInitialDelayMillis: 10000,
     };
 
-    // If using Vercel Postgres, it might need special SSL config
-    if (process.env.POSTGRES_URL && process.env.POSTGRES_URL.includes('neon.tech')) {
+    // SSL configuration for various providers
+    if (connectionString.includes('neon.tech') || 
+        connectionString.includes('supabase') || 
+        connectionString.includes('prisma.io') ||
+        connectionString.includes('sslmode=require')) {
       poolConfig.ssl = { rejectUnauthorized: false };
     }
     

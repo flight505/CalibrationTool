@@ -43,45 +43,58 @@ export default async function handler(
     // Create or get session
     let sessionId = messages[0]?.id || 'default-session';
     
-    // Store user message
-    await withClient(async (client) => {
-      await client.query(
-        'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
-        [sessionId, 'user', lastMessage.content]
-      );
-    });
+    // Try to store user message (non-blocking)
+    let dbAvailable = true;
+    try {
+      await withClient(async (client) => {
+        await client.query(
+          'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
+          [sessionId, 'user', lastMessage.content]
+        );
+      });
+    } catch (dbError) {
+      console.error('Database unavailable for message storage:', dbError);
+      dbAvailable = false;
+    }
 
     // Hybrid search for context
     let context = '';
-    try {
-      // Try vector search first
-      const { hybridSearch } = await import('../src/lib/utils/vectorSearch.js');
-      const searchResults = await hybridSearch(lastMessage.content, 5);
-      
-      if (searchResults.length > 0) {
-        context = 'Relevant information from OrcaSlicer documentation:\n\n';
-        for (const result of searchResults) {
-          context += `${result.title}:\n${result.content.substring(0, 500)}...\n\n`;
+    if (dbAvailable) {
+      try {
+        // Try vector search first
+        const { hybridSearch } = await import('../src/lib/utils/vectorSearch.js');
+        const searchResults = await hybridSearch(lastMessage.content, 5);
+        
+        if (searchResults.length > 0) {
+          context = 'Relevant information from OrcaSlicer documentation:\n\n';
+          for (const result of searchResults) {
+            context += `${result.title}:\n${result.content.substring(0, 500)}...\n\n`;
+          }
         }
-      }
-    } catch (error) {
-      console.log('Vector search failed, using text search:', error);
-      
-      // Fallback to text search
-      const searchResults = await withClient(async (client) => {
-        return await client.query(
-          `SELECT title, content 
-           FROM documents 
-           WHERE to_tsvector('english', title || ' ' || content) @@ plainto_tsquery('english', $1)
-           LIMIT 5`,
-          [lastMessage.content]
-        );
-      });
-      
-      if (searchResults.rows.length > 0) {
-        context = 'Relevant information from OrcaSlicer documentation:\n\n';
-        for (const result of searchResults.rows) {
-          context += `${result.title}:\n${result.content.substring(0, 500)}...\n\n`;
+      } catch (error) {
+        console.log('Vector search failed, trying text search:', error);
+        
+        try {
+          // Fallback to text search
+          const searchResults = await withClient(async (client) => {
+            return await client.query(
+              `SELECT title, content 
+               FROM documents 
+               WHERE to_tsvector('english', title || ' ' || content) @@ plainto_tsquery('english', $1)
+               LIMIT 5`,
+              [lastMessage.content]
+            );
+          });
+          
+          if (searchResults.rows.length > 0) {
+            context = 'Relevant information from OrcaSlicer documentation:\n\n';
+            for (const result of searchResults.rows) {
+              context += `${result.title}:\n${result.content.substring(0, 500)}...\n\n`;
+            }
+          }
+        } catch (dbError) {
+          console.error('Text search also failed:', dbError);
+          dbAvailable = false;
         }
       }
     }
@@ -100,7 +113,7 @@ export default async function handler(
     - Material-specific recommendations
     - Printer optimization
     
-    ${hasContext ? `Context from OrcaSlicer documentation:\n${context}` : 'Note: No specific documentation found in the knowledge base. Using general 3D printing expertise and OrcaSlicer knowledge to help you.'}
+    ${hasContext ? `Context from OrcaSlicer documentation:\n${context}` : dbAvailable ? 'Note: No specific documentation found in the knowledge base. Using general 3D printing expertise and OrcaSlicer knowledge to help you.' : 'Note: Database is currently unavailable. Using general 3D printing expertise and OrcaSlicer knowledge to help you.'}
     
     Guidelines:
     - Be specific and reference exact settings when possible
@@ -146,14 +159,18 @@ export default async function handler(
       // Send completion event
       res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
       
-      // Store the complete response in database
-      if (fullResponse) {
-        await withClient(async (client) => {
-          await client.query(
-            'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
-            [sessionId, 'assistant', fullResponse]
-          );
-        });
+      // Try to store the complete response in database (non-blocking)
+      if (fullResponse && dbAvailable) {
+        try {
+          await withClient(async (client) => {
+            await client.query(
+              'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
+              [sessionId, 'assistant', fullResponse]
+            );
+          });
+        } catch (dbError) {
+          console.error('Failed to store assistant response:', dbError);
+        }
       }
     } catch (streamError) {
       console.error('Error during streaming:', streamError);

@@ -13,6 +13,9 @@
     },
     "api/debug.ts": {
       "maxDuration": 10
+    },
+    "api/test-db.ts": {
+      "maxDuration": 20
     }
   },
   "rewrites": [
