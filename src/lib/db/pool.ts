@@ -11,13 +11,29 @@ export function getPool(): Pool {
       throw new Error('Database connection string not found');
     }
 
-    pool = new Pool({
+    // Parse connection string to add pgbouncer support if needed
+    let poolConfig: any = {
       connectionString,
-      max: 10, // Maximum number of clients in the pool
-      idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-      connectionTimeoutMillis: 5000, // Return an error after 5 seconds if connection cannot be established
-      statement_timeout: 25000, // Timeout statements after 25 seconds (leaving 5s buffer for response)
-    });
+      max: 5, // Reduced for serverless
+      idleTimeoutMillis: 10000, // Reduced for serverless
+      connectionTimeoutMillis: 10000, // Increased for cold starts
+      statement_timeout: 25000,
+      query_timeout: 25000,
+      keepAlive: true,
+      keepAliveInitialDelayMillis: 10000,
+    };
+
+    // If using Vercel Postgres, it might need special SSL config
+    if (process.env.POSTGRES_URL && process.env.POSTGRES_URL.includes('neon.tech')) {
+      poolConfig.ssl = { rejectUnauthorized: false };
+    }
+    
+    // Add pgbouncer support
+    if (connectionString.includes('pgbouncer=true')) {
+      poolConfig.allowExitOnIdle = true;
+    }
+
+    pool = new Pool(poolConfig);
 
     // Handle pool errors
     pool.on('error', (err) => {

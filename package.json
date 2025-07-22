@@ -10,12 +10,14 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "postinstall": "echo 'Dependencies installed'",
     "setup-db": "tsx scripts/setup-database-simple.ts",
     "ingest-docs": "tsx scripts/ingest-docs.ts",
     "ingest-local-wiki": "tsx scripts/ingest-local-wiki.ts",
     "ingest-wiki-batch": "tsx scripts/ingest-local-wiki-batch.ts",
     "update-embeddings": "tsx scripts/update-embeddings.ts",
-    "populate-data": "tsx scripts/populate-initial-data.ts"
+    "populate-data": "tsx scripts/populate-initial-data.ts",
+    "test-db": "tsx scripts/test-db-connection.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.23",

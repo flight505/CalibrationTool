@@ -148,9 +148,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   
   // Initialize database pool
-  const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL,
-  });
+  const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+  let poolConfig: any = {
+    connectionString,
+    max: 3,
+    idleTimeoutMillis: 10000,
+    connectionTimeoutMillis: 10000,
+  };
+  
+  // Add SSL config for production databases
+  if (connectionString && (connectionString.includes('neon.tech') || connectionString.includes('supabase') || connectionString.includes('prisma.io'))) {
+    poolConfig.ssl = { rejectUnauthorized: false };
+  }
+  
+  const pool = new Pool(poolConfig);
   
   // Initialize OpenAI
   const openai = new OpenAI({
