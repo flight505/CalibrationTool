@@ -1,53 +1,38 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { streamText } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { Client } from 'pg';
+import { withClient } from '../src/lib/db/pool';
 
-// Database connection helper
-async function getDbClient() {
-  const client = new Client({
-    connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL,
-  });
-  await client.connect();
-  return client;
-}
-
-export default async function handler(req: Request) {
+export default async function handler(
+  req: VercelRequest,
+  res: VercelResponse
+) {
   // Handle CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    });
+    return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   // Check for API key
   if (!process.env.OPENAI_API_KEY) {
     console.error('OpenAI API key not configured');
-    return new Response(JSON.stringify({ error: 'OpenAI API key not configured' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(500).json({ error: 'OpenAI API key not configured' });
   }
 
-  let client: Client | null = null;
-
   try {
-    // Parse request body
-    const { messages } = await req.json();
+    // Parse request body - it's already parsed by Vercel
+    const { messages } = req.body;
 
-    // Get database client
-    client = await getDbClient();
+    if (!messages || !Array.isArray(messages)) {
+      throw new Error('Invalid request: messages array required');
+    }
 
     // Get the last user message
     const lastMessage = messages[messages.length - 1];
@@ -59,10 +44,12 @@ export default async function handler(req: Request) {
     let sessionId = messages[0]?.id || 'default-session';
     
     // Store user message
-    await client.query(
-      'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
-      [sessionId, 'user', lastMessage.content]
-    );
+    await withClient(async (client) => {
+      await client.query(
+        'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
+        [sessionId, 'user', lastMessage.content]
+      );
+    });
 
     // Hybrid search for context
     let context = '';
@@ -81,13 +68,15 @@ export default async function handler(req: Request) {
       console.log('Vector search failed, using text search:', error);
       
       // Fallback to text search
-      const searchResults = await client.query(
-        `SELECT title, content 
-         FROM documents 
-         WHERE to_tsvector('english', title || ' ' || content) @@ plainto_tsquery('english', $1)
-         LIMIT 5`,
-        [lastMessage.content]
-      );
+      const searchResults = await withClient(async (client) => {
+        return await client.query(
+          `SELECT title, content 
+           FROM documents 
+           WHERE to_tsvector('english', title || ' ' || content) @@ plainto_tsquery('english', $1)
+           LIMIT 5`,
+          [lastMessage.content]
+        );
+      });
       
       if (searchResults.rows.length > 0) {
         context = 'Relevant information from OrcaSlicer documentation:\n\n';
@@ -131,72 +120,69 @@ export default async function handler(req: Request) {
       maxTokens: 2000,
     });
 
-    // Store the response in database asynchronously
-    (async () => {
-      try {
-        let fullResponse = '';
-        const reader = result.textStream.getReader();
+    // Set up SSE headers for streaming
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+      'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no', // Disable Nginx buffering
+    });
+
+    // Stream the response
+    let fullResponse = '';
+    
+    try {
+      for await (const textPart of result.textStream) {
+        fullResponse += textPart;
         
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          if (value) fullResponse += value;
-        }
-        
-        if (fullResponse && client) {
+        // Send SSE formatted data
+        const data = JSON.stringify({ 
+          text: textPart,
+          type: 'text'
+        });
+        res.write(`data: ${data}\n\n`);
+      }
+
+      // Send completion event
+      res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+      
+      // Store the complete response in database
+      if (fullResponse) {
+        await withClient(async (client) => {
           await client.query(
             'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
             [sessionId, 'assistant', fullResponse]
           );
-        }
-      } catch (error) {
-        console.error('Error storing assistant response:', error);
-      } finally {
-        // Clean up database connection
-        if (client) {
-          try {
-            await client.end();
-          } catch (error) {
-            console.error('Error closing client:', error);
-          }
-        }
+        });
       }
-    })();
+    } catch (streamError) {
+      console.error('Error during streaming:', streamError);
+      res.write(`data: ${JSON.stringify({ 
+        type: 'error', 
+        error: 'Stream interrupted' 
+      })}\n\n`);
+    }
 
-    // Return the streaming response with updated headers
-    return result.toDataStreamResponse({
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'no-cache, no-transform',
-        'Content-Type': 'text/event-stream',
-        'Connection': 'keep-alive',
-      },
-    });
+    res.end();
 
   } catch (error) {
     console.error('Chat API error:', error);
     
-    // Clean up database connection on error
-    if (client) {
-      try {
-        await client.end();
-      } catch (error) {
-        console.error('Error closing client:', error);
-      }
-    }
-
-    return new Response(
-      JSON.stringify({ 
+    // If headers haven't been sent, send error response
+    if (!res.headersSent) {
+      res.status(500).json({ 
         error: 'Failed to process chat request',
         details: error instanceof Error ? error.message : 'Unknown error'
-      }), 
-      {
-        status: 500,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      }
-    );
+      });
+    } else {
+      // If streaming has started, send error through SSE
+      res.write(`data: ${JSON.stringify({ 
+        type: 'error', 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      })}\n\n`);
+      res.end();
+    }
+  } finally {
+    // Connection cleanup is handled by the pool
   }
 }
