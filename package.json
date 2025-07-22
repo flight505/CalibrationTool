@@ -14,7 +14,8 @@
     "ingest-docs": "tsx scripts/ingest-docs.ts",
     "ingest-local-wiki": "tsx scripts/ingest-local-wiki.ts",
     "ingest-wiki-batch": "tsx scripts/ingest-local-wiki-batch.ts",
-    "update-embeddings": "tsx scripts/update-embeddings.ts"
+    "update-embeddings": "tsx scripts/update-embeddings.ts",
+    "populate-data": "tsx scripts/populate-initial-data.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.23",

@@ -97,9 +97,12 @@ export default async function handler(req: Request) {
       }
     }
 
-    // System prompt
+    // Check if we have context
+    const hasContext = context && context.trim().length > 0;
+    
+    // System prompt with improved fallback handling
     const systemPrompt = `You are an expert OrcaSlicer assistant specializing in 3D printing calibration, troubleshooting, and settings optimization. 
-    You provide accurate, helpful information based on the context provided and your knowledge of 3D printing.
+    You provide accurate, helpful information based on the context provided and your extensive knowledge of 3D printing.
     
     Key areas of expertise:
     - OrcaSlicer settings and configuration
@@ -108,13 +111,15 @@ export default async function handler(req: Request) {
     - Material-specific recommendations
     - Printer optimization
     
-    ${context ? `Context:\n${context}` : ''}
+    ${hasContext ? `Context from OrcaSlicer documentation:\n${context}` : 'Note: No specific documentation found in the knowledge base. Using general 3D printing expertise and OrcaSlicer knowledge to help you.'}
     
     Guidelines:
     - Be specific and reference exact settings when possible
     - Provide step-by-step instructions for procedures
     - Mention relevant calibration tests when appropriate
-    - If unsure, acknowledge limitations rather than guessing
+    - If no specific context is available, use your general knowledge of OrcaSlicer and 3D printing best practices
+    - Always try to be helpful and provide actionable advice
+    - For calibration questions, provide typical value ranges and explain the calibration process
     - Keep responses concise but comprehensive`;
 
     // Use GPT-4o-mini for cost efficiency and speed
@@ -158,10 +163,13 @@ export default async function handler(req: Request) {
       }
     })();
 
-    // Return the streaming response
+    // Return the streaming response with updated headers
     return result.toDataStreamResponse({
       headers: {
         'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-cache, no-transform',
+        'Content-Type': 'text/event-stream',
+        'Connection': 'keep-alive',
       },
     });
 
