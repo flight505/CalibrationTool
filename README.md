@@ -11,6 +11,16 @@ A comprehensive web-based calibration tool suite for Orca Slicer users to optimi
 
 This tool suite provides interactive calculators and guides for calibrating various 3D printer settings in Orca Slicer. It helps users achieve optimal print quality by systematically testing and calculating the best values for their specific printer and filament combinations.
 
+## ⚠️ Database Requirements
+
+> **Important**: The AI Assistant feature requires a **standard PostgreSQL database**. 
+> 
+> ❌ **Prisma Accelerate URLs (db.prisma.io) are NOT supported**
+> 
+> ✅ Recommended providers: [Vercel Postgres](https://vercel.com/postgres), [Supabase](https://supabase.com), [Railway](https://railway.app)
+> 
+> See [DEPLOYMENT.md](./DEPLOYMENT.md) for setup instructions or [MIGRATE_FROM_PRISMA.md](./MIGRATE_FROM_PRISMA.md) if migrating.
+
 ## ✨ Features
 
 ### Calibration Tools

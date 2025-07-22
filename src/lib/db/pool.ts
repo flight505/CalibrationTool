@@ -13,13 +13,24 @@ export function getPool(): Pool {
 
     // Log connection details (without password)
     const url = new URL(connectionString);
+    const isPrismaAccelerate = url.hostname.includes('prisma.io') || connectionString.includes('accelerate.prisma');
+    
     console.log('Database connection:', {
       host: url.hostname,
       port: url.port || '5432',
       database: url.pathname.slice(1),
       ssl: url.searchParams.get('sslmode'),
-      isPrismaAccelerate: url.hostname.includes('prisma.io'),
+      isPrismaAccelerate,
     });
+    
+    // Warn about Prisma Accelerate
+    if (isPrismaAccelerate) {
+      console.warn('⚠️ Prisma Accelerate detected. This requires Prisma Client, not raw pg library.');
+      console.warn('Consider switching to a standard PostgreSQL provider like:');
+      console.warn('- Vercel Postgres (Neon): https://vercel.com/postgres');
+      console.warn('- Supabase: https://supabase.com');
+      console.warn('- Railway: https://railway.app');
+    }
 
     // Parse connection string to add pgbouncer support if needed
     let poolConfig: any = {

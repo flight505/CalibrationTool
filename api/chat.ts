@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { streamText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { withClient } from '../src/lib/db/pool';
+import { v4 as uuidv4 } from 'uuid';
 
 export default async function handler(
   req: VercelRequest,
@@ -40,8 +41,14 @@ export default async function handler(
       throw new Error('No user message found');
     }
 
-    // Create or get session
-    let sessionId = messages[0]?.id || 'default-session';
+    // Create or get session (ensure it's a valid UUID)
+    let sessionId = messages[0]?.id || uuidv4();
+    
+    // Validate session ID is a UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(sessionId)) {
+      sessionId = uuidv4();
+    }
     
     // Try to store user message (non-blocking)
     let dbAvailable = true;

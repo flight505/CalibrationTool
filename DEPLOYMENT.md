@@ -1,5 +1,31 @@
 # Deployment Guide
 
+## ⚠️ Important: Database Provider Requirements
+
+**This application uses the native PostgreSQL driver (`pg`), NOT Prisma Client.**
+
+If you're seeing "Failed to connect to upstream database. Please contact Prisma support", you're likely using a Prisma Accelerate URL which is **not compatible** with this application.
+
+### Recommended Database Providers
+
+1. **Vercel Postgres (Neon)** - Best for Vercel deployments
+   - Sign up: https://vercel.com/postgres
+   - Automatic pooling and serverless optimization
+   - Connection string format: `postgres://user:pass@host.neon.tech:5432/db?sslmode=require`
+
+2. **Supabase** - Great free tier
+   - Sign up: https://supabase.com
+   - Built-in connection pooling
+   - Connection string format: `postgresql://user:pass@db.supabase.co:5432/postgres`
+
+3. **Railway PostgreSQL** - Simple and reliable
+   - Sign up: https://railway.app
+   - Connection string format: `postgresql://user:pass@containers-us-west-123.railway.app:5432/railway`
+
+4. **Render PostgreSQL** - Good free tier
+   - Sign up: https://render.com
+   - Connection string format: `postgresql://user:pass@oregon-postgres.render.com:5432/dbname`
+
 ## Database Setup
 
 ### Testing Database Connection
