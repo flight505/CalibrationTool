@@ -19,6 +19,9 @@
     },
     "api/test-session.ts": {
       "maxDuration": 10
+    },
+    "api/test-stream.ts": {
+      "maxDuration": 10
     }
   },
   "rewrites": [

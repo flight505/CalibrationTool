@@ -63,6 +63,14 @@ https://your-app.vercel.app/api/test-session
 https://your-app.vercel.app/api/debug
 ```
 
+### 4. Test Streaming Response
+```bash
+# Test if AI streaming works (POST request)
+curl -X POST https://your-app.vercel.app/api/test-stream \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hello"}'
+```
+
 ## Quick Fixes
 
 ### Reset All Sessions (Development Only)
