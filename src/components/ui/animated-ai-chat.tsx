@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useChat } from 'ai/react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import * as React from "react"
 
 interface UseAutoResizeTextareaProps {
@@ -405,7 +407,101 @@ export function AnimatedAIChat() {
                                         : 'bg-gradient-to-br from-purple-900/20 to-blue-900/20 backdrop-blur-lg text-white border border-white/10'
                                 )}
                             >
-                                <div className="whitespace-pre-wrap text-sm">{message.content}</div>
+                                {message.role === 'assistant' ? (
+                                    <div className="text-sm prose prose-invert prose-sm max-w-none">
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm]}
+                                            components={{
+                                                // Custom components for chat-optimized rendering
+                                                p: ({ children }) => (
+                                                    <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>
+                                                ),
+                                                code: ({ children, className }) => {
+                                                    const isInline = !className;
+                                                    if (isInline) {
+                                                        return (
+                                                            <code className="bg-white/10 text-cyan-300 px-1.5 py-0.5 rounded text-xs font-mono">
+                                                                {children}
+                                                            </code>
+                                                        );
+                                                    }
+                                                    return (
+                                                        <pre className="bg-black/30 border border-white/10 rounded-lg p-3 overflow-x-auto my-2">
+                                                            <code className="text-cyan-300 text-xs font-mono">{children}</code>
+                                                        </pre>
+                                                    );
+                                                },
+                                                pre: ({ children }) => children, // Let code handle the pre wrapper
+                                                strong: ({ children }) => (
+                                                    <strong className="font-semibold text-cyan-300">{children}</strong>
+                                                ),
+                                                em: ({ children }) => (
+                                                    <em className="italic text-purple-300">{children}</em>
+                                                ),
+                                                ul: ({ children }) => (
+                                                    <ul className="list-disc list-inside space-y-1 my-2">{children}</ul>
+                                                ),
+                                                ol: ({ children }) => (
+                                                    <ol className="list-decimal list-inside space-y-1 my-2">{children}</ol>
+                                                ),
+                                                li: ({ children }) => (
+                                                    <li className="leading-relaxed">{children}</li>
+                                                ),
+                                                h1: ({ children }) => (
+                                                    <h1 className="text-lg font-bold text-cyan-300 mt-3 mb-2 first:mt-0">{children}</h1>
+                                                ),
+                                                h2: ({ children }) => (
+                                                    <h2 className="text-base font-bold text-cyan-300 mt-3 mb-2 first:mt-0">{children}</h2>
+                                                ),
+                                                h3: ({ children }) => (
+                                                    <h3 className="text-sm font-bold text-cyan-300 mt-2 mb-1 first:mt-0">{children}</h3>
+                                                ),
+                                                blockquote: ({ children }) => (
+                                                    <blockquote className="border-l-2 border-cyan-500 pl-3 my-2 italic text-gray-300">
+                                                        {children}
+                                                    </blockquote>
+                                                ),
+                                                hr: () => (
+                                                    <hr className="border-white/20 my-3" />
+                                                ),
+                                                a: ({ href, children }) => (
+                                                    <a 
+                                                        href={href} 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer"
+                                                        className="text-cyan-400 hover:text-cyan-300 underline transition-colors"
+                                                    >
+                                                        {children}
+                                                    </a>
+                                                ),
+                                                table: ({ children }) => (
+                                                    <div className="overflow-x-auto my-2">
+                                                        <table className="min-w-full border border-white/20 rounded">
+                                                            {children}
+                                                        </table>
+                                                    </div>
+                                                ),
+                                                thead: ({ children }) => (
+                                                    <thead className="bg-white/5">{children}</thead>
+                                                ),
+                                                th: ({ children }) => (
+                                                    <th className="border border-white/20 px-2 py-1 text-left text-xs font-semibold">
+                                                        {children}
+                                                    </th>
+                                                ),
+                                                td: ({ children }) => (
+                                                    <td className="border border-white/20 px-2 py-1 text-xs">
+                                                        {children}
+                                                    </td>
+                                                ),
+                                            }}
+                                        >
+                                            {message.content}
+                                        </ReactMarkdown>
+                                    </div>
+                                ) : (
+                                    <div className="whitespace-pre-wrap text-sm">{message.content}</div>
+                                )}
                             </div>
                         </motion.div>
                     ))}

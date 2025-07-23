@@ -154,7 +154,16 @@ export default async function handler(
     - If no specific context is available, use your general knowledge of OrcaSlicer and 3D printing best practices
     - Always try to be helpful and provide actionable advice
     - For calibration questions, provide typical value ranges and explain the calibration process
-    - Keep responses concise but comprehensive`;
+    - Keep responses concise but comprehensive
+    
+    Formatting Guidelines:
+    - Use **bold** for important settings names and values
+    - Use *italic* for emphasis on key points
+    - Use \`code formatting\` for specific setting values and file names
+    - Use numbered lists for step-by-step procedures
+    - Use bullet points for lists of options or recommendations
+    - Use code blocks for multi-line configurations or scripts
+    - Structure longer responses with headers (## or ###) when appropriate`;
 
     // Use GPT-4o-mini for cost efficiency and speed
     const result = streamText({
