@@ -21,15 +21,15 @@ export default async function handler(req: Request) {
       messages: [
         {
           role: 'system',
-          content: 'You are a helpful assistant. Respond with a short, enthusiastic message about 3D printing.',
+          content: 'Respond with exactly: "Test successful!"',
         },
         {
           role: 'user',
           content: message || 'Hello!',
         },
       ],
-      temperature: 0.7,
-      maxTokens: 100,
+      temperature: 0,
+      maxTokens: 10,
     });
 
     console.log('Returning stream response...');

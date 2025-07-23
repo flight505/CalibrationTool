@@ -21,7 +21,13 @@
       "maxDuration": 10
     },
     "api/test-stream.ts": {
-      "maxDuration": 10
+      "maxDuration": 15
+    },
+    "api/test-mock-stream.ts": {
+      "maxDuration": 5
+    },
+    "api/test-openai.ts": {
+      "maxDuration": 15
     }
   },
   "rewrites": [
