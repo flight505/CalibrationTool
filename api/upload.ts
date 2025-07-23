@@ -226,6 +226,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     // Store file metadata in database
     const fileId = uuidv4();
+    
+    // First ensure the session exists
+    await pool.query(
+      `INSERT INTO chat_sessions (id, created_at, updated_at, metadata) 
+       VALUES ($1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '{}') 
+       ON CONFLICT (id) DO UPDATE 
+       SET updated_at = CURRENT_TIMESTAMP`,
+      [sessionId]
+    );
+    
+    // Then insert the file upload record
     await pool.query(
       `INSERT INTO file_uploads 
        (id, session_id, filename, mime_type, size_bytes, content_extracted, metadata) 

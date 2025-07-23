@@ -29,7 +29,7 @@ export default async function handler(
 
   try {
     // Parse request body - it's already parsed by Vercel
-    const { messages } = req.body;
+    const { messages, id } = req.body;
 
     if (!messages || !Array.isArray(messages)) {
       throw new Error('Invalid request: messages array required');
@@ -41,8 +41,8 @@ export default async function handler(
       throw new Error('No user message found');
     }
 
-    // Create or get session (ensure it's a valid UUID)
-    let sessionId = messages[0]?.id || uuidv4();
+    // Use the chat ID from useChat hook as session ID, or generate a new one
+    let sessionId = id || uuidv4();
     
     // Validate session ID is a UUID
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -50,14 +50,39 @@ export default async function handler(
       sessionId = uuidv4();
     }
     
+    console.log('Chat session ID:', sessionId);
+    
     // Try to store user message (non-blocking)
     let dbAvailable = true;
     try {
       await withClient(async (client) => {
-        await client.query(
-          'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
-          [sessionId, 'user', lastMessage.content]
-        );
+        // Use a transaction to ensure atomicity
+        await client.query('BEGIN');
+        
+        try {
+          // First, ensure the session exists
+          const sessionResult = await client.query(
+            `INSERT INTO chat_sessions (id, metadata) 
+             VALUES ($1, $2::jsonb) 
+             ON CONFLICT (id) DO UPDATE 
+             SET updated_at = CURRENT_TIMESTAMP
+             RETURNING id`,
+            [sessionId, JSON.stringify({ userAgent: req.headers['user-agent'] || 'unknown' })]
+          );
+          
+          console.log('Session upserted:', sessionResult.rows[0].id);
+          
+          // Then insert the message
+          await client.query(
+            'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
+            [sessionId, 'user', lastMessage.content]
+          );
+          
+          await client.query('COMMIT');
+        } catch (error) {
+          await client.query('ROLLBACK');
+          throw error;
+        }
       });
     } catch (dbError) {
       console.error('Database unavailable for message storage:', dbError);
@@ -170,6 +195,16 @@ export default async function handler(
       if (fullResponse && dbAvailable) {
         try {
           await withClient(async (client) => {
+            // Ensure session still exists (in case it was created earlier but deleted)
+            await client.query(
+              `INSERT INTO chat_sessions (id, created_at, updated_at, metadata) 
+               VALUES ($1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '{}') 
+               ON CONFLICT (id) DO UPDATE 
+               SET updated_at = CURRENT_TIMESTAMP`,
+              [sessionId]
+            );
+            
+            // Then insert the assistant message
             await client.query(
               'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
               [sessionId, 'assistant', fullResponse]

@@ -158,8 +158,10 @@ DATABASE_URL=postgresql://user:password@host:5432/dbname?pgbouncer=true&connecti
 Visit these endpoints to diagnose issues:
 - `/api/debug` - Basic environment and database check
 - `/api/test-db` - Detailed database connection diagnostics with multiple SSL configurations
+- `/api/test-session` - Test session creation and foreign key constraints
 
 The test-db endpoint will try different connection configurations and show which one works.
+The test-session endpoint will verify that sessions and messages can be created correctly.
 
 ### Build Errors
 - Ensure Node.js 18+ is used

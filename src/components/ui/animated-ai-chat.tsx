@@ -133,8 +133,12 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 Textarea.displayName = "Textarea"
 
 export function AnimatedAIChat() {
+    // Generate a unique session ID for this chat instance
+    const [sessionId] = React.useState(() => crypto.randomUUID());
+    
     const { messages, input, handleInputChange, handleSubmit: handleChatSubmit, isLoading, setInput } = useChat({
         api: '/api/chat',
+        id: sessionId,
         initialMessages: [
             {
                 id: 'welcome',
@@ -307,7 +311,7 @@ export function AnimatedAIChat() {
                 const response = await fetch('/api/upload', {
                     method: 'POST',
                     headers: {
-                        'x-session-id': messages[0]?.id || 'default-session',
+                        'x-session-id': sessionId,
                     },
                     body: formData,
                 });

@@ -17,7 +17,9 @@
     "ingest-wiki-batch": "tsx scripts/ingest-local-wiki-batch.ts",
     "update-embeddings": "tsx scripts/update-embeddings.ts",
     "populate-data": "tsx scripts/populate-initial-data.ts",
-    "test-db": "tsx scripts/test-db-connection.ts"
+    "test-db": "tsx scripts/test-db-connection.ts",
+    "test-chat": "tsx scripts/test-chat-api.ts",
+    "reset-sessions": "tsx scripts/reset-sessions.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.23",
