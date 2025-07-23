@@ -28,6 +28,9 @@
     },
     "api/test-openai.ts": {
       "maxDuration": 15
+    },
+    "api/test-simple-stream.ts": {
+      "maxDuration": 10
     }
   },
   "rewrites": [

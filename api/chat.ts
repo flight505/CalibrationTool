@@ -167,65 +167,66 @@ export default async function handler(
 
     console.log('Starting AI response stream...');
 
-    // Convert to proper streaming response for Vercel
-    const stream = result.toDataStreamResponse();
-    
-    // Get the response from the stream
-    const response = await stream;
-    
-    // Set proper headers for streaming
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no');
-    
-    // Stream the response body
-    if (response.body) {
-      const reader = response.body.getReader();
-      
+    // Store assistant response asynchronously (non-blocking)
+    (async () => {
       let fullResponse = '';
-      
       try {
-        while (true) {
-          const { done, value } = await reader.read();
-          
-          if (done) break;
-          
-          const chunk = new TextDecoder().decode(value);
-          res.write(chunk);
-          
-          // Extract text for database storage
-          const lines = chunk.split('\n');
-          for (const line of lines) {
-            if (line.startsWith('0:')) {
-              try {
-                const data = JSON.parse(line.slice(2));
-                if (data && typeof data === 'string') {
-                  fullResponse += data;
-                }
-              } catch (e) {
-                // Ignore parsing errors for streaming chunks
-              }
-            }
-          }
+        for await (const textPart of result.textStream) {
+          fullResponse += textPart;
         }
-      } finally {
-        reader.releaseLock();
-      }
-      
-      // Store assistant response in database (non-blocking)
-      if (fullResponse && dbAvailable) {
-        withClient(async (client) => {
+        
+        console.log('AI response completed, length:', fullResponse.length);
+        
+        // Try to store the complete response in database
+        if (fullResponse && dbAvailable) {
           try {
-            await client.query(
-              'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
-              [sessionId, 'assistant', fullResponse]
-            );
+            await withClient(async (client) => {
+              await client.query(
+                'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
+                [sessionId, 'assistant', fullResponse]
+              );
+            });
             console.log('Assistant response stored in database');
           } catch (dbError) {
             console.error('Failed to store assistant response:', dbError);
           }
-        }).catch(console.error);
+        }
+      } catch (error) {
+        console.error('Error processing AI response for storage:', error);
+      }
+    })();
+
+    // Return the streaming response using AI SDK's proper method
+    const streamResponse = result.toDataStreamResponse({
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    });
+
+    // Convert Response to VercelResponse format
+    const response = await streamResponse;
+    
+    // Copy headers
+    response.headers.forEach((value, key) => {
+      res.setHeader(key, value);
+    });
+    
+    // Set status
+    res.status(response.status);
+    
+    // Stream the body
+    if (response.body) {
+      const reader = response.body.getReader();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          res.write(value);
+        }
+      } finally {
+        reader.releaseLock();
       }
     }
     
