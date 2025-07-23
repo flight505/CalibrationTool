@@ -1,46 +1,35 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { streamText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { withClient } from '../src/lib/db/pool';
 import { v4 as uuidv4 } from 'uuid';
 
-export default async function handler(req: Request) {
+export default async function handler(
+  req: VercelRequest,
+  res: VercelResponse
+) {
   // Handle CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    });
+    return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
-    return new Response(
-      JSON.stringify({ error: 'Method not allowed' }), 
-      {
-        status: 405,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   // Check for API key
   if (!process.env.OPENAI_API_KEY) {
     console.error('OpenAI API key not configured');
-    return new Response(
-      JSON.stringify({ error: 'OpenAI API key not configured' }), 
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return res.status(500).json({ error: 'OpenAI API key not configured' });
   }
 
   try {
-    // Parse request body
-    const { messages, id } = await req.json();
+    // Parse request body - it's already parsed by Vercel
+    const { messages, id } = req.body;
 
     if (!messages || !Array.isArray(messages)) {
       throw new Error('Invalid request: messages array required');
@@ -78,7 +67,7 @@ export default async function handler(req: Request) {
              ON CONFLICT (id) DO UPDATE 
              SET updated_at = CURRENT_TIMESTAMP
              RETURNING id`,
-            [sessionId, JSON.stringify({ userAgent: req.headers.get('user-agent') || 'unknown' })]
+            [sessionId, JSON.stringify({ userAgent: req.headers['user-agent'] || 'unknown' })]
           );
           
           console.log('Session upserted:', sessionResult.rows[0].id);
@@ -173,64 +162,91 @@ export default async function handler(req: Request) {
       system: systemPrompt,
       messages,
       temperature: 0.3,
-      maxTokens: 2000,
+      maxTokens: 1000, // Reduced to avoid timeouts
     });
 
     console.log('Starting AI response stream...');
 
-    // Store the assistant response asynchronously (non-blocking)
-    (async () => {
+    // Convert to proper streaming response for Vercel
+    const stream = result.toDataStreamResponse();
+    
+    // Get the response from the stream
+    const response = await stream;
+    
+    // Set proper headers for streaming
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    
+    // Stream the response body
+    if (response.body) {
+      const reader = response.body.getReader();
+      
       let fullResponse = '';
+      
       try {
-        for await (const textPart of result.textStream) {
-          fullResponse += textPart;
+        while (true) {
+          const { done, value } = await reader.read();
+          
+          if (done) break;
+          
+          const chunk = new TextDecoder().decode(value);
+          res.write(chunk);
+          
+          // Extract text for database storage
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('0:')) {
+              try {
+                const data = JSON.parse(line.slice(2));
+                if (data && typeof data === 'string') {
+                  fullResponse += data;
+                }
+              } catch (e) {
+                // Ignore parsing errors for streaming chunks
+              }
+            }
+          }
         }
-        
-        console.log('AI response completed, length:', fullResponse.length);
-        
-        // Try to store the complete response in database
-        if (fullResponse && dbAvailable) {
+      } finally {
+        reader.releaseLock();
+      }
+      
+      // Store assistant response in database (non-blocking)
+      if (fullResponse && dbAvailable) {
+        withClient(async (client) => {
           try {
-            await withClient(async (client) => {
-              await client.query(
-                'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
-                [sessionId, 'assistant', fullResponse]
-              );
-            });
+            await client.query(
+              'INSERT INTO chat_messages (session_id, role, content) VALUES ($1, $2, $3)',
+              [sessionId, 'assistant', fullResponse]
+            );
             console.log('Assistant response stored in database');
           } catch (dbError) {
             console.error('Failed to store assistant response:', dbError);
           }
-        }
-      } catch (error) {
-        console.error('Error processing AI response for storage:', error);
+        }).catch(console.error);
       }
-    })();
-
-    // Return the streaming response using AI SDK's proper method
-    return result.toDataStreamResponse({
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    });
+    }
+    
+    res.end();
 
   } catch (error) {
     console.error('Chat API error:', error);
     
-    return new Response(
-      JSON.stringify({ 
+    // If headers haven't been sent, send error response
+    if (!res.headersSent) {
+      res.status(500).json({ 
         error: 'Failed to process chat request',
         details: error instanceof Error ? error.message : 'Unknown error'
-      }), 
-      {
-        status: 500,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      }
-    );
+      });
+    } else {
+      // If streaming has started, send error through SSE
+      res.write(`data: ${JSON.stringify({ 
+        type: 'error', 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      })}\n\n`);
+      res.end();
+    }
   }
 }
