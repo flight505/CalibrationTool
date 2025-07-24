@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Layers, Info, Download, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { Layers, Info, Download, AlertCircle, CheckCircle2, XCircle, Lightbulb } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -180,53 +180,61 @@ Remember to save this value in your printer settings!`);
         </CardContent>
       </Card>
 
-      <Card className="border-red-200 dark:border-red-800">
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
-            <AlertCircle className="w-5 h-5" />
-            Critical Slicer Settings - READ THIS!
-          </CardTitle>
+          <CardTitle>Important Setup Information</CardTitle>
           <CardDescription>
-            The test pattern requires specific slicer settings to work properly
+            Slicer settings and calibration tips
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <Alert className="border-red-200 bg-red-50 dark:bg-red-900/20">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Default 45° Won't Work!</AlertTitle>
-            <AlertDescription>
-              Most slicers default to 45° infill angle, which hides first layer problems. 
-              You MUST change to 0° (horizontal) for this calibration to work.
-            </AlertDescription>
-          </Alert>
+        <CardContent>
+          <Accordion type="single" collapsible defaultValue="slicer-settings" className="w-full">
+            <AccordionItem value="slicer-settings">
+              <AccordionTrigger className="text-sm font-semibold">
+                Critical Slicer Settings - Must Read!
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-4">
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Default 45° Won't Work!</AlertTitle>
+                    <AlertDescription>
+                      Most slicers default to 45° infill angle, which hides first layer problems. 
+                      You MUST change to 0° (horizontal) for this calibration to work.
+                    </AlertDescription>
+                  </Alert>
 
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-semibold mb-2">OrcaSlicer Settings:</h4>
-              <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground ml-2">
-                <li>Go to <strong>Print Settings → Quality → Bottom surface pattern</strong></li>
-                <li>Set to <strong>Monotonic</strong> or <strong>Rectilinear</strong></li>
-                <li>Go to <strong>Print Settings → Strength → Infill</strong></li>
-                <li>Set <strong>Infill direction</strong> to <strong>0°</strong></li>
-              </ol>
-            </div>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold mb-2">OrcaSlicer Settings:</h4>
+                      <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground ml-2">
+                        <li>Go to <strong>Print Settings → Quality → Bottom surface pattern</strong></li>
+                        <li>Set to <strong>Monotonic</strong> or <strong>Rectilinear</strong></li>
+                        <li>Go to <strong>Filament Settings → Strength → Infill</strong></li>
+                        <li>Set <strong>Solid infill direction</strong> to <strong>0°</strong></li>
+                      </ol>
+                    </div>
 
-            <div className="border-l-4 border-blue-500 pl-4">
-              <p className="text-sm font-medium">Why Horizontal Lines?</p>
-              <ul className="text-xs text-muted-foreground space-y-1 mt-1">
-                <li>• 45° diagonal lines hide gaps and over-squish</li>
-                <li>• Horizontal lines clearly show adhesion issues</li>
-                <li>• Easier to see line separation or ridges</li>
-                <li>• Allows progressive adjustment bottom-to-top</li>
-              </ul>
-            </div>
+                    <div className="border-l-4 border-blue-500 pl-4">
+                      <p className="text-sm font-medium">Why Horizontal Lines?</p>
+                      <ul className="text-xs text-muted-foreground space-y-1 mt-1">
+                        <li>• 45° diagonal lines hide gaps and over-squish</li>
+                        <li>• Horizontal lines clearly show adhesion issues</li>
+                        <li>• Easier to see line separation or ridges</li>
+                        <li>• Allows progressive adjustment bottom-to-top</li>
+                      </ul>
+                    </div>
 
-            <div className="bg-muted/50 p-3 rounded-lg">
-              <p className="text-xs text-center font-medium">
-                The pattern prints: Frame → Then horizontal lines from bottom to top
-              </p>
-            </div>
-          </div>
+                    <div className="bg-muted/50 p-3 rounded-lg">
+                      <p className="text-xs text-center font-medium">
+                        The pattern prints: Frame → Then horizontal lines from bottom to top
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </CardContent>
       </Card>
 
@@ -366,19 +374,20 @@ Remember to save this value in your printer settings!`);
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="examples" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="examples">Examples</TabsTrigger>
               <TabsTrigger value="process">Process</TabsTrigger>
               <TabsTrigger value="troubleshooting">Issues</TabsTrigger>
+              <TabsTrigger value="tips">Tips</TabsTrigger>
             </TabsList>
             
             <TabsContent value="examples" className="space-y-4">
               <div className="grid md:grid-cols-3 gap-4">
-                <Card className="border-red-200 dark:border-red-800">
+                <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <XCircle className="w-4 h-4 text-red-600" />
-                      Too High
+                      <span className="text-2xl font-bold">↑</span>
+                      Too High (Nozzle too far)
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="text-sm">
@@ -391,10 +400,10 @@ Remember to save this value in your printer settings!`);
                   </CardContent>
                 </Card>
 
-                <Card className="border-green-200 dark:border-green-800">
+                <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-600" />
+                      <span className="text-2xl font-bold">=</span>
                       Just Right
                     </CardTitle>
                   </CardHeader>
@@ -408,11 +417,11 @@ Remember to save this value in your printer settings!`);
                   </CardContent>
                 </Card>
 
-                <Card className="border-red-200 dark:border-red-800">
+                <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <XCircle className="w-4 h-4 text-red-600" />
-                      Too Low
+                      <span className="text-2xl font-bold">↓</span>
+                      Too Low (Nozzle too close)
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="text-sm">
@@ -425,6 +434,19 @@ Remember to save this value in your printer settings!`);
                   </CardContent>
                 </Card>
               </div>
+              
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertTitle>Z-Height vs Flow Rate Issues</AlertTitle>
+                <AlertDescription className="text-sm space-y-2">
+                  <p>Visual issues can have multiple causes:</p>
+                  <ul className="list-disc list-inside space-y-1 mt-2">
+                    <li><strong>Z-Height problems:</strong> Gaps, poor adhesion, ridges between lines</li>
+                    <li><strong>Flow rate problems:</strong> Lines too thin/thick, inconsistent width, under/over-extrusion</li>
+                  </ul>
+                  <p className="mt-2">If lines have inconsistent width or appear too thin/thick even with good adhesion, consider flow calibration.</p>
+                </AlertDescription>
+              </Alert>
             </TabsContent>
 
             <TabsContent value="process" className="space-y-4">
@@ -539,6 +561,93 @@ Remember to save this value in your printer settings!`);
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
+            </TabsContent>
+
+            <TabsContent value="tips" className="space-y-4">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                    <Lightbulb className="w-4 h-4" />
+                    Filament Visibility
+                  </h4>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <p>Different filaments show Z-height issues differently:</p>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li><strong>Light/Shiny filaments:</strong> Show gaps more clearly</li>
+                      <li><strong>Dark/Matte filaments:</strong> Better for seeing over-squish</li>
+                      <li><strong>Transparent filaments:</strong> Hardest to judge - look for adhesion</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                    <Info className="w-4 h-4" />
+                    Calibration Order Debate
+                  </h4>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <p>Two schools of thought on calibration sequence:</p>
+                    <div className="grid md:grid-cols-2 gap-3 mt-2">
+                      <div className="p-3 border rounded-lg">
+                        <p className="font-medium mb-1">Flow → Z-Height</p>
+                        <p className="text-xs">Calibrate flow first so you know line width is correct, then adjust Z-height</p>
+                      </div>
+                      <div className="p-3 border rounded-lg">
+                        <p className="font-medium mb-1">Iterative Approach</p>
+                        <p className="text-xs">Get Z-height close, calibrate flow, then fine-tune Z-height again</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    Pro Tips
+                  </h4>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex gap-2">
+                      <span className="text-primary">•</span>
+                      <div>
+                        <strong>Mark your progress:</strong> Write Z-offset values on the print with a marker as you adjust - creates a permanent record
+                      </div>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="text-primary">•</span>
+                      <div>
+                        <strong>Slow it down:</strong> Print at 50% speed for better observation and more time to adjust
+                      </div>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="text-primary">•</span>
+                      <div>
+                        <strong>Temperature matters:</strong> Always calibrate at actual printing temperatures - thermal expansion affects Z-height
+                      </div>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="text-primary">•</span>
+                      <div>
+                        <strong>Surface variation:</strong> Different build surfaces (PEI, glass, textured) may need different Z-offsets
+                      </div>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="text-primary">•</span>
+                      <div>
+                        <strong>Clean = Consistent:</strong> Fingerprints and residue cause inconsistent adhesion - clean between attempts
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+
+                <Alert>
+                  <CheckCircle2 className="h-4 w-4" />
+                  <AlertTitle>Golden Rule</AlertTitle>
+                  <AlertDescription>
+                    It's better to be slightly too close than too far. You can compensate for slight over-squish 
+                    with elephant foot compensation, but you can't fix poor adhesion after the print starts.
+                  </AlertDescription>
+                </Alert>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>
