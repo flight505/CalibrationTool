@@ -31,6 +31,27 @@ This is a comprehensive 3D printing calibration suite for Orca Slicer, implement
   - Converted Quick Fix buttons to compact badges to reduce vertical space
   - Added 12 new settings: Line Width variations, Seam control, Precise Z Height, Wall/Infill configurations
 
+## Recent Updates (2025-01-23) - AI Assistant Implementation
+- Implemented comprehensive AI-powered chat assistant:
+  - Expert OrcaSlicer assistant with specialized 3D printing knowledge
+  - Real-time streaming responses using Vercel AI SDK v4.3.19
+  - Markdown formatting support for professional response rendering
+  - Database integration with PostgreSQL for conversation history
+  - Hybrid search system combining vector and text search for context
+  - Session management with UUID-based tracking
+  - Graceful fallback when database is unavailable
+- Fixed critical streaming and database issues:
+  - Resolved foreign key constraint violations in chat_sessions/chat_messages
+  - Fixed AI SDK v4 streaming format compatibility with useChat hook
+  - Added transaction-based session creation for data consistency
+  - Implemented proper Vercel serverless function streaming
+  - Created comprehensive diagnostic endpoints for troubleshooting
+- Enhanced chat UI with markdown rendering:
+  - Custom styled markdown components for dark theme
+  - Syntax highlighting for code blocks and inline code
+  - Professional typography with proper spacing and colors
+  - Interactive elements (links, tables, lists) with chat-optimized styling
+
 ## Recent Updates (2025-01-14)
 - Enhanced retraction calibration documentation with comprehensive guide including:
   - Detailed cause-and-effect relationships between print issues and retraction settings
@@ -56,6 +77,7 @@ This is a comprehensive 3D printing calibration suite for Orca Slicer, implement
 src/
 ├── components/
 │   ├── ui/                      # shadcn/ui components
+│   │   ├── animated-ai-chat.tsx # AI chat interface with markdown support
 │   │   ├── badge.tsx            # Badge component for compact labels
 │   │   ├── toggle.tsx           # Toggle component
 │   │   ├── toggle-group.tsx     # Toggle group for view switching
@@ -77,13 +99,32 @@ src/
 │   └── HelpButton.tsx           # Documentation link helper component
 ├── data/
 │   └── recommendationsData.ts   # Generated settings database (119 settings)
+├── lib/
+│   ├── db/
+│   │   ├── pool.ts              # PostgreSQL connection pooling
+│   │   └── safePool.ts          # Safe database wrapper with fallback
+│   └── utils/
+│       └── vectorSearch.ts      # Hybrid search implementation
 ├── utils/
 │   └── stlGenerator.ts          # Three.js-based STL file generation
 ├── App.tsx                      # Main app with routing and theme
 └── main.tsx                     # Entry point
 
+api/
+├── chat.ts                      # Main AI chat API with streaming support
+├── upload.ts                    # File upload handler for chat attachments
+├── debug.ts                     # Environment and database diagnostics
+├── test-session.ts              # Session creation and constraint testing
+├── test-db.ts                   # Database connection diagnostics
+└── test-simple-stream.ts        # Simple streaming test endpoint
+
 scripts/
-└── parseSettings.js             # Markdown parser for settings table
+├── parseSettings.js             # Markdown parser for settings table
+├── setup-database-simple.ts    # Database schema creation
+├── populate-initial-data.ts     # Initial data population for AI assistant
+├── test-db-connection.ts        # Local database connection testing
+├── test-chat-api.ts             # Chat API functionality testing
+└── reset-sessions.ts            # Development utility to reset chat sessions
 
 OrcaSlicer Comprehensive Settings.md  # Source data for recommendations (119 settings)
 
@@ -132,6 +173,9 @@ public/
 6. **High Precision Calculations** - Decimal precision matching original Orca calculators
 7. **Interactive UI** - Hover effects, animations, and visual feedback
 8. **Comprehensive Settings Database** - 119 curated OrcaSlicer settings with problem-solving interface
+9. **AI-Powered Assistant** - Expert OrcaSlicer chat assistant with real-time streaming responses
+10. **Advanced Search & Context** - Hybrid vector and text search for intelligent assistance
+11. **Markdown Support** - Professional formatting in chat responses with syntax highlighting
 
 ### Recommendations System
 The recommendations page provides a comprehensive database of OrcaSlicer settings with advanced filtering and problem-solving features:
@@ -169,6 +213,9 @@ The project is set up with Vite, React, TypeScript, and shadcn/ui for a modern d
 - shadcn/ui components with Radix UI
 - Lucide React for icons
 - Three.js for STL file generation
+- Vercel AI SDK v4.3.19 for AI chat functionality
+- PostgreSQL with pg driver for database
+- ReactMarkdown + remark-gfm for markdown rendering
 - Node.js 18+ required
 
 ## Common Tasks
@@ -188,7 +235,15 @@ The project is configured for Vercel deployment:
 - Output directory: `dist`
 
 ### Testing
-No test framework is currently implemented. Consider adding:
+No formal test framework is currently implemented, but diagnostic tools are available:
+- `npm run test-db` - Test database connection locally
+- `npm run test-chat` - Test chat API functionality
+- `npm run reset-sessions` - Reset all chat sessions (development only)
+- `/api/debug` - Production environment diagnostics
+- `/api/test-session` - Session creation and constraint testing
+- `/api/test-db` - Database connection diagnostics
+
+Consider adding:
 - Vitest for unit tests (works well with Vite)
 - Playwright for E2E tests
 
@@ -212,6 +267,30 @@ npx tsc --noEmit # Type check without building
   - Base: 0-0.8mm (solid)
   - Thick walls: 0.8-8.8mm (3× nozzle diameter)
   - Thin walls: 8.8-18.8mm (1× nozzle diameter)
+
+## AI Assistant Technical Details
+- Uses Vercel AI SDK v4.3.19 with OpenAI GPT-4o-mini model
+- Streaming responses compatible with useChat hook
+- PostgreSQL database for conversation history and knowledge base
+- Hybrid search combining vector similarity and full-text search
+- Session management with UUID-based tracking and foreign key constraints
+- Graceful degradation when database is unavailable
+- Markdown rendering with custom components optimized for dark theme
+- Transaction-based database operations for data consistency
+- Comprehensive error handling and diagnostic endpoints
+
+## Database Requirements
+⚠️ **Important**: The AI Assistant requires a standard PostgreSQL database.
+
+❌ **Prisma Accelerate URLs (db.prisma.io) are NOT supported** - Use standard PostgreSQL providers
+
+✅ **Recommended Database Providers**:
+- Vercel Postgres (Neon): https://vercel.com/postgres
+- Supabase: https://supabase.com
+- Railway: https://railway.app
+- Render PostgreSQL: https://render.com
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for setup instructions or [MIGRATE_FROM_PRISMA.md](./MIGRATE_FROM_PRISMA.md) if migrating from Prisma Accelerate.
 
 ## Documentation System
 - Documentation is stored in `public/docs/orca-slicer/`
