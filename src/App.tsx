@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import Layout from '@/components/Layout'
+import FirstLayerCalibration from '@/components/FirstLayerCalibration'
 import FlowRateCalibration from '@/components/FlowRateCalibration'
 import TemperatureTower from '@/components/TemperatureTower'
 import PressureAdvance from '@/components/PressureAdvance'
@@ -24,6 +25,8 @@ function App() {
     switch (currentTool) {
       case 'guide':
         return <CalibrationGuide onNavigateToTool={handleToolChange} />
+      case 'firstlayer':
+        return <FirstLayerCalibration onNavigate={handleToolChange} />
       case 'flow':
         return <FlowRateCalibration onNavigate={handleToolChange} />
       case 'temperature':

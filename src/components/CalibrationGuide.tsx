@@ -17,6 +17,19 @@ interface CalibrationStep {
 
 const calibrationSteps: CalibrationStep[] = [
   {
+    id: 'firstlayer',
+    title: 'First Layer Calibration',
+    description: 'Establish perfect bed adhesion before anything else',
+    tool: 'firstlayer',
+    time: '5 min',
+    tips: [
+      'Start with a clean bed surface',
+      'Live adjust while printing',
+      'Look for proper line squish',
+      'Save Z-offset to printer'
+    ]
+  },
+  {
     id: 'temperature',
     title: 'Temperature Calibration',
     description: 'Find the optimal printing temperature for your filament',
@@ -133,9 +146,9 @@ const CalibrationGuide: React.FC<CalibrationGuideProps> = ({ onNavigateToTool })
         <Lightbulb className="h-4 w-4" />
         <AlertTitle>Why This Order?</AlertTitle>
         <AlertDescription>
-          Each calibration builds on the previous. Temperature affects all other settings, 
-          flow rate affects pressure advance, and so on. Following this sequence ensures 
-          each calibration is based on accurate foundations.
+          Each calibration builds on the previous. First layer adhesion is fundamental - without it, 
+          nothing else matters. Temperature affects flow, flow affects pressure advance, and so on. 
+          Following this sequence ensures each calibration is based on accurate foundations.
         </AlertDescription>
       </Alert>
 
