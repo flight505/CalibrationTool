@@ -180,6 +180,56 @@ Remember to save this value in your printer settings!`);
         </CardContent>
       </Card>
 
+      <Card className="border-red-200 dark:border-red-800">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
+            <AlertCircle className="w-5 h-5" />
+            Critical Slicer Settings - READ THIS!
+          </CardTitle>
+          <CardDescription>
+            The test pattern requires specific slicer settings to work properly
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Alert className="border-red-200 bg-red-50 dark:bg-red-900/20">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Default 45° Won't Work!</AlertTitle>
+            <AlertDescription>
+              Most slicers default to 45° infill angle, which hides first layer problems. 
+              You MUST change to 0° (horizontal) for this calibration to work.
+            </AlertDescription>
+          </Alert>
+
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-semibold mb-2">OrcaSlicer Settings:</h4>
+              <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground ml-2">
+                <li>Go to <strong>Print Settings → Quality → Bottom surface pattern</strong></li>
+                <li>Set to <strong>Monotonic</strong> or <strong>Rectilinear</strong></li>
+                <li>Go to <strong>Print Settings → Strength → Infill</strong></li>
+                <li>Set <strong>Infill direction</strong> to <strong>0°</strong></li>
+              </ol>
+            </div>
+
+            <div className="border-l-4 border-blue-500 pl-4">
+              <p className="text-sm font-medium">Why Horizontal Lines?</p>
+              <ul className="text-xs text-muted-foreground space-y-1 mt-1">
+                <li>• 45° diagonal lines hide gaps and over-squish</li>
+                <li>• Horizontal lines clearly show adhesion issues</li>
+                <li>• Easier to see line separation or ridges</li>
+                <li>• Allows progressive adjustment bottom-to-top</li>
+              </ul>
+            </div>
+
+            <div className="bg-muted/50 p-3 rounded-lg">
+              <p className="text-xs text-center font-medium">
+                The pattern prints: Frame → Then horizontal lines from bottom to top
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -378,15 +428,22 @@ Remember to save this value in your printer settings!`);
             </TabsContent>
 
             <TabsContent value="process" className="space-y-4">
+              <Alert className="mb-4">
+                <Info className="h-4 w-4" />
+                <AlertDescription className="text-xs">
+                  <strong>Pattern Order:</strong> Frame prints first → Then horizontal lines from bottom to top
+                </AlertDescription>
+              </Alert>
+
               <div className="space-y-3">
                 <div className="flex gap-3">
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
                     1
                   </div>
                   <div>
-                    <h4 className="font-semibold">Prepare the bed</h4>
+                    <h4 className="font-semibold">Verify slicer settings</h4>
                     <p className="text-sm text-muted-foreground">
-                      Clean with isopropyl alcohol and heat to target temperature
+                      Confirm infill direction is 0° (horizontal), not 45°
                     </p>
                   </div>
                 </div>
@@ -396,9 +453,9 @@ Remember to save this value in your printer settings!`);
                     2
                   </div>
                   <div>
-                    <h4 className="font-semibold">Start the print</h4>
+                    <h4 className="font-semibold">Start print & watch frame</h4>
                     <p className="text-sm text-muted-foreground">
-                      Begin printing the calibration pattern at 50% speed
+                      The perimeter frame prints first - check initial adhesion
                     </p>
                   </div>
                 </div>
@@ -408,10 +465,13 @@ Remember to save this value in your printer settings!`);
                     3
                   </div>
                   <div>
-                    <h4 className="font-semibold">Live adjust</h4>
+                    <h4 className="font-semibold">Adjust during horizontal lines</h4>
                     <p className="text-sm text-muted-foreground">
-                      Use baby-stepping to adjust Z-offset while printing
+                      As it prints bottom-to-top, baby-step every 20-30mm
                     </p>
+                    <div className="mt-2 bg-muted/50 p-2 rounded text-xs">
+                      <strong>Tip:</strong> Write Z-offset values on the side with a marker!
+                    </div>
                   </div>
                 </div>
 
@@ -420,9 +480,21 @@ Remember to save this value in your printer settings!`);
                     4
                   </div>
                   <div>
-                    <h4 className="font-semibold">Save settings</h4>
+                    <h4 className="font-semibold">Compare sections</h4>
                     <p className="text-sm text-muted-foreground">
-                      Note the final offset and save to your printer
+                      Each horizontal band shows different Z-offset results
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
+                    5
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Calculate final offset</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Use the calculator with your best section's adjustment
                     </p>
                   </div>
                 </div>
