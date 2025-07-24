@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Layers, Info, Download, AlertCircle, CheckCircle2, XCircle, Lightbulb } from 'lucide-react';
+import { Layers, Info, Download, AlertCircle, CheckCircle2, Lightbulb } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
