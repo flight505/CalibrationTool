@@ -88,6 +88,98 @@ Remember to save this value in your printer settings!`);
         </AlertDescription>
       </Alert>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Info className="w-5 h-5" />
+            How This Calculator Works
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3 text-sm">
+            <p>
+              <strong>Important:</strong> This calculator is a simple math tool that helps you calculate your new Z-offset 
+              based on adjustments you make while printing the test pattern.
+            </p>
+            
+            <div className="border-l-4 border-blue-500 pl-4 space-y-2">
+              <p className="font-semibold">The Process:</p>
+              <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                <li>Print the test STL with your current Z-offset</li>
+                <li>Observe if nozzle is too high or too low</li>
+                <li>Use baby stepping to adjust while printing</li>
+                <li>Note how much you adjusted (e.g., -0.05mm)</li>
+                <li>Use this calculator to add that adjustment to your current offset</li>
+              </ol>
+            </div>
+
+            <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-900/20">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                The STL file is just a test pattern - the calculation doesn't depend on it. 
+                You're simply adding your live adjustment to your current Z-offset.
+              </AlertDescription>
+            </Alert>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Does Your Printer Have Auto Z-Calibration?</CardTitle>
+          <CardDescription>
+            Modern printers handle Z-offset differently than traditional ones
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <h4 className="font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-600" />
+                Modern Auto-Calibration Printers
+              </h4>
+              <div className="text-sm space-y-2 text-muted-foreground">
+                <p className="font-medium">Examples: FL-SUN S1 Pro, Bambu Lab, Prusa MK4</p>
+                <ul className="space-y-1 ml-4">
+                  <li>• One-click auto bed leveling</li>
+                  <li>• Baby stepping saves automatically</li>
+                  <li>• May have per-surface profiles</li>
+                  <li>• Often use LIDAR or force sensors</li>
+                </ul>
+                <Alert className="mt-3">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <AlertDescription className="text-xs">
+                    You may not need the calculator - your printer likely saves adjustments automatically!
+                  </AlertDescription>
+                </Alert>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="font-semibold flex items-center gap-2">
+                <Info className="w-4 h-4 text-blue-600" />
+                Traditional Manual Printers
+              </h4>
+              <div className="text-sm space-y-2 text-muted-foreground">
+                <p className="font-medium">Examples: Ender 3, CR-10, Most DIY Printers</p>
+                <ul className="space-y-1 ml-4">
+                  <li>• Manual bed leveling</li>
+                  <li>• Baby stepping resets each print</li>
+                  <li>• Need to manually save Z-offset</li>
+                  <li>• Use paper or feeler gauge method</li>
+                </ul>
+                <Alert className="mt-3">
+                  <Info className="h-4 w-4" />
+                  <AlertDescription className="text-xs">
+                    Use the calculator below to determine your new permanent Z-offset value.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -152,10 +244,18 @@ Remember to save this value in your printer settings!`);
           <CardHeader>
             <CardTitle>Z-Offset Calculator</CardTitle>
             <CardDescription>
-              Calculate your new Z-offset based on test results
+              For manual printers: Calculate your new permanent Z-offset
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <Alert className="border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20">
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-xs">
+                <strong>When to use this:</strong> If your printer doesn't save baby stepping automatically, 
+                use this to calculate what value to save in your printer's memory or start G-code.
+              </AlertDescription>
+            </Alert>
+
             <div className="space-y-2">
               <Label htmlFor="current-offset">Current Z-Offset (mm)</Label>
               <Input
@@ -169,7 +269,7 @@ Remember to save this value in your printer settings!`);
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="adjustment">Adjustment Needed (mm)</Label>
+              <Label htmlFor="adjustment">Baby Stepping Adjustment Made (mm)</Label>
               <Input
                 id="adjustment"
                 type="number"
@@ -178,9 +278,17 @@ Remember to save this value in your printer settings!`);
                 onChange={(e) => setAdjustment(e.target.value)}
                 placeholder="-0.05"
               />
-              <p className="text-xs text-muted-foreground">
-                Negative = closer to bed, Positive = further from bed
-              </p>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">
+                  Enter the total baby stepping adjustment you made during the test print
+                </p>
+                <p className="text-xs text-muted-foreground font-medium">
+                  • Negative (-) = moved nozzle closer to bed
+                </p>
+                <p className="text-xs text-muted-foreground font-medium">
+                  • Positive (+) = moved nozzle away from bed
+                </p>
+              </div>
             </div>
 
             <Button onClick={calculateNewOffset} className="w-full">
@@ -361,6 +469,114 @@ Remember to save this value in your printer settings!`);
               </Accordion>
             </TabsContent>
           </Tabs>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>How to Save Your New Z-Offset</CardTitle>
+          <CardDescription>
+            Firmware-specific instructions for permanent storage
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="marlin">
+              <AccordionTrigger>Marlin Firmware</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-2 text-sm">
+                  <p className="font-medium">Via LCD Menu:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-muted-foreground ml-2">
+                    <li>Configuration → Advanced Settings → Probe Z Offset</li>
+                    <li>Adjust to your new calculated value</li>
+                    <li>Store Settings (or M500 command)</li>
+                  </ol>
+                  <p className="font-medium mt-3">Via G-code:</p>
+                  <code className="block bg-muted p-2 rounded text-xs">
+                    M851 Z-1.30  ; Set new offset<br/>
+                    M500         ; Save to EEPROM
+                  </code>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="klipper">
+              <AccordionTrigger>Klipper Firmware</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-2 text-sm">
+                  <p className="font-medium">For probe users:</p>
+                  <code className="block bg-muted p-2 rounded text-xs">
+                    Z_OFFSET_APPLY_PROBE
+                  </code>
+                  <p className="text-muted-foreground mt-2">This saves your baby stepping to the probe's z_offset</p>
+                  
+                  <p className="font-medium mt-3">Manual method:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-muted-foreground ml-2">
+                    <li>Edit printer.cfg</li>
+                    <li>Find [stepper_z] position_endstop or [probe] z_offset</li>
+                    <li>Update with new value</li>
+                    <li>SAVE_CONFIG</li>
+                  </ol>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="prusa">
+              <AccordionTrigger>Prusa Firmware</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-2 text-sm">
+                  <p className="text-muted-foreground">
+                    Prusa printers save Live Z adjustments automatically!
+                  </p>
+                  <p className="font-medium mt-2">During first layer calibration:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-muted-foreground ml-2">
+                    <li>Turn knob to adjust Live Z</li>
+                    <li>Value saves automatically</li>
+                    <li>Different values can be saved per steel sheet</li>
+                  </ol>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="duet">
+              <AccordionTrigger>Duet/RepRap Firmware</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-2 text-sm">
+                  <p className="font-medium">Console Commands:</p>
+                  <code className="block bg-muted p-2 rounded text-xs">
+                    G31 Z1.30    ; Set new Z offset<br/>
+                    M500         ; Save to config-override.g
+                  </code>
+                  <p className="text-muted-foreground mt-2">
+                    Or edit config.g directly and update the G31 Z value
+                  </p>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="orcaslicer">
+              <AccordionTrigger>OrcaSlicer Software Method</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-2 text-sm">
+                  <p className="text-muted-foreground">
+                    If your printer doesn't support saving Z-offset:
+                  </p>
+                  <ol className="list-decimal list-inside space-y-1 text-muted-foreground ml-2">
+                    <li>Go to Process Settings → Others</li>
+                    <li>Find "Z offset" field</li>
+                    <li>Enter your calculated offset value</li>
+                    <li>This adds offset to every print automatically</li>
+                  </ol>
+                  <Alert className="mt-3">
+                    <Info className="h-4 w-4" />
+                    <AlertDescription className="text-xs">
+                      This method works but requires the offset in every print profile
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </CardContent>
       </Card>
 
