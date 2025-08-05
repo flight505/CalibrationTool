@@ -48,6 +48,7 @@
     "drizzle-orm": "^0.44.3",
     "formidable": "^3.5.4",
     "framer-motion": "^12.23.6",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.525.0",
     "openai": "^5.10.1",
     "ora": "^8.2.0",
@@ -62,10 +63,12 @@
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.178.0",
     "uuid": "^11.1.0",
+    "xmlbuilder2": "^3.1.1",
     "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/formidable": "^3.4.5",
+    "@types/jszip": "^3.4.0",
     "@types/node": "^24.0.13",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",

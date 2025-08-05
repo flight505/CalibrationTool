@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Move3D, Info, Lightbulb, Zap, Download, Settings } from 'lucide-react';
+import { Move3D, Info, Lightbulb, Zap, Download, Settings, Package } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { HelpButton } from '@/components/HelpButton';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generatePressureAdvanceTower } from '@/utils/orcaPressureAdvanceTower';
+import { exportTowerAs3MF } from '@/utils/orca3mfExporter';
 
 interface PressureAdvanceProps {
   onNavigate?: (tool: string, path?: string) => void;
@@ -57,7 +58,7 @@ const PressureAdvance: React.FC<PressureAdvanceProps> = ({ onNavigate }) => {
     }
   };
   
-  const generateTower = async () => {
+  const generateTower = async (export3MF: boolean = false) => {
     try {
       setGenerating(true);
       
@@ -72,30 +73,49 @@ const PressureAdvance: React.FC<PressureAdvanceProps> = ({ onNavigate }) => {
         includeModifierMesh: true
       });
       
-      // Download main STL
-      const url = URL.createObjectURL(tower.mainSTL);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `pa_tower_${towerExtruderType}_${startPA}-${endPA}.stl`;
-      a.click();
-      URL.revokeObjectURL(url);
-      
-      // If modifier meshes are included, download them as well
-      if (tower.modifierMeshes) {
-        tower.modifierMeshes.forEach((mesh, index) => {
-          const modUrl = URL.createObjectURL(mesh);
-          const modA = document.createElement('a');
-          modA.href = modUrl;
-          modA.download = `pa_modifier_section_${index}.stl`;
-          setTimeout(() => {
-            modA.click();
-            URL.revokeObjectURL(modUrl);
-          }, (index + 1) * 500); // Stagger downloads
-        });
+      if (export3MF) {
+        // Export as 3MF with all settings embedded
+        const project = await exportTowerAs3MF(
+          tower,
+          'pressure_advance',
+          `pa_tower_${towerExtruderType}`
+        );
+        
+        const url = URL.createObjectURL(project.file);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = project.filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        setGenResult(`✅ 3MF project generated successfully!\n${tower.sections.length} PA sections from ${startPA} to ${endPA}\nModifier meshes and settings are embedded in the file.`);
+      } else {
+        // Download main STL
+        const url = URL.createObjectURL(tower.mainSTL);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `pa_tower_${towerExtruderType}_${startPA}-${endPA}.stl`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        // If modifier meshes are included, download them as well
+        if (tower.modifierMeshes) {
+          tower.modifierMeshes.forEach((mesh, index) => {
+            const modUrl = URL.createObjectURL(mesh);
+            const modA = document.createElement('a');
+            modA.href = modUrl;
+            modA.download = `pa_modifier_section_${index}.stl`;
+            setTimeout(() => {
+              modA.click();
+              URL.revokeObjectURL(modUrl);
+            }, (index + 1) * 500); // Stagger downloads
+          });
+        }
+        
+        setGenResult(`✅ Pressure Advance tower generated successfully!\n${tower.sections.length} PA sections from ${startPA} to ${endPA}`);
       }
       
       setTowerInstructions(tower.instructions);
-      setGenResult(`✅ Pressure Advance tower generated successfully!\n${tower.sections.length} PA sections from ${startPA} to ${endPA}`);
     } catch (error) {
       console.error('Error generating tower:', error);
       setGenResult('❌ Error generating tower. Please try again.');
@@ -342,20 +362,38 @@ const PressureAdvance: React.FC<PressureAdvanceProps> = ({ onNavigate }) => {
                 />
               </div>
               
-              <Button 
-                onClick={generateTower} 
-                className="w-full"
-                disabled={generating}
-              >
-                {generating ? (
-                  <>Generating...</>
-                ) : (
-                  <>
-                    <Download className="mr-2 h-4 w-4" />
-                    Generate PA Tower STL
-                  </>
-                )}
-              </Button>
+              <div className="grid grid-cols-2 gap-4">
+                <Button 
+                  onClick={() => generateTower(false)} 
+                  className="w-full"
+                  disabled={generating}
+                  variant="outline"
+                >
+                  {generating ? (
+                    <>Generating...</>
+                  ) : (
+                    <>
+                      <Download className="mr-2 h-4 w-4" />
+                      Download STL Files
+                    </>
+                  )}
+                </Button>
+                
+                <Button 
+                  onClick={() => generateTower(true)} 
+                  className="w-full"
+                  disabled={generating}
+                >
+                  {generating ? (
+                    <>Generating...</>
+                  ) : (
+                    <>
+                      <Package className="mr-2 h-4 w-4" />
+                      Download 3MF Project
+                    </>
+                  )}
+                </Button>
+              </div>
               
               {genResult && (
                 <Alert className={genResult.includes('✅') ? "bg-green-50/50 dark:bg-green-950/20" : ""}>

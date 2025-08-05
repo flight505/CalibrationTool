@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Thermometer, Info, FileText, Download, Settings } from 'lucide-react';
+import { Thermometer, Info, FileText, Download, Settings, Package } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { HelpButton } from '@/components/HelpButton';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateTemperatureTower } from '@/utils/orcaTemperatureTower';
+import { exportTowerAs3MF } from '@/utils/orca3mfExporter';
 
 interface TemperatureTowerProps {
   onNavigate?: (tool: string, path?: string) => void;
@@ -47,7 +48,7 @@ const TemperatureTower: React.FC<TemperatureTowerProps> = ({ onNavigate }) => {
     setEndTemp(range.end.toString());
   };
 
-  const generateTower = async () => {
+  const generateTower = async (export3MF: boolean = false) => {
     try {
       setGenerating(true);
       
@@ -62,32 +63,49 @@ const TemperatureTower: React.FC<TemperatureTowerProps> = ({ onNavigate }) => {
         includeModifierMesh: true
       });
       
-      // Download main STL
-      const url = URL.createObjectURL(tower.mainSTL);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `temperature_tower_${material.toLowerCase()}_${startTemp}-${endTemp}.stl`;
-      a.click();
-      URL.revokeObjectURL(url);
-      
-      // If modifier meshes are included, download them as well
-      if (tower.modifierMeshes) {
-        tower.modifierMeshes.forEach((mesh, index) => {
-          const modUrl = URL.createObjectURL(mesh);
-          const modA = document.createElement('a');
-          modA.href = modUrl;
-          modA.download = `modifier_section_${index}.stl`;
-          setTimeout(() => {
-            modA.click();
-            URL.revokeObjectURL(modUrl);
-          }, (index + 1) * 500); // Stagger downloads
-        });
+      if (export3MF) {
+        // Export as 3MF with all settings embedded
+        const project = await exportTowerAs3MF(
+          tower,
+          'temperature',
+          `temperature_tower_${material.toLowerCase()}`
+        );
+        
+        const url = URL.createObjectURL(project.file);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = project.filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        setResult(`✅ 3MF project generated successfully!\n${tower.sections.length} temperature sections from ${startTemp}°C to ${endTemp}°C\nModifier meshes and settings are embedded in the file.`);
+      } else {
+        // Download individual STL files
+        const url = URL.createObjectURL(tower.mainSTL);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `temperature_tower_${material.toLowerCase()}_${startTemp}-${endTemp}.stl`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        // If modifier meshes are included, download them as well
+        if (tower.modifierMeshes) {
+          tower.modifierMeshes.forEach((mesh, index) => {
+            const modUrl = URL.createObjectURL(mesh);
+            const modA = document.createElement('a');
+            modA.href = modUrl;
+            modA.download = `modifier_section_${index}.stl`;
+            setTimeout(() => {
+              modA.click();
+              URL.revokeObjectURL(modUrl);
+            }, (index + 1) * 500); // Stagger downloads
+          });
+        }
+        
+        setResult(`✅ Temperature tower generated successfully!\n${tower.sections.length} temperature sections from ${startTemp}°C to ${endTemp}°C`);
       }
       
       setTowerInstructions(tower.instructions);
-      
-      // Show success alert
-      setResult(`✅ Temperature tower generated successfully!\n${tower.sections.length} temperature sections from ${startTemp}°C to ${endTemp}°C`);
     } catch (error) {
       console.error('Error generating tower:', error);
       setResult('❌ Error generating tower. Please try again.');
@@ -325,20 +343,38 @@ const TemperatureTower: React.FC<TemperatureTowerProps> = ({ onNavigate }) => {
                 </div>
               </div>
               
-              <Button 
-                onClick={generateTower} 
-                className="w-full"
-                disabled={generating}
-              >
-                {generating ? (
-                  <>Generating...</>
-                ) : (
-                  <>
-                    <Download className="mr-2 h-4 w-4" />
-                    Generate Temperature Tower STL
-                  </>
-                )}
-              </Button>
+              <div className="grid grid-cols-2 gap-4">
+                <Button 
+                  onClick={() => generateTower(false)} 
+                  className="w-full"
+                  disabled={generating}
+                  variant="outline"
+                >
+                  {generating ? (
+                    <>Generating...</>
+                  ) : (
+                    <>
+                      <Download className="mr-2 h-4 w-4" />
+                      Download STL Files
+                    </>
+                  )}
+                </Button>
+                
+                <Button 
+                  onClick={() => generateTower(true)} 
+                  className="w-full"
+                  disabled={generating}
+                >
+                  {generating ? (
+                    <>Generating...</>
+                  ) : (
+                    <>
+                      <Package className="mr-2 h-4 w-4" />
+                      Download 3MF Project
+                    </>
+                  )}
+                </Button>
+              </div>
               
               {result && result.includes('tower generated') && (
                 <Alert className="bg-green-50/50 dark:bg-green-950/20">
