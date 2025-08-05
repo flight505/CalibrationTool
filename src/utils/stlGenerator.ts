@@ -1,4 +1,11 @@
 import * as THREE from 'three';
+import { 
+  parseAsciiStl, 
+  stlToString, 
+  adjustFlowCubeForNozzle,
+  createRectangularFirstLayer,
+  createCircularFirstLayer
+} from './asciiStlUtils';
 
 interface CubeParameters {
   nozzleSize: number;
@@ -6,6 +13,79 @@ interface CubeParameters {
   baseHeight?: number;
   singleWallHeight?: number;
   doubleWallHeight?: number;
+}
+
+interface FirstLayerParameters {
+  plateWidth?: number;
+  plateLength?: number;
+  plateShape?: 'rectangular' | 'circular';
+  patchSpacing?: number;
+}
+
+/**
+ * Generate flow calibration cube using ASCII STL template
+ */
+export async function generateFlowCalibrationCubeFromTemplate({
+  nozzleSize
+}: { nozzleSize: number }): Promise<Blob> {
+  try {
+    // Fetch the template STL file
+    const response = await fetch('/templates/flow_calibration_cube_template.stl');
+    const templateSTL = await response.text();
+    
+    // Parse the STL
+    const parsedStl = parseAsciiStl(templateSTL);
+    
+    // The template is designed for 0.4mm nozzle, adjust if needed
+    const adjustedStl = nozzleSize === 0.4 
+      ? parsedStl 
+      : adjustFlowCubeForNozzle(parsedStl, 0.4, nozzleSize);
+    
+    // Convert back to string
+    const stlString = stlToString(adjustedStl);
+    
+    // Return as blob
+    return new Blob([stlString], { type: 'application/sla' });
+  } catch (error) {
+    console.error('Failed to generate flow calibration cube from template:', error);
+    // Fall back to the old Three.js method
+    return generateFlowCalibrationCube({ nozzleSize });
+  }
+}
+
+/**
+ * Generate parametric first layer calibration
+ */
+export async function generateFirstLayerCalibration(params: FirstLayerParameters = {}): Promise<Blob> {
+  const {
+    plateWidth = 220,  // Default Ender 3 size
+    plateLength = 220,
+    plateShape = 'rectangular',
+    patchSpacing = 5
+  } = params;
+  
+  try {
+    // Fetch the template STL file (single patch)
+    const response = await fetch('/templates/first_layer_calibration_ascii.stl');
+    const templateSTL = await response.text();
+    
+    // Parse the STL
+    const patchStl = parseAsciiStl(templateSTL);
+    
+    // Generate pattern based on shape
+    const patternStl = plateShape === 'circular'
+      ? createCircularFirstLayer(patchStl, plateWidth / 2, patchSpacing)
+      : createRectangularFirstLayer(patchStl, plateWidth, plateLength, patchSpacing);
+    
+    // Convert to string
+    const stlString = stlToString(patternStl);
+    
+    // Return as blob
+    return new Blob([stlString], { type: 'application/sla' });
+  } catch (error) {
+    console.error('Failed to generate first layer calibration:', error);
+    throw error;
+  }
 }
 
 export function generateFlowCalibrationCube({

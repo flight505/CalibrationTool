@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Layers, Info, Download, AlertCircle, CheckCircle2, Lightbulb } from 'lucide-react';
+import { Layers, Info, Download, AlertCircle, CheckCircle2, Lightbulb, Settings } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { HelpButton } from '@/components/HelpButton';
+import { generateFirstLayerCalibration } from '@/utils/stlGenerator';
+import { Switch } from '@/components/ui/switch';
 
 interface FirstLayerCalibrationProps {
   onNavigate?: (tool: string, path?: string) => void;
@@ -21,6 +23,14 @@ const FirstLayerCalibration: React.FC<FirstLayerCalibrationProps> = ({ onNavigat
   const [bedTemp, setBedTemp] = useState('60');
   const [nozzleTemp, setNozzleTemp] = useState('210');
   const [result, setResult] = useState<string | null>(null);
+  
+  // Parametric STL generation states
+  const [useCustomSize, setUseCustomSize] = useState(false);
+  const [plateWidth, setPlateWidth] = useState('220');
+  const [plateLength, setPlateLength] = useState('220');
+  const [plateShape, setPlateShape] = useState<'rectangular' | 'circular'>('rectangular');
+  const [patchSpacing, setPatchSpacing] = useState('5');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const materialSettings = {
     PLA: { bedTemp: 60, nozzleTemp: 210, squish: 'moderate' },
@@ -54,6 +64,29 @@ Remember to save this value in your printer settings!`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+  
+  const generateCustomSTL = async () => {
+    setIsGenerating(true);
+    try {
+      const blob = await generateFirstLayerCalibration({
+        plateWidth: parseFloat(plateWidth),
+        plateLength: parseFloat(plateLength),
+        plateShape,
+        patchSpacing: parseFloat(patchSpacing)
+      });
+      
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `first_layer_${plateShape}_${plateWidth}x${plateLength}mm.stl`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to generate custom STL:', error);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -364,6 +397,125 @@ Remember to save this value in your printer settings!`);
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="w-5 h-5" />
+            Custom Build Plate Pattern
+          </CardTitle>
+          <CardDescription>
+            Generate a first layer calibration pattern for your entire build plate
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="custom-size"
+              checked={useCustomSize}
+              onCheckedChange={setUseCustomSize}
+            />
+            <Label htmlFor="custom-size">Enable custom plate size</Label>
+          </div>
+          
+          {useCustomSize && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="plate-shape">Plate Shape</Label>
+                <Select value={plateShape} onValueChange={(value: 'rectangular' | 'circular') => setPlateShape(value)}>
+                  <SelectTrigger id="plate-shape">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="rectangular">Rectangular</SelectItem>
+                    <SelectItem value="circular">Circular</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {plateShape === 'rectangular' ? (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="plate-width">Plate Width (mm)</Label>
+                    <Input
+                      id="plate-width"
+                      type="number"
+                      value={plateWidth}
+                      onChange={(e) => setPlateWidth(e.target.value)}
+                      placeholder="220"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="plate-length">Plate Length (mm)</Label>
+                    <Input
+                      id="plate-length"
+                      type="number"
+                      value={plateLength}
+                      onChange={(e) => setPlateLength(e.target.value)}
+                      placeholder="220"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="plate-diameter">Plate Diameter (mm)</Label>
+                  <Input
+                    id="plate-diameter"
+                    type="number"
+                    value={plateWidth}
+                    onChange={(e) => {
+                      setPlateWidth(e.target.value);
+                      setPlateLength(e.target.value);
+                    }}
+                    placeholder="200"
+                  />
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="patch-spacing">Patch Spacing (mm)</Label>
+                <Input
+                  id="patch-spacing"
+                  type="number"
+                  value={patchSpacing}
+                  onChange={(e) => setPatchSpacing(e.target.value)}
+                  placeholder="5"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Distance between test patches
+                </p>
+              </div>
+              
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertTitle>Pattern Info</AlertTitle>
+                <AlertDescription className="text-sm">
+                  {plateShape === 'rectangular' 
+                    ? `Will generate a grid pattern covering ${plateWidth}×${plateLength}mm`
+                    : `Will generate concentric rings within ${plateWidth}mm diameter`
+                  }
+                </AlertDescription>
+              </Alert>
+              
+              <Button 
+                onClick={generateCustomSTL} 
+                className="w-full" 
+                variant="outline"
+                disabled={isGenerating}
+              >
+                {isGenerating ? (
+                  <>Generating...</>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-2" />
+                    Generate Custom Pattern
+                  </>
+                )}
+              </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

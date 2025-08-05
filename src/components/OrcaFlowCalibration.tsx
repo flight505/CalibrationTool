@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { generateFlowCalibrationCube } from '@/utils/stlGenerator';
+import { generateFlowCalibrationCubeFromTemplate } from '@/utils/stlGenerator';
 
 interface CalibrationResults {
   singleWallAvg: number | null;
@@ -108,18 +108,22 @@ Adjustment: ${parseFloat(results.adjustment) > 0 ? '+' : ''}${results.adjustment
     a.click();
   };
 
-  const downloadSTL = () => {
+  const downloadSTL = async () => {
     const nozzleSizeNum = parseFloat(nozzleSize);
-    const stlBlob = generateFlowCalibrationCube({ nozzleSize: nozzleSizeNum });
-    
-    const url = window.URL.createObjectURL(stlBlob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `flow_calibration_cube_${nozzleSize}mm.stl`;
-    a.click();
-    
-    // Clean up
-    window.URL.revokeObjectURL(url);
+    try {
+      const stlBlob = await generateFlowCalibrationCubeFromTemplate({ nozzleSize: nozzleSizeNum });
+      
+      const url = window.URL.createObjectURL(stlBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `flow_calibration_cube_${nozzleSize}mm.stl`;
+      a.click();
+      
+      // Clean up
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to generate STL:', error);
+    }
   };
 
   return (
