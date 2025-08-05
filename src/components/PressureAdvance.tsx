@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Move3D, Info, Lightbulb, Zap } from 'lucide-react';
+import { Move3D, Info, Lightbulb, Zap, Download, Settings } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { HelpButton } from '@/components/HelpButton';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { generatePressureAdvanceTower } from '@/utils/orcaPressureAdvanceTower';
 
 interface PressureAdvanceProps {
   onNavigate?: (tool: string, path?: string) => void;
@@ -18,10 +21,87 @@ const PressureAdvance: React.FC<PressureAdvanceProps> = ({ onNavigate }) => {
   const [paStep, setPaStep] = useState(0.002);
   const [measuredHeight, setMeasuredHeight] = useState(8);
   const [result, setResult] = useState<number | null>(null);
+  
+  // Tower generation states
+  const [towerExtruderType, setTowerExtruderType] = useState<'direct_drive' | 'bowden' | 'high_speed'>('direct_drive');
+  const [startPA, setStartPA] = useState('0.00');
+  const [endPA, setEndPA] = useState('0.10');
+  const [paStepGen, setPAStepGen] = useState('0.01');
+  const [testPattern, setTestPattern] = useState<'corners' | 'lines' | 'combined'>('corners');
+  const [printSpeed, setPrintSpeed] = useState('100');
+  const [includeLabels, setIncludeLabels] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [towerInstructions, setTowerInstructions] = useState<string | null>(null);
+  const [genResult, setGenResult] = useState<string | null>(null);
 
   const calculate = () => {
     const calculatedPA = paStep * measuredHeight;
     setResult(calculatedPA);
+  };
+  
+  const handleExtruderTypeChange = (type: 'direct_drive' | 'bowden' | 'high_speed') => {
+    setTowerExtruderType(type);
+    // Set appropriate defaults based on extruder type
+    if (type === 'direct_drive') {
+      setStartPA('0.00');
+      setEndPA('0.10');
+      setPAStepGen('0.01');
+    } else if (type === 'bowden') {
+      setStartPA('0.00');
+      setEndPA('0.50');
+      setPAStepGen('0.05');
+    } else {
+      setStartPA('0.00');
+      setEndPA('0.05');
+      setPAStepGen('0.005');
+    }
+  };
+  
+  const generateTower = async () => {
+    try {
+      setGenerating(true);
+      
+      const tower = await generatePressureAdvanceTower({
+        extruderType: towerExtruderType,
+        startValue: parseFloat(startPA),
+        endValue: parseFloat(endPA),
+        stepSize: parseFloat(paStepGen),
+        testPattern,
+        printSpeed: parseInt(printSpeed),
+        includeLabels,
+        includeModifierMesh: true
+      });
+      
+      // Download main STL
+      const url = URL.createObjectURL(tower.mainSTL);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pa_tower_${towerExtruderType}_${startPA}-${endPA}.stl`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      // If modifier meshes are included, download them as well
+      if (tower.modifierMeshes) {
+        tower.modifierMeshes.forEach((mesh, index) => {
+          const modUrl = URL.createObjectURL(mesh);
+          const modA = document.createElement('a');
+          modA.href = modUrl;
+          modA.download = `pa_modifier_section_${index}.stl`;
+          setTimeout(() => {
+            modA.click();
+            URL.revokeObjectURL(modUrl);
+          }, (index + 1) * 500); // Stagger downloads
+        });
+      }
+      
+      setTowerInstructions(tower.instructions);
+      setGenResult(`✅ Pressure Advance tower generated successfully!\n${tower.sections.length} PA sections from ${startPA} to ${endPA}`);
+    } catch (error) {
+      console.error('Error generating tower:', error);
+      setGenResult('❌ Error generating tower. Please try again.');
+    } finally {
+      setGenerating(false);
+    }
   };
 
   return (
@@ -47,7 +127,14 @@ const PressureAdvance: React.FC<PressureAdvanceProps> = ({ onNavigate }) => {
         </CardHeader>
       </Card>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <Tabs defaultValue="calculate" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="calculate">Calculate PA</TabsTrigger>
+          <TabsTrigger value="generate">Generate Tower</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="calculate">
+          <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>PA Calculator</CardTitle>
@@ -154,7 +241,149 @@ const PressureAdvance: React.FC<PressureAdvanceProps> = ({ onNavigate }) => {
             </div>
           </CardContent>
         </Card>
-      </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="generate" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Generate Pressure Advance Tower</CardTitle>
+              <CardDescription>
+                Create a custom PA calibration tower for your printer
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="gen-extruder">Extruder Type</Label>
+                  <Select value={towerExtruderType} onValueChange={handleExtruderTypeChange}>
+                    <SelectTrigger id="gen-extruder">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="direct_drive">Direct Drive</SelectItem>
+                      <SelectItem value="bowden">Bowden</SelectItem>
+                      <SelectItem value="high_speed">High-Speed Direct</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="test-pattern">Test Pattern</Label>
+                  <Select value={testPattern} onValueChange={(v) => setTestPattern(v as 'corners' | 'lines' | 'combined')}>
+                    <SelectTrigger id="test-pattern">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="corners">Corner Test (Recommended)</SelectItem>
+                      <SelectItem value="lines">Line Test</SelectItem>
+                      <SelectItem value="combined">Combined Pattern</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="start-pa">Start PA Value</Label>
+                  <Input
+                    id="start-pa"
+                    type="number"
+                    step="0.01"
+                    value={startPA}
+                    onChange={(e) => setStartPA(e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="end-pa">End PA Value</Label>
+                  <Input
+                    id="end-pa"
+                    type="number"
+                    step="0.01"
+                    value={endPA}
+                    onChange={(e) => setEndPA(e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="pa-step-gen">PA Step</Label>
+                  <Input
+                    id="pa-step-gen"
+                    type="number"
+                    step="0.001"
+                    value={paStepGen}
+                    onChange={(e) => setPAStepGen(e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="print-speed">Print Speed (mm/s)</Label>
+                <Input
+                  id="print-speed"
+                  type="number"
+                  value={printSpeed}
+                  onChange={(e) => setPrintSpeed(e.target.value)}
+                />
+                <p className="text-sm text-muted-foreground">
+                  Higher speeds make PA effects more visible
+                </p>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <Label htmlFor="include-labels" className="cursor-pointer">
+                  Include PA Value Labels
+                </Label>
+                <Switch
+                  id="include-labels"
+                  checked={includeLabels}
+                  onCheckedChange={setIncludeLabels}
+                />
+              </div>
+              
+              <Button 
+                onClick={generateTower} 
+                className="w-full"
+                disabled={generating}
+              >
+                {generating ? (
+                  <>Generating...</>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-4 w-4" />
+                    Generate PA Tower STL
+                  </>
+                )}
+              </Button>
+              
+              {genResult && (
+                <Alert className={genResult.includes('✅') ? "bg-green-50/50 dark:bg-green-950/20" : ""}>
+                  <AlertDescription className="whitespace-pre-line">
+                    {genResult}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+          
+          {towerInstructions && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
+                  Tower Setup Instructions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="text-sm whitespace-pre-wrap bg-muted p-4 rounded-lg">
+                  {towerInstructions}
+                </pre>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
 
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="instructions">
