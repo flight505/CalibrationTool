@@ -52,6 +52,19 @@ This is a comprehensive 3D printing calibration suite for Orca Slicer, implement
   - Professional typography with proper spacing and colors
   - Interactive elements (links, tables, lists) with chat-optimized styling
 
+## Recent Updates (2025-01-28) - OrcaSlicer Tower Generation System
+- Implemented comprehensive tower generation framework:
+  - Created base tower generator class with modifier mesh support
+  - Implemented Temperature Tower with bridge and overhang tests
+  - Added material-specific presets for PLA, PETG, ABS, TPU, ASA, PC, PA
+  - Integrated tower generation into Temperature Tower UI with download functionality
+  - Support for OrcaSlicer modifier meshes for per-section temperature settings
+- Unified STL generation approach:
+  - Migrated Flow Calibration to use ASCII STL templates
+  - Added parametric First Layer Calibration with custom plate sizes
+  - Created comprehensive ASCII STL utility functions for manipulation
+  - All calibration tools now use consistent template-based approach
+
 ## Recent Updates (2025-01-14)
 - Enhanced retraction calibration documentation with comprehensive guide including:
   - Detailed cause-and-effect relationships between print issues and retraction settings
@@ -61,8 +74,8 @@ This is a comprehensive 3D printing calibration suite for Orca Slicer, implement
   - Added retraction calibration to documentation TOC for better accessibility
 
 ## TODO
-- [ ] The retraction tower is not working exactly as the original STL then two tower were solid during last print and the small ridges on the towers seems to be slightly different than the original STL, that is a big problem as values read from the tower might not be accurate to the original STL.
-- [ ] The calibration cube uses another method for the STL generation. We should use similar method as the retraction tower. I need to create a ASCII STL for the flow calibration cube and add it to the project. then update the flow calibration cube to use a similar method.
+- [x] The retraction tower is not working exactly as the original STL - RESOLVED with ASCII template approach
+- [x] The calibration cube uses another method for the STL generation - RESOLVED with unified ASCII STL method
 
 - [ ] Add a dashboard with graph of all the calibrations such that the user can see how well their calibrations are doing. We need to think hard about how we could do this in a way that is not too complex and not too simple. But still useful for the user. We might have baseline or target values.
 - [ ] Add a way to save/export calibration settings to a file
@@ -88,9 +101,10 @@ src/
 │   ├── FlowRateCalibration.tsx  # Flow calibration with two methods
 │   ├── OrcaFlowCalibration.tsx  # Orca cube-based flow calibration
 │   ├── YoloMethod.tsx           # Quick visual flow calibration
-│   ├── TemperatureTower.tsx     # Temperature optimization
+│   ├── TemperatureTower.tsx     # Temperature optimization with tower generation
 │   ├── PressureAdvance.tsx      # PA value calculator
 │   ├── RetractionTest.tsx       # Retraction length calculator with STL generation
+│   ├── FirstLayerCalibration.tsx # Parametric first layer calibration
 │   ├── MaxVolumetricSpeed.tsx   # Hotend capacity testing
 │   ├── Recommendations.tsx      # Settings recommendations with filtering
 │   ├── QuickFixButtons.tsx      # Problem-based quick filters
@@ -106,7 +120,10 @@ src/
 │   └── utils/
 │       └── vectorSearch.ts      # Hybrid search implementation
 ├── utils/
-│   └── stlGenerator.ts          # Three.js-based STL file generation
+│   ├── stlGenerator.ts          # Unified STL file generation with template support
+│   ├── asciiStlUtils.ts         # ASCII STL parsing and manipulation utilities
+│   ├── orcaTowerGenerator.ts    # Base tower generator for OrcaSlicer
+│   └── orcaTemperatureTower.ts  # Temperature tower implementation
 ├── App.tsx                      # Main app with routing and theme
 └── main.tsx                     # Entry point
 
@@ -137,6 +154,9 @@ public/
 │       │   └── ...              # Other calibration docs
 │       └── images/              # Documentation images
 └── templates/                   # STL templates
+    ├── flow_calibration_cube_template.stl    # Flow cube ASCII template
+    ├── first_layer_calibration_ascii.stl     # First layer ASCII template
+    └── retraction_tower_template.stl         # Retraction tower ASCII template
 ```
 
 ## Key Technical Details
