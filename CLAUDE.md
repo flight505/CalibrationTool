@@ -60,10 +60,12 @@ This is a comprehensive 3D printing calibration suite for Orca Slicer, implement
   - **Flow Rate Tower**: Wall thickness and thin wall tests for flow ratio calibration
   - **Max Volumetric Speed Tower**: Spiral, zigzag, and straight patterns for hotend limits
 - Advanced features:
+  - **3MF Export**: Complete project files with embedded modifier meshes and settings
   - OrcaSlicer modifier mesh generation for per-section parameter changes
   - Material-specific presets and recommendations
   - Detailed setup instructions with firmware compatibility info
   - Automatic calculation of optimal print speeds from volumetric rates
+  - Dual export options: Individual STL files or complete 3MF project
 - Unified STL generation approach:
   - Migrated Flow Calibration to use ASCII STL templates
   - Added parametric First Layer Calibration with custom plate sizes
@@ -81,6 +83,8 @@ This is a comprehensive 3D printing calibration suite for Orca Slicer, implement
 ## TODO
 - [x] The retraction tower is not working exactly as the original STL - RESOLVED with ASCII template approach
 - [x] The calibration cube uses another method for the STL generation - RESOLVED with unified ASCII STL method
+- [x] Implement OrcaSlicer tower generation system - COMPLETED with 5 tower types
+- [x] Add 3MF export functionality - COMPLETED with full OrcaSlicer compatibility
 
 - [ ] Add a dashboard with graph of all the calibrations such that the user can see how well their calibrations are doing. We need to think hard about how we could do this in a way that is not too complex and not too simple. But still useful for the user. We might have baseline or target values.
 - [ ] Add a way to save/export calibration settings to a file
@@ -132,7 +136,8 @@ src/
 │   ├── orcaPressureAdvanceTower.ts # Pressure advance tower implementation
 │   ├── orcaFanSpeedTower.ts     # Fan speed tower implementation
 │   ├── orcaFlowRateTower.ts     # Flow rate tower implementation
-│   └── orcaMaxVolumetricTower.ts # Max volumetric speed tower implementation
+│   ├── orcaMaxVolumetricTower.ts # Max volumetric speed tower implementation
+│   └── orca3mfExporter.ts       # 3MF project file exporter for OrcaSlicer
 ├── App.tsx                      # Main app with routing and theme
 └── main.tsx                     # Entry point
 
