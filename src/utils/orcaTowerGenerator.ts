@@ -6,7 +6,7 @@
 import { stlToString, ParsedSTL, Triangle } from './asciiStlUtils';
 
 export interface OrcaTowerParameters {
-  type: 'temperature' | 'pressure_advance' | 'max_flow' | 'fan' | 'layer_time' | 'retraction';
+  type: 'temperature' | 'pressure_advance' | 'max_flow' | 'fan' | 'layer_time' | 'retraction' | 'fan_speed' | 'flow_rate' | 'max_volumetric';
   startValue: number;
   endValue: number;
   stepSize: number;
