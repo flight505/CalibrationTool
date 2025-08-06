@@ -5,7 +5,7 @@
 
 import JSZip from 'jszip';
 import { create } from 'xmlbuilder2';
-import { ParsedSTL } from './asciiStlUtils';
+import { ParsedSTL, Triangle, Vertex } from './asciiStlUtils';
 import { GeneratedTower, OrcaSlicerSettings } from './orcaTowerGenerator';
 
 export interface ThreeMFExportOptions {
@@ -321,40 +321,48 @@ export class Orca3MFExporter {
    * Parse STL blob content to ParsedSTL format
    */
   private parseSTLBlob(content: string): ParsedSTL {
-    // This is a simplified parser - in production, use the full asciiStlUtils parser
     const lines = content.split('\n');
-    const triangles: any[] = [];
+    const triangles: Triangle[] = [];
     let name = 'Model';
-    let currentTriangle: any = {};
-    let vertices: any[] = [];
+    let currentNormal: { x: number; y: number; z: number } | null = null;
+    let vertices: Vertex[] = [];
 
     for (const line of lines) {
       const trimmed = line.trim();
+      
       if (trimmed.startsWith('solid')) {
-        name = trimmed.replace('solid', '').trim() || 'Model';
+        // Extract model name
+        name = trimmed.substring(5).trim() || 'Model';
       } else if (trimmed.startsWith('facet normal')) {
-        const parts = trimmed.split(/\s+/);
-        currentTriangle.normal = {
-          x: parseFloat(parts[2]),
-          y: parseFloat(parts[3]),
-          z: parseFloat(parts[4])
-        };
+        // Parse normal vector
+        const matches = trimmed.match(/facet\s+normal\s+([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s+([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s+([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)/);
+        if (matches) {
+          currentNormal = {
+            x: parseFloat(matches[1]),
+            y: parseFloat(matches[2]),
+            z: parseFloat(matches[3])
+          };
+        }
         vertices = [];
       } else if (trimmed.startsWith('vertex')) {
-        const parts = trimmed.split(/\s+/);
-        vertices.push({
-          x: parseFloat(parts[1]),
-          y: parseFloat(parts[2]),
-          z: parseFloat(parts[3])
-        });
-      } else if (trimmed.startsWith('endfacet')) {
-        if (vertices.length === 3 && currentTriangle.normal) {
-          triangles.push({
-            normal: currentTriangle.normal,
-            vertices: vertices
+        // Parse vertex coordinates
+        const matches = trimmed.match(/vertex\s+([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s+([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s+([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)/);
+        if (matches) {
+          vertices.push({
+            x: parseFloat(matches[1]),
+            y: parseFloat(matches[2]),
+            z: parseFloat(matches[3])
           });
         }
-        currentTriangle = {};
+      } else if (trimmed.startsWith('endfacet')) {
+        // Complete the triangle
+        if (vertices.length === 3 && currentNormal) {
+          triangles.push({
+            normal: currentNormal,
+            vertices: vertices as [Vertex, Vertex, Vertex]
+          });
+        }
+        currentNormal = null;
         vertices = [];
       }
     }

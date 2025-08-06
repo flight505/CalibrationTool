@@ -8,7 +8,6 @@ import {
   OrcaTowerParameters,
   OrcaSlicerSettings,
   MATERIAL_TEMP_PRESETS,
-  createCylinderMesh,
   generateTextMesh
 } from './orcaTowerGenerator';
 import { ParsedSTL, Triangle, Vertex } from './asciiStlUtils';
@@ -94,29 +93,32 @@ export class TemperatureTowerGenerator extends TowerGeneratorBase {
     const { towerWidth, towerDepth } = this.tempParams;
     const triangles: Triangle[] = [];
     
-    // Main rectangular tower body
+    // Main rectangular tower body - HOLLOW
     const halfWidth = towerWidth! / 2;
     const halfDepth = towerDepth! / 2;
+    const wallThickness = 2; // 2mm walls
     
-    // Create the main tower as a box with some detail
+    // Create outer box
     triangles.push(...this.createBoxTriangles(
       -halfWidth, halfWidth,
       -halfDepth, halfDepth,
       0, totalHeight
     ));
     
-    // Add corner pillars for structural support
-    const pillarRadius = 2;
-    const pillarPositions = [
-      { x: halfWidth - pillarRadius - 1, y: halfDepth - pillarRadius - 1, z: 0 },
-      { x: -(halfWidth - pillarRadius - 1), y: halfDepth - pillarRadius - 1, z: 0 },
-      { x: halfWidth - pillarRadius - 1, y: -(halfDepth - pillarRadius - 1), z: 0 },
-      { x: -(halfWidth - pillarRadius - 1), y: -(halfDepth - pillarRadius - 1), z: 0 }
-    ];
+    // Create inner cavity (hollow interior) - inverted normals
+    const innerTriangles = this.createBoxTriangles(
+      -halfWidth + wallThickness, halfWidth - wallThickness,
+      -halfDepth + wallThickness, halfDepth - wallThickness,
+      wallThickness, totalHeight  // Start from wallThickness to keep solid base
+    );
     
-    for (const pos of pillarPositions) {
-      triangles.push(...createCylinderMesh(pillarRadius, totalHeight, pos));
-    }
+    // Invert normals for inner cavity
+    const invertedTriangles = innerTriangles.map(tri => ({
+      normal: { x: -tri.normal.x, y: -tri.normal.y, z: -tri.normal.z },
+      vertices: [tri.vertices[2], tri.vertices[1], tri.vertices[0]] as [Vertex, Vertex, Vertex]
+    }));
+    
+    triangles.push(...invertedTriangles);
     
     return triangles;
   }
@@ -153,35 +155,38 @@ export class TemperatureTowerGenerator extends TowerGeneratorBase {
   }
 
   private generateBridgeFeature(sectionHeight: number, _index: number): Triangle[] {
-    const { towerWidth, bridgeGap, sectionHeight: secHeight } = this.tempParams;
+    const { bridgeGap, sectionHeight: secHeight } = this.tempParams;
     const triangles: Triangle[] = [];
     
-    // Create two pillars with a gap between them
+    // Create two pillars with a gap between them - POSITIONED OUTSIDE MAIN TOWER
     const pillarWidth = 5;
     const pillarDepth = 5;
     const bridgeHeight = 2;
     const bridgeZ = sectionHeight + (secHeight! * 0.7); // 70% up the section
     
+    // Position pillars on the FRONT of the tower (positive Y)
+    const yPosition = 15; // Front face position
+    
     // Left pillar
-    const leftX = -towerWidth! / 2 - pillarWidth - bridgeGap! / 2;
+    const leftX = -bridgeGap! / 2 - pillarWidth;
     triangles.push(...this.createBoxTriangles(
       leftX, leftX + pillarWidth,
-      -pillarDepth / 2, pillarDepth / 2,
+      yPosition, yPosition + pillarDepth,
       sectionHeight, bridgeZ
     ));
     
-    // Right pillar
-    const rightX = -towerWidth! / 2 - pillarWidth + bridgeGap! / 2;
+    // Right pillar  
+    const rightX = bridgeGap! / 2;
     triangles.push(...this.createBoxTriangles(
       rightX, rightX + pillarWidth,
-      -pillarDepth / 2, pillarDepth / 2,
+      yPosition, yPosition + pillarDepth,
       sectionHeight, bridgeZ
     ));
     
     // Bridge connecting them
     triangles.push(...this.createBoxTriangles(
       leftX, rightX + pillarWidth,
-      -pillarDepth / 2, pillarDepth / 2,
+      yPosition, yPosition + pillarDepth,
       bridgeZ, bridgeZ + bridgeHeight
     ));
     
@@ -192,49 +197,142 @@ export class TemperatureTowerGenerator extends TowerGeneratorBase {
     const { towerDepth, sectionHeight: secHeight } = this.tempParams;
     const triangles: Triangle[] = [];
     
-    // Create progressive overhangs
-    const overhangAngles = [30, 45, 60, 75]; // degrees
-    const overhangWidth = 3;
-    const overhangHeight = secHeight! * 0.8;
-    const startZ = sectionHeight + secHeight! * 0.1;
+    // Create progressive overhangs extending FROM the BACK of the tower
+    const overhangAngles = [30, 45, 60, 75]; // degrees  
+    const overhangWidth = 5; // Wider for better visibility
+    const overhangHeight = secHeight! * 0.6; // Height of each overhang section
+    const startZ = sectionHeight + secHeight! * 0.2;
+    
+    // Position overhangs on the BACK of the tower (negative Y)
+    const baseY = -towerDepth! / 2; // Back face of tower
     
     for (let i = 0; i < overhangAngles.length; i++) {
       const angle = overhangAngles[i];
       const radians = (angle * Math.PI) / 180;
       const overhangDepth = overhangHeight * Math.tan(radians);
       
-      const x = -15 + (i * (overhangWidth + 2));
-      const y = -towerDepth! / 2;
+      // Space them out along the back of the tower
+      const x = -12 + (i * (overhangWidth + 3));
       
-      // Create angled overhang
-      const vertices: Vertex[] = [
-        { x: x, y: y, z: startZ },
-        { x: x + overhangWidth, y: y, z: startZ },
-        { x: x + overhangWidth, y: y - overhangDepth, z: startZ + overhangHeight },
-        { x: x, y: y - overhangDepth, z: startZ + overhangHeight }
-      ];
-      
-      // Create triangles for the overhang face
+      // Create the overhang extending outward from the back
+      // Bottom face (at startZ)
       triangles.push(
         {
-          normal: { x: 0, y: -Math.cos(radians), z: Math.sin(radians) },
-          vertices: [vertices[0], vertices[1], vertices[2]]
+          normal: { x: 0, y: 0, z: -1 },
+          vertices: [
+            { x: x, y: baseY, z: startZ },
+            { x: x + overhangWidth, y: baseY, z: startZ },
+            { x: x + overhangWidth, y: baseY - overhangDepth, z: startZ }
+          ]
         },
         {
-          normal: { x: 0, y: -Math.cos(radians), z: Math.sin(radians) },
-          vertices: [vertices[0], vertices[2], vertices[3]]
+          normal: { x: 0, y: 0, z: -1 },
+          vertices: [
+            { x: x, y: baseY, z: startZ },
+            { x: x + overhangWidth, y: baseY - overhangDepth, z: startZ },
+            { x: x, y: baseY - overhangDepth, z: startZ }
+          ]
         }
       );
       
-      // Add side faces
+      // Top face (at startZ + overhangHeight)
+      const topZ = startZ + overhangHeight;
+      triangles.push(
+        {
+          normal: { x: 0, y: 0, z: 1 },
+          vertices: [
+            { x: x, y: baseY, z: topZ },
+            { x: x + overhangWidth, y: baseY - overhangDepth, z: topZ },
+            { x: x + overhangWidth, y: baseY, z: topZ }
+          ]
+        },
+        {
+          normal: { x: 0, y: 0, z: 1 },
+          vertices: [
+            { x: x, y: baseY, z: topZ },
+            { x: x, y: baseY - overhangDepth, z: topZ },
+            { x: x + overhangWidth, y: baseY - overhangDepth, z: topZ }
+          ]
+        }
+      );
+      
+      // Angled overhang face (the actual overhang test surface)
+      triangles.push(
+        {
+          normal: { x: 0, y: -Math.cos(radians), z: -Math.sin(radians) },
+          vertices: [
+            { x: x, y: baseY, z: startZ },
+            { x: x, y: baseY - overhangDepth, z: topZ },
+            { x: x + overhangWidth, y: baseY - overhangDepth, z: topZ }
+          ]
+        },
+        {
+          normal: { x: 0, y: -Math.cos(radians), z: -Math.sin(radians) },
+          vertices: [
+            { x: x, y: baseY, z: startZ },
+            { x: x + overhangWidth, y: baseY - overhangDepth, z: topZ },
+            { x: x + overhangWidth, y: baseY, z: startZ }
+          ]
+        }
+      );
+      
+      // Left side face
       triangles.push(
         {
           normal: { x: -1, y: 0, z: 0 },
-          vertices: [vertices[0], vertices[3], { ...vertices[0], z: startZ + overhangHeight }]
+          vertices: [
+            { x: x, y: baseY, z: startZ },
+            { x: x, y: baseY, z: topZ },
+            { x: x, y: baseY - overhangDepth, z: topZ }
+          ]
+        },
+        {
+          normal: { x: -1, y: 0, z: 0 },
+          vertices: [
+            { x: x, y: baseY, z: startZ },
+            { x: x, y: baseY - overhangDepth, z: topZ },
+            { x: x, y: baseY - overhangDepth, z: startZ }
+          ]
+        }
+      );
+      
+      // Right side face
+      triangles.push(
+        {
+          normal: { x: 1, y: 0, z: 0 },
+          vertices: [
+            { x: x + overhangWidth, y: baseY, z: startZ },
+            { x: x + overhangWidth, y: baseY - overhangDepth, z: topZ },
+            { x: x + overhangWidth, y: baseY, z: topZ }
+          ]
         },
         {
           normal: { x: 1, y: 0, z: 0 },
-          vertices: [vertices[1], { ...vertices[1], z: startZ + overhangHeight }, vertices[2]]
+          vertices: [
+            { x: x + overhangWidth, y: baseY, z: startZ },
+            { x: x + overhangWidth, y: baseY - overhangDepth, z: startZ },
+            { x: x + overhangWidth, y: baseY - overhangDepth, z: topZ }
+          ]
+        }
+      );
+      
+      // Back face (end of overhang)
+      triangles.push(
+        {
+          normal: { x: 0, y: -1, z: 0 },
+          vertices: [
+            { x: x, y: baseY - overhangDepth, z: startZ },
+            { x: x + overhangWidth, y: baseY - overhangDepth, z: startZ },
+            { x: x + overhangWidth, y: baseY - overhangDepth, z: topZ }
+          ]
+        },
+        {
+          normal: { x: 0, y: -1, z: 0 },
+          vertices: [
+            { x: x, y: baseY - overhangDepth, z: startZ },
+            { x: x + overhangWidth, y: baseY - overhangDepth, z: topZ },
+            { x: x, y: baseY - overhangDepth, z: topZ }
+          ]
         }
       );
     }

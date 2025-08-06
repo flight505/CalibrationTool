@@ -241,6 +241,10 @@ Tower Parameters:
    */
   public generate(): GeneratedTower {
     const mainGeometry = this.generateTowerGeometry();
+    
+    // Validate the main geometry
+    this.validateGeometry(mainGeometry);
+    
     const mainSTL = new Blob([stlToString(mainGeometry)], { type: 'application/sla' });
     
     const result: GeneratedTower = {
@@ -251,6 +255,16 @@ Tower Parameters:
     
     if (this.params.includeModifierMesh) {
       const modifiers = this.generateModifierMeshes();
+      
+      // Validate each modifier mesh
+      modifiers.forEach((mod, index) => {
+        try {
+          this.validateGeometry(mod);
+        } catch (error) {
+          console.warn(`Warning: Modifier mesh ${index} validation failed:`, error);
+        }
+      });
+      
       result.modifierMeshes = modifiers.map(mod => 
         new Blob([stlToString(mod)], { type: 'application/sla' })
       );
@@ -258,6 +272,104 @@ Tower Parameters:
     }
     
     return result;
+  }
+  
+  /**
+   * Validate geometry for common issues
+   */
+  protected validateGeometry(geometry: ParsedSTL): void {
+    if (!geometry.triangles || geometry.triangles.length === 0) {
+      throw new Error('Geometry validation failed: No triangles generated');
+    }
+    
+    // Check for degenerate triangles and calculate bounds
+    let degenerateCount = 0;
+    let invalidNormalCount = 0;
+    let boundsMin = { x: Infinity, y: Infinity, z: Infinity };
+    let boundsMax = { x: -Infinity, y: -Infinity, z: -Infinity };
+    
+    for (const triangle of geometry.triangles) {
+      // Check vertices
+      if (!triangle.vertices || triangle.vertices.length !== 3) {
+        throw new Error('Geometry validation failed: Invalid triangle structure');
+      }
+      
+      // Update bounds
+      for (const vertex of triangle.vertices) {
+        boundsMin.x = Math.min(boundsMin.x, vertex.x);
+        boundsMin.y = Math.min(boundsMin.y, vertex.y);
+        boundsMin.z = Math.min(boundsMin.z, vertex.z);
+        boundsMax.x = Math.max(boundsMax.x, vertex.x);
+        boundsMax.y = Math.max(boundsMax.y, vertex.y);
+        boundsMax.z = Math.max(boundsMax.z, vertex.z);
+      }
+      
+      // Check for degenerate triangles (zero area)
+      const v0 = triangle.vertices[0];
+      const v1 = triangle.vertices[1];
+      const v2 = triangle.vertices[2];
+      
+      const edge1 = {
+        x: v1.x - v0.x,
+        y: v1.y - v0.y,
+        z: v1.z - v0.z
+      };
+      const edge2 = {
+        x: v2.x - v0.x,
+        y: v2.y - v0.y,
+        z: v2.z - v0.z
+      };
+      
+      // Cross product to check area
+      const cross = {
+        x: edge1.y * edge2.z - edge1.z * edge2.y,
+        y: edge1.z * edge2.x - edge1.x * edge2.z,
+        z: edge1.x * edge2.y - edge1.y * edge2.x
+      };
+      
+      const area = Math.sqrt(cross.x * cross.x + cross.y * cross.y + cross.z * cross.z);
+      if (area < 0.0001) {
+        degenerateCount++;
+      }
+      
+      // Check normal validity
+      const normal = triangle.normal;
+      const normalLength = Math.sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+      if (normalLength < 0.0001 || normalLength > 1.1) {
+        invalidNormalCount++;
+      }
+    }
+    
+    // Calculate dimensions
+    const dimensions = {
+      width: boundsMax.x - boundsMin.x,
+      depth: boundsMax.y - boundsMin.y,
+      height: boundsMax.z - boundsMin.z
+    };
+    
+    // Validation checks
+    if (degenerateCount > geometry.triangles.length * 0.01) {
+      console.warn(`Warning: ${degenerateCount} degenerate triangles found (${(degenerateCount / geometry.triangles.length * 100).toFixed(1)}%)`);
+    }
+    
+    if (invalidNormalCount > 0) {
+      console.warn(`Warning: ${invalidNormalCount} triangles with invalid normals`);
+    }
+    
+    // Check reasonable bounds
+    if (dimensions.width <= 0 || dimensions.depth <= 0 || dimensions.height <= 0) {
+      throw new Error(`Geometry validation failed: Invalid dimensions (${dimensions.width.toFixed(2)} x ${dimensions.depth.toFixed(2)} x ${dimensions.height.toFixed(2)})`);
+    }
+    
+    if (dimensions.width > 200 || dimensions.depth > 200 || dimensions.height > 300) {
+      console.warn(`Warning: Large model dimensions (${dimensions.width.toFixed(2)} x ${dimensions.depth.toFixed(2)} x ${dimensions.height.toFixed(2)}) mm`);
+    }
+    
+    if (boundsMin.z < -0.01) {
+      console.warn(`Warning: Model extends below Z=0 (min Z: ${boundsMin.z.toFixed(2)})`);
+    }
+    
+    console.log(`Geometry validated: ${geometry.triangles.length} triangles, dimensions: ${dimensions.width.toFixed(2)} x ${dimensions.depth.toFixed(2)} x ${dimensions.height.toFixed(2)} mm`);
   }
 }
 
