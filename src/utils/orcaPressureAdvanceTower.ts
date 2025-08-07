@@ -8,9 +8,12 @@ import {
   OrcaTowerParameters,
   OrcaSlicerSettings,
   PA_PRESETS,
-  generateTextMesh
+  generateTextMesh,
+  GeneratedTower
 } from './orcaTowerGenerator';
 import { ParsedSTL, Triangle, Vertex } from './asciiStlUtils';
+import { exportTowerAs3MF } from './orca3mfExporter';
+import { FirmwareType } from './postProcessingGenerator';
 
 export interface PressureAdvanceTowerParameters extends OrcaTowerParameters {
   type: 'pressure_advance';
@@ -441,4 +444,24 @@ export async function generatePressureAdvanceTower(params: Partial<PressureAdvan
   });
   
   return generator.generate();
+}
+
+/**
+ * Generate and export pressure advance tower as 3MF with post-processing
+ */
+export async function generatePressureAdvanceTower3MF(
+  params: Partial<PressureAdvanceTowerParameters>,
+  firmware: FirmwareType = 'marlin',
+  includePostProcessing: boolean = true
+) {
+  const tower = await generatePressureAdvanceTower(params);
+  const extruderType = params.extruderType || 'direct_drive';
+  
+  return exportTowerAs3MF(
+    tower,
+    'pressure_advance',
+    `Pressure_Advance_Tower_${extruderType}`,
+    firmware,
+    includePostProcessing
+  );
 }

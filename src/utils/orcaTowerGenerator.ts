@@ -116,7 +116,7 @@ export abstract class TowerGeneratorBase {
   /**
    * Generate the main tower geometry
    */
-  protected abstract generateTowerGeometry(): ParsedSTL;
+  protected abstract generateTowerGeometry(): ParsedSTL | Promise<ParsedSTL>;
 
   /**
    * Generate modifier meshes for each section
@@ -239,8 +239,8 @@ Tower Parameters:
   /**
    * Generate the complete tower with all components
    */
-  public generate(): GeneratedTower {
-    const mainGeometry = this.generateTowerGeometry();
+  public async generate(): Promise<GeneratedTower> {
+    const mainGeometry = await this.generateTowerGeometry();
     
     // Validate the main geometry
     this.validateGeometry(mainGeometry);

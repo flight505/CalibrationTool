@@ -61,11 +61,22 @@ This is a comprehensive 3D printing calibration suite for Orca Slicer, implement
   - **Max Volumetric Speed Tower**: Spiral, zigzag, and straight patterns for hotend limits
 - Advanced features:
   - **3MF Export**: Complete project files with embedded modifier meshes and settings
+  - **Post-Processing Support**: Automatic G-code injection for calibration commands
   - OrcaSlicer modifier mesh generation for per-section parameter changes
   - Material-specific presets and recommendations
   - Detailed setup instructions with firmware compatibility info
   - Automatic calculation of optimal print speeds from volumetric rates
   - Dual export options: Individual STL files or complete 3MF project
+- Post-Processing G-code Generation:
+  - **Firmware Support**: Marlin, Klipper, RepRapFirmware (RRF), and OrcaSlicer native
+  - **Smart Layer Height Calculation**: Automatically calculates correct Z heights for command injection
+  - **Custom G-code Per Layer**: Generates OrcaSlicer's `custom_gcode_per_layer.xml` format
+  - **Temperature Commands**: M104/M109 (Marlin), SET_HEATER_TEMPERATURE (Klipper)
+  - **Fan Speed Control**: M106 with percentage to PWM conversion
+  - **Flow Rate Adjustment**: M221 commands for flow ratio changes
+  - **Pressure Advance**: M900 K (Marlin), SET_PRESSURE_ADVANCE (Klipper), M572 (RRF)
+  - **LCD Messages**: M117 commands display current calibration values
+  - **Volumetric to Linear Speed**: Automatic conversion for max volumetric testing
 - Unified STL generation approach:
   - Migrated Flow Calibration to use ASCII STL templates
   - Added parametric First Layer Calibration with custom plate sizes

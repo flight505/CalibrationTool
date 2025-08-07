@@ -7,6 +7,7 @@ import JSZip from 'jszip';
 import { create } from 'xmlbuilder2';
 import { ParsedSTL, Triangle, Vertex } from './asciiStlUtils';
 import { GeneratedTower, OrcaSlicerSettings } from './orcaTowerGenerator';
+import { PostProcessingGenerator, FirmwareType, PostProcessingOptions } from './postProcessingGenerator';
 
 export interface ThreeMFExportOptions {
   projectName: string;
@@ -15,6 +16,9 @@ export interface ThreeMFExportOptions {
   modifierSTLs?: ParsedSTL[];
   orcaSettings: OrcaSlicerSettings;
   metadata?: Record<string, any>;
+  firmware?: FirmwareType;
+  includePostProcessing?: boolean;
+  postProcessingOptions?: Partial<PostProcessingOptions>;
 }
 
 export interface OrcaSlicerProject {
@@ -39,6 +43,8 @@ export class Orca3MFExporter {
   async exportTower(tower: GeneratedTower, options: Partial<ThreeMFExportOptions>): Promise<OrcaSlicerProject> {
     const projectName = options.projectName || 'CalibrationTower';
     const towerType = options.towerType || 'calibration';
+    const firmware = options.firmware || 'marlin';
+    const includePostProcessing = options.includePostProcessing !== false; // Default to true
     
     // Initialize 3MF structure
     this.initializeStructure();
@@ -61,11 +67,18 @@ export class Orca3MFExporter {
       this.addOrcaSlicerConfig(options.orcaSettings, towerType);
     }
     
+    // Add post-processing G-code if enabled
+    if (includePostProcessing && tower.orcaSettings) {
+      this.addPostProcessing(tower, firmware, options.postProcessingOptions);
+    }
+    
     // Add metadata
     this.addMetadata({
       ...options.metadata,
       generator: 'OrcaSlicer Calibration Tool',
       towerType: towerType,
+      firmware: firmware,
+      postProcessing: includePostProcessing,
       timestamp: new Date().toISOString()
     });
     
@@ -270,6 +283,47 @@ export class Orca3MFExporter {
   }
 
   /**
+   * Add post-processing G-code commands
+   */
+  private addPostProcessing(
+    tower: GeneratedTower,
+    firmware: FirmwareType,
+    postProcessingOptions?: Partial<PostProcessingOptions>
+  ) {
+    // Create post-processor with options
+    const postProcessor = new PostProcessingGenerator({
+      firmware,
+      includeLCD: true,
+      includeComments: true,
+      ...postProcessingOptions
+    });
+
+    // Generate calibration commands
+    const calibrationType = tower.orcaSettings?.calibrationType || 'calibration';
+    const commands = postProcessor.generateCommands(tower, calibrationType);
+
+    // Generate custom_gcode_per_layer.xml
+    if (commands.length > 0) {
+      const gcodeXML = postProcessor.generateCustomGcodeXML(commands);
+      this.zip.file('Metadata/custom_gcode_per_layer.xml', gcodeXML);
+    }
+
+    // Also add modifier settings if using OrcaSlicer format
+    if (firmware === 'orcaslicer' && tower.orcaSettings) {
+      const modifierSettings = postProcessor.generateModifierSettings(
+        tower.orcaSettings,
+        firmware
+      );
+      
+      // Add to config
+      this.zip.file(
+        'Metadata/modifier_settings.json',
+        JSON.stringify(modifierSettings, null, 2)
+      );
+    }
+  }
+
+  /**
    * Add metadata
    */
   private addMetadata(metadata: Record<string, any>) {
@@ -377,13 +431,23 @@ export class Orca3MFExporter {
 export async function exportTowerAs3MF(
   tower: GeneratedTower,
   towerType: string,
-  projectName?: string
+  projectName?: string,
+  firmware: FirmwareType = 'marlin',
+  includePostProcessing: boolean = true
 ): Promise<OrcaSlicerProject> {
   const exporter = new Orca3MFExporter();
   
   return await exporter.exportTower(tower, {
     projectName: projectName || `${towerType}_tower`,
     towerType,
-    orcaSettings: tower.orcaSettings
+    orcaSettings: tower.orcaSettings,
+    firmware,
+    includePostProcessing,
+    postProcessingOptions: {
+      baseHeight: tower.sections[0]?.height || 1.0,
+      sectionHeight: tower.sections[1]?.height - tower.sections[0]?.height || 10.0,
+      initialLayerHeight: 0.3,
+      layerHeight: 0.2
+    }
   });
 }

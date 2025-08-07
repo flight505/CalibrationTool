@@ -1,0 +1,142 @@
+solid PATowerWithSeam
+  facet normal -7.071068e-1 -7.071068e-1 1.024206e-18
+    outer loop
+      vertex -3.500000e+1 -4.527799e-15 0.000000e+0
+      vertex -2.304164e-16 -3.500000e+1 0.000000e+0
+      vertex -3.500000e+1 -4.440892e-15 6.000000e+1
+    endloop
+  endfacet
+  facet normal -7.071068e-1 -7.071068e-1 0.000000e+0
+    outer loop
+      vertex -3.500000e+1 -4.440892e-15 6.000000e+1
+      vertex -2.304164e-16 -3.500000e+1 0.000000e+0
+      vertex -2.304164e-16 -3.500000e+1 6.000000e+1
+    endloop
+  endfacet
+  facet normal -1.000000e+0 0.000000e+0 0.000000e+0
+    outer loop
+      vertex -3.500000e+1 3.475000e+1 0.000000e+0
+      vertex -3.500000e+1 -4.527799e-15 0.000000e+0
+      vertex -3.500000e+1 3.475000e+1 6.000000e+1
+    endloop
+  endfacet
+  facet normal -1.000000e+0 0.000000e+0 0.000000e+0
+    outer loop
+      vertex -3.500000e+1 3.475000e+1 6.000000e+1
+      vertex -3.500000e+1 -4.527799e-15 0.000000e+0
+      vertex -3.500000e+1 -4.440892e-15 6.000000e+1
+    endloop
+  endfacet
+  facet normal -7.142675e-3 9.999745e-1 0.000000e+0
+    outer loop
+      vertex 0.000000e+0 3.500000e+1 0.000000e+0
+      vertex -3.500000e+1 3.475000e+1 0.000000e+0
+      vertex 0.000000e+0 3.500000e+1 6.000000e+1
+    endloop
+  endfacet
+  facet normal -7.142675e-3 9.999745e-1 0.000000e+0
+    outer loop
+      vertex 0.000000e+0 3.500000e+1 6.000000e+1
+      vertex -3.500000e+1 3.475000e+1 0.000000e+0
+      vertex -3.500000e+1 3.475000e+1 6.000000e+1
+    endloop
+  endfacet
+  facet normal 7.142675e-3 9.999745e-1 0.000000e+0
+    outer loop
+      vertex 3.500000e+1 3.475000e+1 0.000000e+0
+      vertex 0.000000e+0 3.500000e+1 0.000000e+0
+      vertex 3.500000e+1 3.475000e+1 6.000000e+1
+    endloop
+  endfacet
+  facet normal 7.142675e-3 9.999745e-1 0.000000e+0
+    outer loop
+      vertex 3.500000e+1 3.475000e+1 6.000000e+1
+      vertex 0.000000e+0 3.500000e+1 0.000000e+0
+      vertex 0.000000e+0 3.500000e+1 6.000000e+1
+    endloop
+  endfacet
+  facet normal 1.000000e+0 0.000000e+0 0.000000e+0
+    outer loop
+      vertex 3.500000e+1 -2.612365e-14 0.000000e+0
+      vertex 3.500000e+1 3.475000e+1 0.000000e+0
+      vertex 3.500000e+1 -2.664535e-14 6.000000e+1
+    endloop
+  endfacet
+  facet normal 1.000000e+0 0.000000e+0 0.000000e+0
+    outer loop
+      vertex 3.500000e+1 -2.664535e-14 6.000000e+1
+      vertex 3.500000e+1 3.475000e+1 0.000000e+0
+      vertex 3.500000e+1 3.475000e+1 6.000000e+1
+    endloop
+  endfacet
+  facet normal 7.071068e-1 -7.071068e-1 0.000000e+0
+    outer loop
+      vertex -2.304164e-16 -3.500000e+1 0.000000e+0
+      vertex 3.500000e+1 -2.612365e-14 0.000000e+0
+      vertex -2.304164e-16 -3.500000e+1 6.000000e+1
+    endloop
+  endfacet
+  facet normal 7.071068e-1 -7.071068e-1 0.000000e+0
+    outer loop
+      vertex -2.304164e-16 -3.500000e+1 6.000000e+1
+      vertex 3.500000e+1 -2.612365e-14 0.000000e+0
+      vertex 3.500000e+1 -2.664535e-14 6.000000e+1
+    endloop
+  endfacet
+  facet normal 0.000000e+0 0.000000e+0 1.000000e+0
+    outer loop
+      vertex -2.304164e-16 -3.500000e+1 6.000000e+1
+      vertex 3.500000e+1 -2.664535e-14 6.000000e+1
+      vertex -3.500000e+1 -4.440892e-15 6.000000e+1
+    endloop
+  endfacet
+  facet normal 0.000000e+0 0.000000e+0 1.000000e+0
+    outer loop
+      vertex -3.500000e+1 -4.440892e-15 6.000000e+1
+      vertex 3.500000e+1 -2.664535e-14 6.000000e+1
+      vertex 0.000000e+0 3.500000e+1 6.000000e+1
+    endloop
+  endfacet
+  facet normal 0.000000e+0 0.000000e+0 1.000000e+0
+    outer loop
+      vertex -3.500000e+1 -4.440892e-15 6.000000e+1
+      vertex 0.000000e+0 3.500000e+1 6.000000e+1
+      vertex -3.500000e+1 3.475000e+1 6.000000e+1
+    endloop
+  endfacet
+  facet normal 0.000000e+0 0.000000e+0 1.000000e+0
+    outer loop
+      vertex 3.500000e+1 -2.664535e-14 6.000000e+1
+      vertex 3.500000e+1 3.475000e+1 6.000000e+1
+      vertex 0.000000e+0 3.500000e+1 6.000000e+1
+    endloop
+  endfacet
+  facet normal 0.000000e+0 0.000000e+0 -1.000000e+0
+    outer loop
+      vertex -2.304164e-16 -3.500000e+1 0.000000e+0
+      vertex -3.500000e+1 -4.527799e-15 0.000000e+0
+      vertex 3.500000e+1 -2.612365e-14 0.000000e+0
+    endloop
+  endfacet
+  facet normal 0.000000e+0 0.000000e+0 -1.000000e+0
+    outer loop
+      vertex 3.500000e+1 -2.612365e-14 0.000000e+0
+      vertex -3.500000e+1 -4.527799e-15 0.000000e+0
+      vertex 0.000000e+0 3.500000e+1 0.000000e+0
+    endloop
+  endfacet
+  facet normal 0.000000e+0 0.000000e+0 -1.000000e+0
+    outer loop
+      vertex 3.500000e+1 -2.612365e-14 0.000000e+0
+      vertex 0.000000e+0 3.500000e+1 0.000000e+0
+      vertex 3.500000e+1 3.475000e+1 0.000000e+0
+    endloop
+  endfacet
+  facet normal 0.000000e+0 0.000000e+0 -1.000000e+0
+    outer loop
+      vertex -3.500000e+1 -4.527799e-15 0.000000e+0
+      vertex -3.500000e+1 3.475000e+1 0.000000e+0
+      vertex 0.000000e+0 3.500000e+1 0.000000e+0
+    endloop
+  endfacet
+endsolid PATowerWithSeam
