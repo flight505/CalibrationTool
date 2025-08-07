@@ -6,8 +6,7 @@
 import {
   TowerGeneratorBase,
   OrcaTowerParameters,
-  OrcaSlicerSettings,
-  GeneratedTower
+  OrcaSlicerSettings
 } from './orcaTowerGenerator';
 import { ParsedSTL } from './asciiStlUtils';
 import { filterAsciiSTLByHeight } from './stlConverter';

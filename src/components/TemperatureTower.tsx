@@ -57,8 +57,6 @@ const TemperatureTower: React.FC<TemperatureTowerProps> = ({ onNavigate }) => {
         startValue: parseInt(startTemp),
         endValue: parseInt(endTemp),
         stepSize: parseInt(tempStep),
-        includeBridge,
-        includeOverhang,
         includeLabels,
         includeModifierMesh: true
       });

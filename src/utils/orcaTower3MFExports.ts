@@ -3,13 +3,22 @@
  * Centralized exports for all tower generators with post-processing support
  */
 
-export { generateTemperatureTower3MF } from './orcaTemperatureTower';
-export { generateFanSpeedTower3MF } from './orcaFanSpeedTower';
-export { generateFlowRateTower3MF } from './orcaFlowRateTower';
-export { generateMaxVolumetricTower3MF } from './orcaMaxVolumetricTower';
-export { generatePressureAdvanceTower3MF } from './orcaPressureAdvanceTower';
+import { generateTemperatureTower3MF } from './orcaTemperatureTower';
+import { generateFanSpeedTower3MF } from './orcaFanSpeedTower';
+import { generateFlowRateTower3MF } from './orcaFlowRateTower';
+import { generateMaxVolumetricTower3MF } from './orcaMaxVolumetricTower';
+import { generatePressureAdvanceTower3MF } from './orcaPressureAdvanceTower';
+import type { FirmwareType } from './postProcessingGenerator';
 
-export type { FirmwareType } from './postProcessingGenerator';
+export {
+  generateTemperatureTower3MF,
+  generateFanSpeedTower3MF,
+  generateFlowRateTower3MF,
+  generateMaxVolumetricTower3MF,
+  generatePressureAdvanceTower3MF
+};
+
+export type { FirmwareType };
 
 // Re-export the main export function for custom usage
 export { exportTowerAs3MF } from './orca3mfExporter';

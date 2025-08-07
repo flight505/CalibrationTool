@@ -8,8 +8,7 @@ import {
   OrcaTowerParameters,
   OrcaSlicerSettings,
   PA_PRESETS,
-  generateTextMesh,
-  GeneratedTower
+  generateTextMesh
 } from './orcaTowerGenerator';
 import { ParsedSTL, Triangle, Vertex } from './asciiStlUtils';
 import { exportTowerAs3MF } from './orca3mfExporter';

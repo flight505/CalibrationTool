@@ -62,7 +62,7 @@ export class PostProcessingGenerator {
     let currentZ = baseHeight;
     let layerNumber = Math.ceil(baseHeight / layerHeight);
     
-    sections.forEach((section, index) => {
+    sections.forEach((_section, index) => {
       // Calculate the Z height for this section
       const sectionStartZ = baseHeight + (index * sectionHeight);
       
