@@ -28,7 +28,6 @@ const PressureAdvance: React.FC<PressureAdvanceProps> = ({ onNavigate }) => {
   const [startPA, setStartPA] = useState('0.00');
   const [endPA, setEndPA] = useState('0.10');
   const [paStepGen, setPAStepGen] = useState('0.01');
-  const [testPattern, setTestPattern] = useState<'corners' | 'lines' | 'combined'>('corners');
   const [printSpeed, setPrintSpeed] = useState('100');
   const [includeLabels, setIncludeLabels] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -67,7 +66,6 @@ const PressureAdvance: React.FC<PressureAdvanceProps> = ({ onNavigate }) => {
         startValue: parseFloat(startPA),
         endValue: parseFloat(endPA),
         stepSize: parseFloat(paStepGen),
-        testPattern,
         printSpeed: parseInt(printSpeed),
         includeLabels,
         includeModifierMesh: true
@@ -288,19 +286,6 @@ const PressureAdvance: React.FC<PressureAdvanceProps> = ({ onNavigate }) => {
                   </Select>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="test-pattern">Test Pattern</Label>
-                  <Select value={testPattern} onValueChange={(v) => setTestPattern(v as 'corners' | 'lines' | 'combined')}>
-                    <SelectTrigger id="test-pattern">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="corners">Corner Test (Recommended)</SelectItem>
-                      <SelectItem value="lines">Line Test</SelectItem>
-                      <SelectItem value="combined">Combined Pattern</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
               
               <div className="grid md:grid-cols-3 gap-4">
