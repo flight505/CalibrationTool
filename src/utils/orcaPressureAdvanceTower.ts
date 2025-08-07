@@ -89,6 +89,13 @@ export class PressureAdvanceTowerGenerator extends TowerGeneratorBase {
     const { towerWidth, towerDepth } = this.paParams;
     const triangles: Triangle[] = [];
     
+    // Add connecting base FIRST to ensure everything is supported
+    triangles.push(...this.createBoxTriangles(
+      -towerWidth! / 2, towerWidth! / 2,
+      -towerDepth! / 2, towerDepth! / 2,
+      0, this.paParams.baseHeight!
+    ));
+    
     // Create a pattern with sharp corners to test PA
     const cornerSize = 15;
     const spacing = 5;
@@ -106,27 +113,22 @@ export class PressureAdvanceTowerGenerator extends TowerGeneratorBase {
       const wallThickness = this.paParams.lineWidth! * 3; // 3 line widths
       const innerSize = outerSize - wallThickness * 2;
       
-      // Outer square
+      // Outer square - start from base height (not from 0 to avoid Z-fighting with base)
       triangles.push(...this.createBoxTriangles(
         pos.x - outerSize / 2, pos.x + outerSize / 2,
         pos.y - outerSize / 2, pos.y + outerSize / 2,
-        0, totalHeight
-      ));
-      
-      // Inner cutout (hollow)
-      triangles.push(...this.createInnerCutout(
-        pos.x - innerSize / 2, pos.x + innerSize / 2,
-        pos.y - innerSize / 2, pos.y + innerSize / 2,
         this.paParams.baseHeight!, totalHeight
       ));
+      
+      // Inner cutout (hollow) - also starts from base height
+      if (innerSize > 0) {
+        triangles.push(...this.createInnerCutout(
+          pos.x - innerSize / 2, pos.x + innerSize / 2,
+          pos.y - innerSize / 2, pos.y + innerSize / 2,
+          this.paParams.baseHeight!, totalHeight
+        ));
+      }
     }
-    
-    // Add connecting base
-    triangles.push(...this.createBoxTriangles(
-      -towerWidth! / 2, towerWidth! / 2,
-      -towerDepth! / 2, towerDepth! / 2,
-      0, this.paParams.baseHeight!
-    ));
     
     return triangles;
   }
@@ -140,51 +142,161 @@ export class PressureAdvanceTowerGenerator extends TowerGeneratorBase {
     const lineThickness = this.paParams.lineWidth! * 2;
     const numLines = Math.floor(towerWidth! / lineSpacing);
     
+    // First, create a solid base plate to connect all lines
+    triangles.push(...this.createBoxTriangles(
+      -towerWidth! / 2, towerWidth! / 2,
+      -towerDepth! / 2, towerDepth! / 2,
+      0, this.paParams.baseHeight!
+    ));
+    
     for (let i = 0; i < numLines; i++) {
       const x = -towerWidth! / 2 + (i + 0.5) * lineSpacing;
       
-      // Alternating line pattern for direction changes
+      // All lines are now continuous vertical walls
       if (i % 2 === 0) {
-        // Straight line
+        // Straight line - continuous wall from base to top
         triangles.push(...this.createBoxTriangles(
           x - lineThickness / 2, x + lineThickness / 2,
           -towerDepth! / 2, towerDepth! / 2,
           0, totalHeight
         ));
       } else {
-        // Zigzag line
-        const segments = 5;
-        const segmentHeight = totalHeight / segments;
+        // Create a zigzag pattern with connected segments
+        const zigzagAmplitude = towerDepth! / 4;
+        const zigzagPeriods = 5;
+        const segmentHeight = totalHeight / (zigzagPeriods * 2);
         
-        for (let j = 0; j < segments; j++) {
-          const yOffset = (j % 2 === 0) ? -towerDepth! / 4 : towerDepth! / 4;
-          triangles.push(...this.createBoxTriangles(
-            x - lineThickness / 2, x + lineThickness / 2,
-            yOffset - lineThickness, yOffset + lineThickness,
-            j * segmentHeight, (j + 1) * segmentHeight
-          ));
+        // Create connected zigzag segments
+        for (let j = 0; j < zigzagPeriods * 2; j++) {
+          const zStart = j * segmentHeight;
+          const zEnd = (j + 1) * segmentHeight;
+          const isForward = (j % 2 === 0);
+          
+          if (j === 0) {
+            // First segment connects from center to one side
+            const yStart = 0;
+            const yEnd = isForward ? zigzagAmplitude : -zigzagAmplitude;
+            
+            // Create a slanted wall segment
+            triangles.push(...this.createSlantedWall(
+              x - lineThickness / 2, x + lineThickness / 2,
+              yStart, yEnd,
+              zStart, zEnd
+            ));
+          } else {
+            // Subsequent segments connect between alternating positions
+            const yStart = ((j - 1) % 2 === 0) ? zigzagAmplitude : -zigzagAmplitude;
+            const yEnd = isForward ? zigzagAmplitude : -zigzagAmplitude;
+            
+            // Create a slanted wall segment
+            triangles.push(...this.createSlantedWall(
+              x - lineThickness / 2, x + lineThickness / 2,
+              yStart, yEnd,
+              zStart, zEnd
+            ));
+          }
         }
       }
     }
     
     return triangles;
   }
+  
+  private createSlantedWall(
+    minX: number, maxX: number,
+    yStart: number, yEnd: number,
+    zStart: number, zEnd: number
+  ): Triangle[] {
+    const triangles: Triangle[] = [];
+    
+    // Create vertices for the slanted wall
+    const vertices: Vertex[] = [
+      // Bottom vertices
+      { x: minX, y: yStart, z: zStart },
+      { x: maxX, y: yStart, z: zStart },
+      { x: maxX, y: yEnd, z: zEnd },
+      { x: minX, y: yEnd, z: zEnd },
+      // Top face (same as bottom for a wall)
+      { x: minX, y: yStart, z: zStart },
+      { x: maxX, y: yStart, z: zStart },
+      { x: maxX, y: yEnd, z: zEnd },
+      { x: minX, y: yEnd, z: zEnd }
+    ];
+    
+    // Front face
+    triangles.push(
+      { normal: { x: 0, y: 0, z: 1 }, vertices: [vertices[0], vertices[1], vertices[2]] },
+      { normal: { x: 0, y: 0, z: 1 }, vertices: [vertices[0], vertices[2], vertices[3]] }
+    );
+    
+    // Back face  
+    triangles.push(
+      { normal: { x: 0, y: 0, z: -1 }, vertices: [vertices[1], vertices[0], vertices[3]] },
+      { normal: { x: 0, y: 0, z: -1 }, vertices: [vertices[1], vertices[3], vertices[2]] }
+    );
+    
+    // Left face
+    triangles.push(
+      { normal: { x: -1, y: 0, z: 0 }, vertices: [vertices[0], vertices[3], vertices[2]] },
+      { normal: { x: -1, y: 0, z: 0 }, vertices: [vertices[0], vertices[2], vertices[1]] }
+    );
+    
+    // Right face
+    triangles.push(
+      { normal: { x: 1, y: 0, z: 0 }, vertices: [vertices[2], vertices[3], vertices[0]] },
+      { normal: { x: 1, y: 0, z: 0 }, vertices: [vertices[2], vertices[0], vertices[1]] }
+    );
+    
+    return triangles;
+  }
 
   private generateCombinedPattern(totalHeight: number): Triangle[] {
     const triangles: Triangle[] = [];
-    const { towerWidth } = this.paParams;
+    const { towerWidth, towerDepth } = this.paParams;
     
-    // Combine both patterns - corners on left, lines on right
+    // First, create a common base plate for everything
+    triangles.push(...this.createBoxTriangles(
+      -towerWidth! / 2, towerWidth! / 2,
+      -towerDepth! / 2, towerDepth! / 2,
+      0, this.paParams.baseHeight!
+    ));
     
-    // Left side: corners
-    const leftCorners = this.generateCornerTestPattern(totalHeight);
-    const translatedLeft = this.translateTriangles(leftCorners, -towerWidth! / 4, 0, 0);
-    triangles.push(...translatedLeft);
+    // Left side: simplified corner test (single corner box)
+    const cornerSize = 15;
+    const wallThickness = this.paParams.lineWidth! * 3;
+    const leftX = -towerWidth! / 3;
     
-    // Right side: lines
-    const rightLines = this.generateLineTestPattern(totalHeight);
-    const translatedRight = this.translateTriangles(rightLines, towerWidth! / 4, 0, 0);
-    triangles.push(...translatedRight);
+    // Outer corner box
+    triangles.push(...this.createBoxTriangles(
+      leftX - cornerSize / 2, leftX + cornerSize / 2,
+      -cornerSize / 2, cornerSize / 2,
+      this.paParams.baseHeight!, totalHeight
+    ));
+    
+    // Inner cutout for hollow corner
+    const innerSize = cornerSize - wallThickness * 2;
+    triangles.push(...this.createInnerCutout(
+      leftX - innerSize / 2, leftX + innerSize / 2,
+      -innerSize / 2, innerSize / 2,
+      this.paParams.baseHeight!, totalHeight
+    ));
+    
+    // Right side: simplified line test (straight lines only for combined pattern)
+    const lineSpacing = 4;
+    const lineThickness = this.paParams.lineWidth! * 2;
+    const startX = towerWidth! / 6;
+    const numLines = 3; // Fewer lines for combined pattern
+    
+    for (let i = 0; i < numLines; i++) {
+      const x = startX + i * lineSpacing;
+      
+      // All straight lines in combined pattern for simplicity
+      triangles.push(...this.createBoxTriangles(
+        x - lineThickness / 2, x + lineThickness / 2,
+        -towerDepth! / 3, towerDepth! / 3,
+        this.paParams.baseHeight!, totalHeight
+      ));
+    }
     
     return triangles;
   }
@@ -204,16 +316,6 @@ export class PressureAdvanceTowerGenerator extends TowerGeneratorBase {
     }));
   }
 
-  private translateTriangles(triangles: Triangle[], dx: number, dy: number, dz: number): Triangle[] {
-    return triangles.map(tri => ({
-      normal: tri.normal,
-      vertices: tri.vertices.map(v => ({
-        x: v.x + dx,
-        y: v.y + dy,
-        z: v.z + dz
-      })) as [Vertex, Vertex, Vertex]
-    }));
-  }
 
   private generateSectionLabel(section: { height: number; value: number; label: string }, _index: number): Triangle[] {
     const { towerDepth, sectionHeight } = this.paParams;
