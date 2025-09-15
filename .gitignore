@@ -31,3 +31,15 @@ OrcaSlicer-main
 .env.production
 .vercel
 .env*.local
+
+# Reference materials (removed from project)
+AutoTowersGenerator/
+OrcaSlicer.wiki/
+temp_3mf/
+Retractiontest/
+OrcaSlicerChatbotPlan.html
+OrcaSlicerChatbotPlan_files/
+
+# Loose STL files (except templates)
+*.stl
+!public/templates/*.stl
