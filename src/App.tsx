@@ -3,6 +3,8 @@ import { ThemeProvider } from '@/components/providers/theme-provider'
 import Layout from '@/components/Layout'
 import FirstLayerCalibration from '@/components/FirstLayerCalibration'
 import FlowRateCalibration from '@/components/FlowRateCalibration'
+import FlowRateTower from '@/components/FlowRateTower'
+import FanSpeedTower from '@/components/FanSpeedTower'
 import TemperatureTower from '@/components/TemperatureTower'
 import PressureAdvance from '@/components/PressureAdvance'
 import RetractionTest from '@/components/RetractionTest'
@@ -29,6 +31,10 @@ function App() {
         return <FirstLayerCalibration onNavigate={handleToolChange} />
       case 'flow':
         return <FlowRateCalibration onNavigate={handleToolChange} />
+      case 'flowtower':
+        return <FlowRateTower onNavigate={handleToolChange} />
+      case 'fanspeed':
+        return <FanSpeedTower onNavigate={handleToolChange} />
       case 'temperature':
         return <TemperatureTower onNavigate={handleToolChange} />
       case 'pressure':

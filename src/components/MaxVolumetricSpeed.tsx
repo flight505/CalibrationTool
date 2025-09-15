@@ -1,12 +1,16 @@
 import { useState } from 'react';
-import { Zap, Info, Lightbulb, Gauge } from 'lucide-react';
+import { Zap, Info, Lightbulb, Gauge, Package, Settings } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { HelpButton } from '@/components/HelpButton';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { generateMaxVolumetricTower3MF } from '@/utils/orcaTower3MFExports';
 
 interface MaxVolumetricSpeedProps {
   onNavigate?: (tool: string, path?: string) => void;
@@ -18,9 +22,76 @@ const MaxVolumetricSpeed: React.FC<MaxVolumetricSpeedProps> = ({ onNavigate }) =
   const [step, setStep] = useState(0.5);
   const [result, setResult] = useState<number | null>(null);
 
+  // Tower generation states
+  const [material, setMaterial] = useState('PLA');
+  const [towerStart, setTowerStart] = useState('10');
+  const [towerEnd, setTowerEnd] = useState('40');
+  const [towerStep, setTowerStep] = useState('5');
+  const [firmware, setFirmware] = useState<'marlin' | 'klipper' | 'rrf' | 'orcaslicer'>('marlin');
+  const [includePostProcessing, setIncludePostProcessing] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [towerResult, setTowerResult] = useState<string | null>(null);
+  const [towerInstructions, setTowerInstructions] = useState<string | null>(null);
+
   const calculate = () => {
     const maxSpeed = start + (measuredHeight * step);
     setResult(maxSpeed);
+  };
+
+  const generateTower = async () => {
+    try {
+      setGenerating(true);
+
+      const params = {
+        material: material as 'PLA' | 'PETG' | 'ABS' | 'TPU' | 'ASA',
+        startValue: parseInt(towerStart),
+        endValue: parseInt(towerEnd),
+        stepSize: parseInt(towerStep),
+      };
+
+      const project = await generateMaxVolumetricTower3MF(
+        params,
+        firmware,
+        includePostProcessing
+      );
+
+      const url = URL.createObjectURL(project.file);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = project.filename;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      const numSections = Math.floor(Math.abs(params.endValue - params.startValue) / params.stepSize) + 1;
+      setTowerResult(`✅ Max Volumetric Speed tower generated successfully!\n${numSections} speed sections from ${towerStart} to ${towerEnd} mm³/s\n${includePostProcessing ? 'Post-processing G-code included' : 'Manual setup required'}`);
+
+      setTowerInstructions(`Max Volumetric Speed Tower Setup Instructions:
+
+1. Import the 3MF file into OrcaSlicer
+2. Slice with these settings:
+   - Layer height: 0.2mm (or your preference)
+   - Line width: 0.4mm (or your nozzle size)
+   - Infill: 20-30%
+${includePostProcessing ?
+`3. Post-processing is already configured for ${firmware}
+4. Each section will automatically change volumetric speed` :
+`3. Manual setup required - add speed changes in slicer`}
+5. Print and observe where under-extrusion starts:
+   - Look for rough surfaces
+   - Missing or thin layers
+   - Inconsistent extrusion
+6. Measure the height where quality degrades
+7. Calculate: Max Speed = Start + (Height × Step)
+
+Material notes for ${material}:
+Test at your normal printing temperature.
+Higher temperatures allow higher volumetric speeds.`);
+    } catch (error) {
+      console.error('Error generating tower:', error);
+      setTowerResult('❌ Error generating tower. Please try again.');
+    } finally {
+      setGenerating(false);
+    }
   };
 
   return (
@@ -46,7 +117,14 @@ const MaxVolumetricSpeed: React.FC<MaxVolumetricSpeedProps> = ({ onNavigate }) =
         </CardHeader>
       </Card>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <Tabs defaultValue="calculate" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="calculate">Calculate from Test</TabsTrigger>
+          <TabsTrigger value="generate">Generate Tower</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="calculate">
+          <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Speed Calculator</CardTitle>
@@ -154,6 +232,141 @@ const MaxVolumetricSpeed: React.FC<MaxVolumetricSpeedProps> = ({ onNavigate }) =
           </CardContent>
         </Card>
       </div>
+        </TabsContent>
+
+        <TabsContent value="generate" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Generate Max Volumetric Speed Tower</CardTitle>
+              <CardDescription>
+                Create a test tower to find your hotend's maximum flow capacity
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="gen-material">Material Type</Label>
+                  <Select value={material} onValueChange={setMaterial}>
+                    <SelectTrigger id="gen-material">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PLA">PLA</SelectItem>
+                      <SelectItem value="PETG">PETG</SelectItem>
+                      <SelectItem value="ABS">ABS</SelectItem>
+                      <SelectItem value="TPU">TPU</SelectItem>
+                      <SelectItem value="ASA">ASA</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="firmware">Firmware Type</Label>
+                  <Select value={firmware} onValueChange={(v) => setFirmware(v as any)}>
+                    <SelectTrigger id="firmware">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="marlin">Marlin</SelectItem>
+                      <SelectItem value="klipper">Klipper</SelectItem>
+                      <SelectItem value="rrf">RepRapFirmware</SelectItem>
+                      <SelectItem value="orcaslicer">OrcaSlicer Native</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="tower-start">Start Speed (mm³/s)</Label>
+                  <Input
+                    id="tower-start"
+                    type="number"
+                    value={towerStart}
+                    onChange={(e) => setTowerStart(e.target.value)}
+                    min="5"
+                    max="100"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="tower-end">End Speed (mm³/s)</Label>
+                  <Input
+                    id="tower-end"
+                    type="number"
+                    value={towerEnd}
+                    onChange={(e) => setTowerEnd(e.target.value)}
+                    min="10"
+                    max="100"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="tower-step">Step Size (mm³/s)</Label>
+                  <Input
+                    id="tower-step"
+                    type="number"
+                    value={towerStep}
+                    onChange={(e) => setTowerStep(e.target.value)}
+                    min="1"
+                    max="10"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Label htmlFor="post-processing" className="cursor-pointer">
+                  Include Post-Processing G-code
+                </Label>
+                <Switch
+                  id="post-processing"
+                  checked={includePostProcessing}
+                  onCheckedChange={setIncludePostProcessing}
+                />
+              </div>
+
+              <Button
+                onClick={generateTower}
+                className="w-full"
+                disabled={generating}
+              >
+                {generating ? (
+                  <>Generating...</>
+                ) : (
+                  <>
+                    <Package className="mr-2 h-4 w-4" />
+                    Generate 3MF Project
+                  </>
+                )}
+              </Button>
+
+              {towerResult && (
+                <Alert className={towerResult.includes('✅') ? "bg-green-50/50 dark:bg-green-950/20" : ""}>
+                  <AlertDescription className="whitespace-pre-line">
+                    {towerResult}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+
+          {towerInstructions && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
+                  Tower Setup Instructions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="text-sm whitespace-pre-wrap bg-muted p-4 rounded-lg">
+                  {towerInstructions}
+                </pre>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
 
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="understanding">

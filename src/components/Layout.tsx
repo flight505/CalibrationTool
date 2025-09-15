@@ -1,5 +1,5 @@
 import React from 'react';
-import { Printer, Calculator, Thermometer, Move3D, RotateCcw, FileText, Github, Gauge, BookOpen, Settings, MessageCircle, Layers } from 'lucide-react';
+import { Printer, Calculator, Thermometer, Move3D, RotateCcw, FileText, Github, Gauge, BookOpen, Settings, MessageCircle, Layers, Wind, Droplets } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 
@@ -13,7 +13,9 @@ const tools = [
   { id: 'guide', name: 'Guide', icon: BookOpen, description: 'Calibration sequence' },
   { id: 'firstlayer', name: 'First Layer', icon: Layers, description: 'Perfect bed adhesion' },
   { id: 'temperature', name: 'Temperature', icon: Thermometer, description: 'Find optimal temperature' },
-  { id: 'flow', name: 'Flow Rate', icon: Calculator, description: 'Calibrate flow rate' },
+  { id: 'flow', name: 'Flow Cube', icon: Calculator, description: 'Calibrate flow rate' },
+  { id: 'flowtower', name: 'Flow Tower', icon: Droplets, description: 'Flow rate tower test' },
+  { id: 'fanspeed', name: 'Fan Speed', icon: Wind, description: 'Optimize cooling fan' },
   { id: 'pressure', name: 'Pressure Advance', icon: Move3D, description: 'Tune pressure advance' },
   { id: 'retraction', name: 'Retraction', icon: RotateCcw, description: 'Optimize retraction' },
   { id: 'maxspeed', name: 'Max Speed', icon: Gauge, description: 'Find volumetric limit' },
