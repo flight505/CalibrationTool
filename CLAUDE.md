@@ -52,13 +52,14 @@ This is a comprehensive 3D printing calibration suite for Orca Slicer, implement
   - Professional typography with proper spacing and colors
   - Interactive elements (links, tables, lists) with chat-optimized styling
 
-## Recent Updates (2025-01-28) - Complete OrcaSlicer Tower Generation System
-- Implemented comprehensive tower generation framework with 5 tower types:
+## Recent Updates (2025-01-29) - Complete OrcaSlicer Tower Generation System
+- Implemented comprehensive tower generation framework with 6 tower types:
   - **Temperature Tower**: Bridge and overhang tests, material presets for PLA/PETG/ABS/TPU/ASA/PC/PA
-  - **Pressure Advance Tower**: Corner, line, and combined patterns for PA calibration
+  - **Pressure Advance Tower**: Corner test pattern for PA calibration (fixed floating geometry)
   - **Fan Speed Tower**: Bridging, overhang, and stringing tests for cooling optimization
   - **Flow Rate Tower**: Wall thickness and thin wall tests for flow ratio calibration
   - **Max Volumetric Speed Tower**: Spiral, zigzag, and straight patterns for hotend limits
+  - **Retraction Tower**: Multi-pillar design for stringing detection with extruder presets
 - Advanced features:
   - **3MF Export**: Complete project files with embedded modifier meshes and settings
   - **Post-Processing Support**: Automatic G-code injection for calibration commands
@@ -75,13 +76,70 @@ This is a comprehensive 3D printing calibration suite for Orca Slicer, implement
   - **Fan Speed Control**: M106 with percentage to PWM conversion
   - **Flow Rate Adjustment**: M221 commands for flow ratio changes
   - **Pressure Advance**: M900 K (Marlin), SET_PRESSURE_ADVANCE (Klipper), M572 (RRF)
+  - **Retraction Control**: M207 commands for retraction length and speed
   - **LCD Messages**: M117 commands display current calibration values
   - **Volumetric to Linear Speed**: Automatic conversion for max volumetric testing
 - Unified STL generation approach:
-  - Migrated Flow Calibration to use ASCII STL templates
-  - Added parametric First Layer Calibration with custom plate sizes
-  - Created comprehensive ASCII STL utility functions for manipulation
+  - Migrated all towers to use validated ASCII STL templates
+  - Templates sourced from OrcaSlicer's AutoTowersGenerator project
+  - Height filtering dynamically adjusts tower size based on calibration range
   - All calibration tools now use consistent template-based approach
+
+### Tower Generation Workflow
+
+The tower generation system follows the AutoTowersGenerator pattern from OrcaSlicer for reliable, professional-grade calibration models:
+
+#### Architecture
+1. **Base Class** (`TowerGeneratorBase`): Provides common functionality for all towers
+2. **Template-Based Geometry**: Uses validated ASCII STL templates from `/templates/`
+3. **Post-Processing System**: Injects G-code at specific heights for parameter changes
+4. **3MF Export**: Creates complete OrcaSlicer project files with embedded settings
+
+#### Implementation Pattern
+```typescript
+// Tower generator extends base class
+class SpecificTowerGenerator extends TowerGeneratorBase {
+  // Load and filter template STL
+  protected async generateTowerGeometry(): Promise<ParsedSTL> {
+    const template = await fetch('/templates/tower_template.stl');
+    const filtered = filterAsciiSTLByHeight(template, totalHeight);
+    return parseSTL(filtered);
+  }
+  
+  // Define OrcaSlicer settings
+  protected generateOrcaSettings(): OrcaSlicerSettings {
+    return {
+      calibrationType: 'parameter_type',
+      modifierSettings: sections.map(s => ({
+        sectionIndex: s.index,
+        settings: { parameter: s.value }
+      }))
+    };
+  }
+}
+
+// Usage in component
+const generate3MF = async () => {
+  const project = await generateTowerType3MF(
+    params,
+    firmware,      // marlin, klipper, reprap, orcaslicer
+    includePostProcessing  // true for auto G-code injection
+  );
+  // Download project.file with project.filename
+};
+```
+
+#### Tower Types and Templates
+| Tower Type | Template File | Key Features |
+|------------|--------------|--------------|
+| Temperature | `temp_tower_ascii.stl` | Bridge, overhang tests |
+| Pressure Advance | `pa_pattern_ascii.stl` | Corner test pattern |
+| Fan Speed | `fan_tower_ascii.stl` | Cooling validation |
+| Flow Rate | `flow_tower_ascii.stl` | Wall thickness tests |
+| Max Volumetric | `mvs_tower_ascii.stl` | Speed patterns |
+| Retraction | `retraction_tower_orca_ascii.stl` | Stringing pillars |
+
+See `/docs/TOWER_GENERATION_METHODS.md` for detailed implementation guide.
 
 ## Recent Updates (2025-01-14)
 - Enhanced retraction calibration documentation with comprehensive guide including:
@@ -142,12 +200,16 @@ src/
 ├── utils/
 │   ├── stlGenerator.ts          # Unified STL file generation with template support
 │   ├── asciiStlUtils.ts         # ASCII STL parsing and manipulation utilities
+│   ├── stlConverter.ts          # STL height filtering and conversion utilities
 │   ├── orcaTowerGenerator.ts    # Base tower generator for OrcaSlicer
 │   ├── orcaTemperatureTower.ts  # Temperature tower implementation
 │   ├── orcaPressureAdvanceTower.ts # Pressure advance tower implementation
 │   ├── orcaFanSpeedTower.ts     # Fan speed tower implementation
 │   ├── orcaFlowRateTower.ts     # Flow rate tower implementation
 │   ├── orcaMaxVolumetricTower.ts # Max volumetric speed tower implementation
+│   ├── orcaRetractionTower.ts   # Retraction tower implementation
+│   ├── orcaTower3MFExports.ts   # Centralized 3MF exports for all towers
+│   ├── postProcessingGenerator.ts # G-code injection and firmware support
 │   └── orca3mfExporter.ts       # 3MF project file exporter for OrcaSlicer
 ├── App.tsx                      # Main app with routing and theme
 └── main.tsx                     # Entry point
@@ -181,7 +243,13 @@ public/
 └── templates/                   # STL templates
     ├── flow_calibration_cube_template.stl    # Flow cube ASCII template
     ├── first_layer_calibration_ascii.stl     # First layer ASCII template
-    └── retraction_tower_template.stl         # Retraction tower ASCII template
+    ├── retraction_tower_template.stl         # Retraction tower ASCII template (legacy)
+    ├── temp_tower_ascii.stl                  # Temperature tower template
+    ├── pa_pattern_ascii.stl                  # Pressure advance pattern template
+    ├── fan_tower_ascii.stl                   # Fan speed tower template
+    ├── flow_tower_ascii.stl                  # Flow rate tower template
+    ├── mvs_tower_ascii.stl                   # Max volumetric speed template
+    └── retraction_tower_orca_ascii.stl       # OrcaSlicer retraction tower template
 ```
 
 ## Key Technical Details

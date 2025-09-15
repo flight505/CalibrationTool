@@ -5,9 +5,12 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { HelpButton } from '@/components/HelpButton';
 import { generateRetractionTestTower } from '@/utils/stlGenerator';
+import { generateRetractionTower3MF } from '@/utils/orcaRetractionTower';
+import type { FirmwareType } from '@/utils/postProcessingGenerator';
 
 interface RetractionTestProps {
   onNavigate?: (tool: string, path?: string) => void;
@@ -25,6 +28,8 @@ const RetractionTest: React.FC<RetractionTestProps> = ({ onNavigate }) => {
   const [stlEndRetraction, setStlEndRetraction] = useState(2);
   const [stlRetractionStep, setStlRetractionStep] = useState(0.1);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [firmware, setFirmware] = useState<FirmwareType>('marlin');
+  const [includePostProcessing, setIncludePostProcessing] = useState(true);
   
   // Material recommendations
   const materialRecommendations: Record<string, Record<string, { start: number; end: number; optimal: string }>> = {
@@ -73,6 +78,39 @@ const RetractionTest: React.FC<RetractionTestProps> = ({ onNavigate }) => {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Failed to generate STL:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const generate3MF = async () => {
+    setIsGenerating(true);
+    try {
+      const extruderTypeMap: Record<string, 'direct_drive' | 'bowden'> = {
+        'Direct Drive': 'direct_drive',
+        'Bowden': 'bowden'
+      };
+      
+      const project = await generateRetractionTower3MF(
+        {
+          startValue: stlStartRetraction,
+          endValue: stlEndRetraction,
+          stepSize: stlRetractionStep,
+          extruderType: extruderTypeMap[extruderType] || 'direct_drive',
+          retractionSpeed: 30  // Default speed
+        },
+        firmware,
+        includePostProcessing
+      );
+      
+      const url = URL.createObjectURL(project.file);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = project.filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to generate 3MF:', error);
     } finally {
       setIsGenerating(false);
     }
@@ -256,14 +294,78 @@ const RetractionTest: React.FC<RetractionTestProps> = ({ onNavigate }) => {
               </AlertDescription>
             </Alert>
 
-            <Button 
-              onClick={generateSTL} 
-              className="w-full"
-              disabled={isGenerating || stlRetractionStep <= 0 || stlEndRetraction <= stlStartRetraction}
-            >
-              <Download className="mr-2 h-4 w-4" />
-              {isGenerating ? 'Generating...' : 'Download STL'}
-            </Button>
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="firmware">Firmware Type</Label>
+                <Select value={firmware} onValueChange={(value) => setFirmware(value as FirmwareType)}>
+                  <SelectTrigger id="firmware">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="marlin">Marlin</SelectItem>
+                    <SelectItem value="klipper">Klipper</SelectItem>
+                    <SelectItem value="reprap">RepRapFirmware</SelectItem>
+                    <SelectItem value="orcaslicer">OrcaSlicer (Native)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  Select your printer's firmware for proper G-code generation
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label htmlFor="post-processing">Include Post-Processing</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Auto-inject retraction changes at each height
+                  </p>
+                </div>
+                <button
+                  id="post-processing"
+                  type="button"
+                  role="switch"
+                  aria-checked={includePostProcessing}
+                  onClick={() => setIncludePostProcessing(!includePostProcessing)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    includePostProcessing ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      includePostProcessing ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <Button 
+                  onClick={generateSTL} 
+                  variant="outline"
+                  disabled={isGenerating || stlRetractionStep <= 0 || stlEndRetraction <= stlStartRetraction}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  {isGenerating ? 'Generating...' : 'STL'}
+                </Button>
+
+                <Button 
+                  onClick={generate3MF} 
+                  disabled={isGenerating || stlRetractionStep <= 0 || stlEndRetraction <= stlStartRetraction}
+                >
+                  <Package className="mr-2 h-4 w-4" />
+                  {isGenerating ? 'Generating...' : '3MF Project'}
+                </Button>
+              </div>
+
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  <strong>3MF Project:</strong> Complete OrcaSlicer project with embedded settings and automatic retraction changes.
+                  <br />
+                  <strong>STL:</strong> Basic geometry file for manual setup.
+                </AlertDescription>
+              </Alert>
+            </div>
 
             {/* Collapsible Height reference guide */}
             <Accordion type="single" collapsible className="mt-4">

@@ -8,6 +8,7 @@ import { generateFanSpeedTower3MF } from './orcaFanSpeedTower';
 import { generateFlowRateTower3MF } from './orcaFlowRateTower';
 import { generateMaxVolumetricTower3MF } from './orcaMaxVolumetricTower';
 import { generatePressureAdvanceTower3MF } from './orcaPressureAdvanceTower';
+import { generateRetractionTower3MF } from './orcaRetractionTower';
 import type { FirmwareType } from './postProcessingGenerator';
 
 export {
@@ -15,7 +16,8 @@ export {
   generateFanSpeedTower3MF,
   generateFlowRateTower3MF,
   generateMaxVolumetricTower3MF,
-  generatePressureAdvanceTower3MF
+  generatePressureAdvanceTower3MF,
+  generateRetractionTower3MF
 };
 
 export type { FirmwareType };
@@ -31,7 +33,8 @@ export const towerExports = {
   fanSpeed: generateFanSpeedTower3MF,
   flowRate: generateFlowRateTower3MF,
   maxVolumetric: generateMaxVolumetricTower3MF,
-  pressureAdvance: generatePressureAdvanceTower3MF
+  pressureAdvance: generatePressureAdvanceTower3MF,
+  retraction: generateRetractionTower3MF
 };
 
 /**
