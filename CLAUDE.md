@@ -5,6 +5,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Overview
 This is a comprehensive 3D printing calibration suite for Orca Slicer, implemented as a React web application. The suite provides multiple calibration tools including temperature analysis, flow ratio calibration, pressure advance calculation, retraction testing, and maximum volumetric speed determination.
 
+## Recent Updates (2025-01-30) - Project Cleanup and Complete UI Implementation
+- **Project Structure Cleanup**:
+  - Removed AutoTowersGenerator reference folder after verifying complete implementation
+  - All STL templates successfully migrated to /templates/ folder
+  - Tower generation logic fully integrated into utils/ modules
+  - Post-processing system completely implemented
+- **UI Components Completed**:
+  - Added FanSpeedTower.tsx - Full UI for fan speed optimization with material presets
+  - Added FlowRateTower.tsx - Complete flow ratio calibration interface
+  - Enhanced MaxVolumetricSpeed.tsx - Added tower generation with tabbed interface
+  - All tower generators now accessible through the main navigation
+- **TypeScript Fixes**:
+  - Fixed firmware type definitions across all components (using 'rrf' instead of 'reprapfirmware')
+  - Resolved all build errors and import issues
+  - Ensured type consistency across tower generation system
+
 ## Recent Updates (2025-01-16) - Flow Calibration Improvements
 - Fixed Flow Calibration terminology and format issues:
   - Changed all references from "Flow Rate" to "Flow Ratio" to match OrcaSlicer
@@ -152,10 +168,37 @@ See `/docs/TOWER_GENERATION_METHODS.md` for detailed implementation guide.
 ## TODO
 - [x] The retraction tower is not working exactly as the original STL - RESOLVED with ASCII template approach
 - [x] The calibration cube uses another method for the STL generation - RESOLVED with unified ASCII STL method
-- [x] Implement OrcaSlicer tower generation system - COMPLETED with 5 tower types
+- [x] Implement OrcaSlicer tower generation system - COMPLETED with 6 tower types
 - [x] Add 3MF export functionality - COMPLETED with full OrcaSlicer compatibility
+- [x] Create UI components for all tower generators - COMPLETED
 
-- [ ] Add a dashboard with graph of all the calibrations such that the user can see how well their calibrations are doing. We need to think hard about how we could do this in a way that is not too complex and not too simple. But still useful for the user. We might have baseline or target values.
+### Design of Experiments (DOE) Implementation - Next Phase
+- [ ] **Phase 1: DOE Framework**
+  - [ ] Implement Taguchi orthogonal array generators (L9, L18 arrays)
+  - [ ] Create Response Surface Methodology (RSM) experiment designer
+  - [ ] Build parameter variation system for G-code generation
+  - [ ] Develop experiment tracking and results database
+
+- [ ] **Phase 2: Test Models & Metrics**
+  - [ ] Create/import standard test models (benchy, calibration cube, overhang test, etc.)
+  - [ ] Implement quantifiable scoring rubrics for print quality metrics
+  - [ ] Build automated measurement guidance system
+  - [ ] Add photo upload and quality assessment tools
+
+- [ ] **Phase 3: Experiment Execution**
+  - [ ] Generate multi-parameter G-code files for batch testing
+  - [ ] Create experiment run sheets with QR codes for tracking
+  - [ ] Implement results capture interface with guided scoring
+  - [ ] Build statistical analysis tools for factor significance
+
+- [ ] **Phase 4: Optimization & Recommendations**
+  - [ ] Implement Response Surface optimization algorithms
+  - [ ] Create interactive 3D response surface visualizations
+  - [ ] Generate optimal parameter recommendations
+  - [ ] Export optimized profiles to OrcaSlicer format
+
+### General Features
+- [ ] Add a dashboard with graph of all the calibrations such that the user can see how well their calibrations are doing
 - [ ] Add a way to save/export calibration settings to a file
 - [ ] Add a way to load/import calibration settings from a file
 - [ ] Add a way to share calibration settings with others (possibly via URL or QR code)
@@ -177,13 +220,15 @@ src/
 │   ├── DocumentationLayout.tsx  # Documentation navigation and structure
 │   ├── DocumentationViewer.tsx  # Markdown documentation renderer
 │   ├── FlowRateCalibration.tsx  # Flow calibration with two methods
+│   ├── FlowRateTower.tsx        # Flow ratio tower generator with 3MF export
 │   ├── OrcaFlowCalibration.tsx  # Orca cube-based flow calibration
 │   ├── YoloMethod.tsx           # Quick visual flow calibration
 │   ├── TemperatureTower.tsx     # Temperature optimization with tower generation
 │   ├── PressureAdvance.tsx      # PA value calculator
 │   ├── RetractionTest.tsx       # Retraction length calculator with STL generation
 │   ├── FirstLayerCalibration.tsx # Parametric first layer calibration
-│   ├── MaxVolumetricSpeed.tsx   # Hotend capacity testing
+│   ├── FanSpeedTower.tsx        # Fan speed optimization with material presets
+│   ├── MaxVolumetricSpeed.tsx   # Hotend capacity testing with tower generation
 │   ├── Recommendations.tsx      # Settings recommendations with filtering
 │   ├── QuickFixButtons.tsx      # Problem-based quick filters
 │   ├── MaterialQuickSwitch.tsx  # Material filter badges
