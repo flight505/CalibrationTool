@@ -1,13 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
-    Calculator,
-    Thermometer,
-    Move3D,
-    RotateCcw,
     Paperclip,
     SendIcon,
     XIcon,
@@ -19,120 +14,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useChat } from 'ai/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import * as React from "react"
+import * as React from "react";
+import { ChatTextarea } from "@/components/chat/ChatTextarea";
+import { CommandPalette } from "@/components/chat/CommandPalette";
+import { TypingDots } from "@/components/chat/TypingDots";
+import { commandSuggestions, getQueryForCommand } from "@/components/chat/commandPaletteData";
+import { useAutoResizeTextarea } from "@/components/chat/useAutoResizeTextarea";
 
-interface UseAutoResizeTextareaProps {
-    minHeight: number;
-    maxHeight?: number;
+const rippleKeyframes = `
+@keyframes ripple {
+  0% { transform: scale(0.5); opacity: 0.6; }
+  100% { transform: scale(2); opacity: 0; }
 }
-
-function useAutoResizeTextarea({
-    minHeight,
-    maxHeight,
-}: UseAutoResizeTextareaProps) {
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-    const adjustHeight = useCallback(
-        (reset?: boolean) => {
-            const textarea = textareaRef.current;
-            if (!textarea) return;
-
-            if (reset) {
-                textarea.style.height = `${minHeight}px`;
-                return;
-            }
-
-            textarea.style.height = `${minHeight}px`;
-            const newHeight = Math.max(
-                minHeight,
-                Math.min(
-                    textarea.scrollHeight,
-                    maxHeight ?? Number.POSITIVE_INFINITY
-                )
-            );
-
-            textarea.style.height = `${newHeight}px`;
-        },
-        [minHeight, maxHeight]
-    );
-
-    useEffect(() => {
-        const textarea = textareaRef.current;
-        if (textarea) {
-            textarea.style.height = `${minHeight}px`;
-        }
-    }, [minHeight]);
-
-    useEffect(() => {
-        const handleResize = () => adjustHeight();
-        window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
-    }, [adjustHeight]);
-
-    return { textareaRef, adjustHeight };
-}
-
-interface CommandSuggestion {
-    icon: React.ReactNode;
-    label: string;
-    description: string;
-    prefix: string;
-}
-
-interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  containerClassName?: string;
-  showRing?: boolean;
-}
-
-const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, containerClassName, showRing = true, ...props }, ref) => {
-    const [isFocused, setIsFocused] = React.useState(false);
-    
-    return (
-      <div className={cn(
-        "relative",
-        containerClassName
-      )}>
-        <textarea
-          className={cn(
-            "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-            "transition-all duration-200 ease-in-out",
-            "placeholder:text-muted-foreground",
-            "disabled:cursor-not-allowed disabled:opacity-50",
-            showRing ? "focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" : "",
-            className
-          )}
-          ref={ref}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          {...props}
-        />
-        
-        {showRing && isFocused && (
-          <motion.span 
-            className="absolute inset-0 rounded-md pointer-events-none ring-2 ring-offset-0 ring-violet-500/30"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          />
-        )}
-
-        {props.onChange && (
-          <div 
-            className="absolute bottom-2 right-2 opacity-0 w-2 h-2 bg-violet-500 rounded-full"
-            style={{
-              animation: 'none',
-            }}
-            id="textarea-ripple"
-          />
-        )}
-      </div>
-    )
-  }
-)
-Textarea.displayName = "Textarea"
+`;
 
 export function AnimatedAIChat() {
     // Generate a unique session ID for this chat instance
@@ -161,33 +55,6 @@ export function AnimatedAIChat() {
     const [inputFocused, setInputFocused] = useState(false);
     const commandPaletteRef = useRef<HTMLDivElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-
-    const commandSuggestions: CommandSuggestion[] = [
-        { 
-            icon: <Calculator className="w-4 h-4" />, 
-            label: "Flow Calibration", 
-            description: "Calibrate flow ratio for accurate extrusion", 
-            prefix: "/flow" 
-        },
-        { 
-            icon: <Thermometer className="w-4 h-4" />, 
-            label: "Temperature Tower", 
-            description: "Find optimal printing temperature", 
-            prefix: "/temperature" 
-        },
-        { 
-            icon: <Move3D className="w-4 h-4" />, 
-            label: "Pressure Advance", 
-            description: "Tune pressure advance for sharp corners", 
-            prefix: "/pressure" 
-        },
-        { 
-            icon: <RotateCcw className="w-4 h-4" />, 
-            label: "Retraction Test", 
-            description: "Eliminate stringing and oozing", 
-            prefix: "/retraction" 
-        },
-    ];
 
     useEffect(() => {
         if (input.startsWith('/') && !input.includes(' ')) {
@@ -277,21 +144,6 @@ export function AnimatedAIChat() {
         }
     };
 
-    const getQueryForCommand = (prefix: string): string => {
-        switch (prefix) {
-            case '/flow':
-                return 'How do I calibrate flow ratio in OrcaSlicer? What are the steps?';
-            case '/temperature':
-                return 'What is the temperature tower calibration process? How do I find the optimal temperature?';
-            case '/pressure':
-                return 'Explain pressure advance calibration. How do I tune it for sharp corners?';
-            case '/retraction':
-                return 'How to perform a retraction test to eliminate stringing?';
-            default:
-                return prefix + ' ';
-        }
-    };
-
     const handleAttachFile = async () => {
         // Create file input element
         const input = document.createElement('input');
@@ -355,6 +207,25 @@ export function AnimatedAIChat() {
             handleChatSubmit(new Event('submit') as any);
         }, 100);
     };
+
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
+
+        const styleId = 'animated-ai-chat-ripple';
+        if (document.getElementById(styleId)) {
+            return;
+        }
+
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.innerHTML = rippleKeyframes;
+        document.head.appendChild(style);
+
+        return () => {
+            const existing = document.getElementById(styleId);
+            existing?.remove();
+        };
+    }, []);
 
     return (
         <div className="min-h-screen flex flex-col w-full bg-transparent text-white relative overflow-hidden">
@@ -532,47 +403,16 @@ export function AnimatedAIChat() {
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ delay: 0.1 }}
                     >
-                        <AnimatePresence>
-                            {showCommandPalette && (
-                                <motion.div 
-                                    ref={commandPaletteRef}
-                                    className="absolute left-4 right-4 bottom-full mb-2 backdrop-blur-xl bg-black/90 rounded-lg z-50 shadow-lg border border-white/10 overflow-hidden"
-                                    initial={{ opacity: 0, y: 5 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 5 }}
-                                    transition={{ duration: 0.15 }}
-                                >
-                                    <div className="py-1 bg-black/95">
-                                        {commandSuggestions.map((suggestion, index) => (
-                                            <motion.div
-                                                key={suggestion.prefix}
-                                                className={cn(
-                                                    "flex items-center gap-2 px-3 py-2 text-xs transition-colors cursor-pointer",
-                                                    activeSuggestion === index 
-                                                        ? "bg-white/10 text-white" 
-                                                        : "text-white/70 hover:bg-white/5"
-                                                )}
-                                                onClick={() => selectCommandSuggestion(index)}
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                transition={{ delay: index * 0.03 }}
-                                            >
-                                                <div className="w-5 h-5 flex items-center justify-center text-white/60">
-                                                    {suggestion.icon}
-                                                </div>
-                                                <div className="font-medium">{suggestion.label}</div>
-                                                <div className="text-white/40 text-xs ml-1">
-                                                    {suggestion.prefix}
-                                                </div>
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                        <CommandPalette
+                            isOpen={showCommandPalette}
+                            activeIndex={activeSuggestion}
+                            suggestions={commandSuggestions}
+                            paletteRef={commandPaletteRef}
+                            onSelect={selectCommandSuggestion}
+                        />
 
                         <div className="p-4">
-                            <Textarea
+                            <ChatTextarea
                                 ref={textareaRef}
                                 value={input}
                                 onChange={(e) => {
@@ -742,44 +582,4 @@ export function AnimatedAIChat() {
             )}
         </div>
     );
-}
-
-function TypingDots() {
-    return (
-        <div className="flex items-center ml-1">
-            {[1, 2, 3].map((dot) => (
-                <motion.div
-                    key={dot}
-                    className="w-1.5 h-1.5 bg-white/90 rounded-full mx-0.5"
-                    initial={{ opacity: 0.3 }}
-                    animate={{ 
-                        opacity: [0.3, 0.9, 0.3],
-                        scale: [0.85, 1.1, 0.85]
-                    }}
-                    transition={{
-                        duration: 1.2,
-                        repeat: Infinity,
-                        delay: dot * 0.15,
-                        ease: "easeInOut",
-                    }}
-                    style={{
-                        boxShadow: "0 0 4px rgba(255, 255, 255, 0.3)"
-                    }}
-                />
-            ))}
-        </div>
-    );
-}
-
-const rippleKeyframes = `
-@keyframes ripple {
-  0% { transform: scale(0.5); opacity: 0.6; }
-  100% { transform: scale(2); opacity: 0; }
-}
-`;
-
-if (typeof document !== 'undefined') {
-    const style = document.createElement('style');
-    style.innerHTML = rippleKeyframes;
-    document.head.appendChild(style);
 }
