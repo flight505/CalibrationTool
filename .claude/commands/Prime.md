@@ -11,7 +11,4 @@ eza . --tree --git-ignore
 > list of files:
 README.md
 CLAUDE.md
-OrcaRAG.md
-OrcaSlicerChatbotPlan.md
-docs/TOWER_GENERATION_METHODS.md
 > Dont do anything else.
