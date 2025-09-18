@@ -151,12 +151,12 @@ interface TestModel {
 - [ ] Import existing calibration models from current tool
 - [ ] Create missing models:
   - [ ] Standard 3DBenchy (existing STL)
-  - [ ] XYZ calibration cube (20mm)
-  - [ ] Overhang test (30-80 degrees)
+  - [x] XYZ calibration cube (20mm) — generated procedurally (`scripts/generate-doe-models.js`)
+  - [x] Overhang test (30-80 degrees) — generated procedurally
   - [ ] Stringing torture test
-  - [ ] Bridge test array
+  - [x] Bridge test array — generated procedurally
   - [ ] Thin wall test (0.4-1.2mm)
-  - [ ] Surface quality patch
+  - [x] Surface quality patch — generated procedurally
   - [ ] Corner sharpness test
 
 ### 2.2 Quantifiable Scoring System

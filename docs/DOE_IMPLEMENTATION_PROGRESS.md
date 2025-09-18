@@ -1,11 +1,11 @@
 # DOE Implementation Progress Tracker
 Last Updated: 2025-02-14
 
-## 📊 Overall Progress: ~65% Complete
+## 📊 Overall Progress: ~70% Complete
 
 ### Phase Completion Status
 - ✅ **Phase 1: DOE Framework** - 85% Complete
-- 🔄 **Phase 2: Test Models & Metrics** - 40% Complete
+- 🔄 **Phase 2: Test Models & Metrics** - 60% Complete
 - ⏳ **Phase 3: Experiment Execution** - 10% Complete
 - ⏳ **Phase 4: Optimization & Analysis** - 5% Complete
 
@@ -57,13 +57,13 @@ Last Updated: 2025-02-14
 - ✅ Qualitative metrics with clear descriptions
 - ✅ Response type definitions (larger/smaller/nominal-is-best)
 
-### 🔄 2.3 Physical Test Models [80% Complete]
+### ✅ 2.3 Physical Test Models [COMPLETED]
 **Source Directory:** `public/templates/doe/`
 - ✅ 20mm calibration cube STL (auto-generated)
 - ✅ Bridge array STL (bridging spans 10-30mm)
 - ✅ Overhang test STL (progressive cantilever)
 - ✅ Clearance test STL (0.2-0.6mm gaps)
-- ❌ Surface quality patch STL
+- ✅ Surface quality patch STL
 - ✅ Existing tower STLs available
 
 ---
@@ -78,11 +78,11 @@ Last Updated: 2025-02-14
 - ✅ Measurement types
 - ✅ Export format definitions
 
-### 🔄 3.2 UI Components [60% Complete]
+### 🔄 3.2 UI Components [70% Complete]
 - ✅ DOE experiment workbench (`src/components/DOEWorkbench.tsx`)
 - ✅ Factor selection interface with presets
 - ✅ Level configuration inputs
-- ❌ Experiment matrix preview visualization
+- ✅ Experiment matrix preview & CSV tools
 - ✅ Results input + download workflow
 - ❌ Visual scoring guides with reference images
 
@@ -144,13 +144,12 @@ Last Updated: 2025-02-14
 
 ### Immediate (Required for MVP)
 1. **Finalize geometry library**
-   - Surface quality patch STL
-   - Iterative refinements from print feedback (bridge sag, clearance fit)
+   - Iterate from print feedback (bridge sag, clearance fit, surface differentials)
 
 2. **Enhance DOE UI**
-   - Experiment matrix preview with CSV preview/download
-   - Visual scoring hints per selected metric
-   - Persist experiment definitions (local storage baseline)
+   - Add visual reference images to scoring hints
+   - Persist measurement inputs between sessions
+   - Polish matrix preview with charts/summary stats
 
 3. **Extend analysis toolkit**
    - Interaction plots / two-factor analysis

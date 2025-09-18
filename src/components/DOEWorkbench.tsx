@@ -40,6 +40,7 @@ interface GeneratedFile {
 }
 
 const ARRAY_TYPES: Array<'L9' | 'L18' | 'L27'> = ['L9', 'L18', 'L27'];
+const STORAGE_KEY = 'doe-workbench-state';
 
 const metricLabel = (metric: TestModel['metrics'][number]) =>
   `${metric.name} (${metric.responseType.replace(/-/g, ' ')})`;
@@ -63,8 +64,11 @@ const DOEWorkbench: React.FC = () => {
   const [snrResults, setSnrResults] = useState<SNRAnalysis[]>([]);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [anovaSummary, setAnovaSummary] = useState<string>('');
+  const [csvPreview, setCsvPreview] = useState<string>('');
   const plannerRef = useRef<ExperimentPlanner | null>(null);
   const urlCache = useRef<string[]>([]);
+  const csvDownloadUrl = useRef<string | null>(null);
+  const hydratedRef = useRef<boolean>(false);
 
   const testModel = TEST_MODELS[testModelId];
 
@@ -72,8 +76,67 @@ const DOEWorkbench: React.FC = () => {
     return () => {
       urlCache.current.forEach((url) => URL.revokeObjectURL(url));
       urlCache.current = [];
+      if (csvDownloadUrl.current) {
+        URL.revokeObjectURL(csvDownloadUrl.current);
+        csvDownloadUrl.current = null;
+      }
     };
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        hydratedRef.current = true;
+        return;
+      }
+      const saved = JSON.parse(raw);
+      if (saved.experimentName) {
+        setExperimentName(saved.experimentName);
+      }
+      if (saved.description) {
+        setDescription(saved.description);
+      }
+      if (saved.arrayType && ARRAY_TYPES.includes(saved.arrayType)) {
+        setArrayType(saved.arrayType);
+      }
+      if (saved.testModelId && TEST_MODELS[saved.testModelId as TestModelType]) {
+        setTestModelId(saved.testModelId);
+      }
+      if (Array.isArray(saved.factors)) {
+        const restored = saved.factors.filter((factor: any) =>
+          factor && typeof factor.name === 'string' && Array.isArray(factor.levels)
+        ) as ExperimentFactor[];
+        if (restored.length) {
+          setFactors(restored);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to restore DOE workbench state', error);
+    } finally {
+      hydratedRef.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!hydratedRef.current) return;
+
+    const payload = {
+      experimentName,
+      description,
+      arrayType,
+      testModelId,
+      factors
+    };
+
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch (error) {
+      console.warn('Failed to persist DOE workbench state', error);
+    }
+  }, [experimentName, description, arrayType, testModelId, factors]);
 
   useEffect(() => {
     setSelectedMetricId(testModel.metrics[0]?.id || '');
@@ -141,11 +204,16 @@ const DOEWorkbench: React.FC = () => {
   const resetGeneratedArtifacts = () => {
     urlCache.current.forEach((url) => URL.revokeObjectURL(url));
     urlCache.current = [];
+    if (csvDownloadUrl.current) {
+      URL.revokeObjectURL(csvDownloadUrl.current);
+      csvDownloadUrl.current = null;
+    }
     setGeneratedFiles([]);
     setRuns([]);
     setMainEffects([]);
     setSnrResults([]);
     setAnovaSummary('');
+    setCsvPreview('');
   };
 
   const handleGenerateExperiment = async () => {
@@ -169,6 +237,8 @@ const DOEWorkbench: React.FC = () => {
 
       plannerRef.current = planner;
       const files = await planner.generateAll3MFFiles();
+      const csv = planner.exportToCSV();
+      setCsvPreview(csv);
       const experiment = planner.getExperiment();
 
       const generated = files
@@ -187,8 +257,8 @@ const DOEWorkbench: React.FC = () => {
       setGeneratedFiles(generated);
       setRuns(experiment.runs);
     } catch (error: any) {
-      console.error('Failed to generate DOE experiment:', error);
-      setGenerationError(error?.message || 'Failed to generate experiment.');
+        console.error('Failed to generate DOE experiment:', error);
+        setGenerationError(error?.message || 'Failed to generate experiment.');
     } finally {
       setIsGenerating(false);
     }
@@ -216,6 +286,34 @@ const DOEWorkbench: React.FC = () => {
         };
       })
     );
+  };
+
+  const handleDownloadCSV = () => {
+    if (!plannerRef.current) return;
+    const csv = plannerRef.current.exportToCSV();
+    if (csvDownloadUrl.current) {
+      URL.revokeObjectURL(csvDownloadUrl.current);
+      csvDownloadUrl.current = null;
+    }
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    csvDownloadUrl.current = url;
+    const link = document.createElement('a');
+    link.href = url;
+    const filenameSafe = experimentName.trim().length ? experimentName.trim().replace(/\s+/g, '_') : 'DOE_Experiment';
+    link.download = `${filenameSafe}_design.csv`;
+    link.click();
+  };
+
+  const handleCopyCsv = async () => {
+    if (!csvPreview || typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(csvPreview);
+    } catch (error) {
+      console.warn('Failed to copy CSV to clipboard', error);
+    }
   };
 
   const computeAnalysis = () => {
@@ -281,7 +379,12 @@ const DOEWorkbench: React.FC = () => {
     setFactors([]);
     setSelectedPreset('');
     resetGeneratedArtifacts();
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(STORAGE_KEY);
+    }
   };
+
+  const selectedMetric = testModel.metrics.find((metric) => metric.id === selectedMetricId);
 
   return (
     <div className="space-y-6">
@@ -449,6 +552,17 @@ const DOEWorkbench: React.FC = () => {
             <Button variant="outline" onClick={resetAll} disabled={isGenerating}>
               Reset
             </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.localStorage.removeItem(STORAGE_KEY);
+                }
+              }}
+              disabled={isGenerating}
+            >
+              Clear Saved Setup
+            </Button>
             {generationError && (
               <Alert className="w-full">
                 <AlertDescription>{generationError}</AlertDescription>
@@ -457,6 +571,58 @@ const DOEWorkbench: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {runs.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Experiment Matrix Preview</CardTitle>
+            <CardDescription>Orthogonal array layout for the current experiment.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="text-left border-b">
+                    <th className="py-2 pr-4">Run</th>
+                    {factors.map((factor) => (
+                      <th key={factor.parameter} className="py-2 pr-4">
+                        {factor.name} ({factor.unit || 'value'})
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {runs.map((run) => (
+                    <tr key={`matrix-${run.runNumber}`} className="border-b last:border-none">
+                      <td className="py-2 pr-4 font-medium">#{run.runNumber}</td>
+                      {factors.map((factor) => (
+                        <td key={`${run.runNumber}-${factor.parameter}`} className="py-2 pr-4">
+                          {run.factorSettings[factor.name] ?? '—'}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" onClick={handleDownloadCSV}>
+                Download CSV
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleCopyCsv} disabled={!csvPreview}>
+                Copy CSV
+              </Button>
+            </div>
+
+            {csvPreview && (
+              <pre className="max-h-48 overflow-auto rounded-md bg-muted p-3 text-xs whitespace-pre-wrap">
+                {csvPreview}
+              </pre>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {runs.length > 0 && (
         <Card>
@@ -538,6 +704,38 @@ const DOEWorkbench: React.FC = () => {
                   </Select>
                 </div>
                 <Button onClick={computeAnalysis}>Analyze Results</Button>
+              </div>
+            )}
+
+            {selectedMetric && (
+              <div className="rounded-lg border bg-muted/40 p-4 space-y-2">
+                <div>
+                  <span className="text-sm font-semibold">Metric Details:</span>
+                  <p className="text-sm text-muted-foreground">{selectedMetric.description}</p>
+                </div>
+                <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+                  <span>Response: {selectedMetric.responseType.replace(/-/g, ' ')}</span>
+                  {selectedMetric.unit && <span>Unit: {selectedMetric.unit}</span>}
+                  {typeof selectedMetric.target === 'number' && (
+                    <span>Target: {selectedMetric.target}</span>
+                  )}
+                  {typeof selectedMetric.minValue === 'number' && typeof selectedMetric.maxValue === 'number' && (
+                    <span>Range: {selectedMetric.minValue} – {selectedMetric.maxValue}</span>
+                  )}
+                </div>
+                {selectedMetric.scoringRubric && (
+                  <div className="text-xs">
+                    <p className="font-semibold">Scoring Rubric:</p>
+                    <ul className="mt-1 space-y-1 text-muted-foreground">
+                      {Object.entries(selectedMetric.scoringRubric).map(([scoreKey, text]) => (
+                        <li key={scoreKey}>
+                          <span className="font-medium uppercase mr-1">{scoreKey.replace('score', 'Score ')}</span>
+                          {text}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
 
