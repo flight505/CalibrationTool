@@ -154,7 +154,7 @@ interface TestModel {
   - [x] XYZ calibration cube (20mm) — generated procedurally (`scripts/generate-doe-models.js`)
   - [x] Overhang test (30-80 degrees) — generated procedurally
   - [ ] Stringing torture test
-  - [x] Bridge test array — generated procedurally
+  - [x] Bridge test array — generated procedurally (U-shaped spans)
   - [ ] Thin wall test (0.4-1.2mm)
   - [x] Surface quality patch — generated procedurally
   - [ ] Corner sharpness test

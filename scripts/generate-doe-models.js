@@ -70,31 +70,71 @@ function createCalibrationCube() {
 function createBridgeArray() {
   const triangles = [];
   const baseThickness = 2;
-  pushBox(triangles, 0, 0, 0, 120, 40, baseThickness);
+  const baseWidth = 150;
+  const baseDepth = 60;
+  pushBox(triangles, 0, 0, 0, baseWidth, baseDepth, baseThickness);
 
-  const pillarWidth = 6;
-  const pillarDepth = 8;
-  const pillarHeight = 22;
-  const bridgeThickness = 1.4;
   const spans = [10, 15, 20, 25, 30];
-  const laneSpacing = 7;
-  const laneOffset = 5;
-  const leftMargin = 15;
+  const laneGap = 6; // clearance between lanes
+  const laneDepth = 12;
+  const pillarWidth = 8;
+  const pillarDepth = 6;
+  const pillarHeight = 25;
+  const bridgeThickness = 1.2;
+  const leftMargin = 18;
+  const frontMargin = 10;
 
   spans.forEach((span, index) => {
-    const y = laneOffset + index * laneSpacing;
-    const leftX = leftMargin;
-    const rightX = leftMargin + pillarWidth + span;
+    const laneY = frontMargin + index * (laneDepth + laneGap);
+    const laneXStart = leftMargin;
+    const laneXEnd = laneXStart + pillarWidth * 2 + span;
 
-    pushBox(triangles, leftX, y, baseThickness, pillarWidth, pillarDepth, pillarHeight);
-    pushBox(triangles, rightX, y, baseThickness, pillarWidth, pillarDepth, pillarHeight);
+    // Left pillar
+    pushBox(
+      triangles,
+      laneXStart,
+      laneY,
+      baseThickness,
+      pillarWidth,
+      pillarDepth,
+      pillarHeight
+    );
 
-    const deckWidth = span + pillarWidth * 2;
-    pushBox(triangles, leftX, y, baseThickness + pillarHeight, deckWidth, pillarDepth, bridgeThickness);
+    // Right pillar
+    const rightPillarX = laneXStart + pillarWidth + span;
+    pushBox(
+      triangles,
+      rightPillarX,
+      laneY,
+      baseThickness,
+      pillarWidth,
+      pillarDepth,
+      pillarHeight
+    );
 
-    const ridgeHeight = 1.5;
-    const ridgeDepth = 1.5;
-    pushBox(triangles, leftX, y - ridgeDepth, baseThickness + pillarHeight + bridgeThickness, deckWidth, ridgeDepth, ridgeHeight);
+    // Bridge element sitting on top of pillars spanning the gap only
+    pushBox(
+      triangles,
+      laneXStart + pillarWidth,
+      laneY,
+      baseThickness + pillarHeight,
+      span,
+      pillarDepth,
+      bridgeThickness
+    );
+
+    // Add a number tag on the base in front of each lane for identification
+    const tagHeight = 1.2;
+    const tagDepth = 3;
+    pushBox(
+      triangles,
+      laneXStart,
+      laneY - tagDepth - 1,
+      baseThickness,
+      laneXEnd - laneXStart,
+      tagDepth,
+      tagHeight
+    );
   });
 
   return triangles;
