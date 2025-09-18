@@ -42,4 +42,4 @@ OrcaSlicerChatbotPlan_files/
 
 # Loose STL files (except templates)
 *.stl
-!public/templates/*.stl
+!public/templates/**/*.stl

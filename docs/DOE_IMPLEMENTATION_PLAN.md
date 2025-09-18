@@ -11,6 +11,12 @@ This document outlines the actionable implementation plan for integrating Design
 3. **Quantifiable Quality Metrics**: Implement objective scoring systems for print quality assessment
 4. **Automated G-code Generation**: Create test files with parameter variations for efficient batch testing
 
+### Asset Workflow Alignment (Update — 2025-02-14)
+
+- All *design assets* are maintained as ASCII STL sources under `public/templates/doe/`
+- The DOE planner converts those STL sources into Orca-compatible 3MF projects on-demand, embedding modifier settings and metadata
+- New geometry work should target STL first; no manual 3MF authoring is required beyond the automated export path
+
 ## Phase 1: DOE Framework Implementation
 
 ### 1.1 Taguchi Orthogonal Array Generator

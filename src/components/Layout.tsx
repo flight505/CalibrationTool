@@ -1,5 +1,5 @@
 import React from 'react';
-import { Printer, Calculator, Thermometer, Move3D, RotateCcw, FileText, Github, Gauge, BookOpen, Settings, MessageCircle, Layers, Wind, Droplets } from 'lucide-react';
+import { Printer, Calculator, Thermometer, Move3D, RotateCcw, FileText, Github, Gauge, BookOpen, Settings, MessageCircle, Layers, Wind, Droplets, FlaskConical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 
@@ -19,6 +19,7 @@ const tools = [
   { id: 'pressure', name: 'Pressure Advance', icon: Move3D, description: 'Tune pressure advance' },
   { id: 'retraction', name: 'Retraction', icon: RotateCcw, description: 'Optimize retraction' },
   { id: 'maxspeed', name: 'Max Speed', icon: Gauge, description: 'Find volumetric limit' },
+  { id: 'doe', name: 'DOE Planner', icon: FlaskConical, description: 'Design of Experiments' },
   { id: 'chat', name: 'AI Assistant', icon: MessageCircle, description: 'Chat with OrcaSlicer AI' },
   { id: 'recommendations', name: 'Recommendations', icon: Settings, description: 'Optimal printer settings' },
 ];

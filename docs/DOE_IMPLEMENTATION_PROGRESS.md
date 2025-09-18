@@ -1,7 +1,7 @@
 # DOE Implementation Progress Tracker
-Last Updated: 2025-01-30
+Last Updated: 2025-02-14
 
-## 📊 Overall Progress: ~40% Complete
+## 📊 Overall Progress: ~65% Complete
 
 ### Phase Completion Status
 - ✅ **Phase 1: DOE Framework** - 85% Complete
@@ -57,12 +57,12 @@ Last Updated: 2025-01-30
 - ✅ Qualitative metrics with clear descriptions
 - ✅ Response type definitions (larger/smaller/nominal-is-best)
 
-### ❌ 2.3 Physical Test Models [PENDING]
-**Status:** Awaiting STL file creation
-- ❌ 20mm calibration cube STL
-- ❌ Bridge array STL (5, 10, 15, 20, 25mm spans)
-- ❌ Overhang test STL (30°, 45°, 60°, 70°, 80°)
-- ❌ Clearance test STL (0.1-0.5mm gaps)
+### 🔄 2.3 Physical Test Models [80% Complete]
+**Source Directory:** `public/templates/doe/`
+- ✅ 20mm calibration cube STL (auto-generated)
+- ✅ Bridge array STL (bridging spans 10-30mm)
+- ✅ Overhang test STL (progressive cantilever)
+- ✅ Clearance test STL (0.2-0.6mm gaps)
 - ❌ Surface quality patch STL
 - ✅ Existing tower STLs available
 
@@ -78,12 +78,12 @@ Last Updated: 2025-01-30
 - ✅ Measurement types
 - ✅ Export format definitions
 
-### ⏳ 3.2 UI Components [NOT STARTED]
-- ❌ DOE Experiment Wizard component
-- ❌ Factor selection interface
-- ❌ Level configuration UI
-- ❌ Experiment matrix preview
-- ❌ Results input forms
+### 🔄 3.2 UI Components [60% Complete]
+- ✅ DOE experiment workbench (`src/components/DOEWorkbench.tsx`)
+- ✅ Factor selection interface with presets
+- ✅ Level configuration inputs
+- ❌ Experiment matrix preview visualization
+- ✅ Results input + download workflow
 - ❌ Visual scoring guides with reference images
 
 ### ⏳ 3.3 Database Integration [NOT STARTED]
@@ -103,12 +103,12 @@ Last Updated: 2025-01-30
 - ✅ ANOVA table definitions
 - ✅ Confirmation run structures
 
-### ❌ 4.2 Statistical Analysis [NOT STARTED]
-- ❌ Main effects calculation
-- ❌ S/N ratio computation
-- ❌ ANOVA implementation
-- ❌ Interaction analysis
-- ❌ Optimal setting prediction
+### 🔄 4.2 Statistical Analysis [70% Complete]
+- ✅ Main effects calculation (`calculateMainEffects`)
+- ✅ S/N ratio computation (`calculateSignalToNoise`)
+- ✅ ANOVA implementation (`calculateANOVA`)
+- ❌ Interaction analysis (two-factor effects)
+- ✅ Optimal setting prediction (`predictOptimalSettings`)
 
 ### ❌ 4.3 Visualization [NOT STARTED]
 - ❌ Main effects plots
@@ -126,6 +126,13 @@ Last Updated: 2025-01-30
 2. `/src/utils/doe/doeTypes.ts` - TypeScript type definitions
 3. `/src/utils/doe/testModels.ts` - Test model library with metrics
 4. `/src/utils/doe/experimentPlanner.ts` - Experiment generation system
+5. `/src/utils/doe/factorLibrary.ts` - Factor presets & helpers
+6. `/src/utils/doe/analysis.ts` - Statistical analysis utilities
+
+### DOE Assets & UI
+1. `/public/templates/doe/*.stl` - Procedural STL sources for experiments
+2. `/scripts/generate-doe-models.js` - STL generation script
+3. `/src/components/DOEWorkbench.tsx` - Experiment builder & results UI
 
 ### Documentation
 1. `/docs/DOE_TEST_MODEL_INVENTORY.md` - Complete test model tracking
@@ -136,20 +143,19 @@ Last Updated: 2025-01-30
 ## 🎯 Next Priority Tasks
 
 ### Immediate (Required for MVP)
-1. **Create missing STL files** (User to create in Fusion 360)
-   - 20mm calibration cube
-   - Bridge test array
-   - Overhang test
-   - Clearance test
+1. **Finalize geometry library**
+   - Surface quality patch STL
+   - Iterative refinements from print feedback (bridge sag, clearance fit)
 
-2. **Build basic UI components**
-   - Simple experiment setup form
-   - Results input interface
-   - Download experiment files button
+2. **Enhance DOE UI**
+   - Experiment matrix preview with CSV preview/download
+   - Visual scoring hints per selected metric
+   - Persist experiment definitions (local storage baseline)
 
-3. **Implement basic analysis**
-   - Main effects calculation
-   - Simple recommendation output
+3. **Extend analysis toolkit**
+   - Interaction plots / two-factor analysis
+   - Chart visualizations for main effects & SNR
+   - Confirmation run assistant and PDF/Markdown report export
 
 ### Short-term (Next Sprint)
 1. RSM implementation for advanced optimization
@@ -173,10 +179,10 @@ Last Updated: 2025-01-30
 
 ### Key Decisions Made
 1. **Tower-based approach** instead of complex models like Benchy
-2. **3MF format** for complete parameter control
+2. **3MF format** for complete parameter control (exported from ASCII STL templates)
 3. **L9 array as default** for basic experiments
 4. **Single-purpose tests** for clear metrics
-5. **ASCII STL format** for easy manipulation
+5. **ASCII STL sources** stored under `public/templates/doe/` with procedural generation
 
 ### Dependencies Added
 - No new npm packages required (uses existing)
@@ -188,8 +194,8 @@ Last Updated: 2025-01-30
 ## 📈 Metrics
 
 ### Code Statistics
-- **Files Created:** 6
-- **Lines of Code:** ~1,500
+- **Files Created:** 10
+- **Lines of Code:** ~1,900
 - **Type Coverage:** 100%
 - **Build Status:** ✅ Passing
 
@@ -214,4 +220,4 @@ If session crashes, resume from:
 2. Review git log for latest commits
 3. Continue with "Next Priority Tasks" section
 4. All core DOE system files are complete and functional
-5. Main pending work: STL files and UI components
+5. Main pending work: surface patch STL, DOE UI enhancements, interaction analysis

@@ -13,6 +13,7 @@ import CalibrationGuide from '@/components/CalibrationGuide'
 import { DocumentationLayout } from '@/components/DocumentationLayout'
 import Recommendations from '@/components/Recommendations'
 import ChatPage from '@/components/ChatPage'
+import DOEWorkbench from '@/components/DOEWorkbench'
 
 function App() {
   const [currentTool, setCurrentTool] = useState('guide')
@@ -45,6 +46,8 @@ function App() {
         return <MaxVolumetricSpeed onNavigate={handleToolChange} />
       case 'recommendations':
         return <Recommendations onNavigate={handleToolChange} />
+      case 'doe':
+        return <DOEWorkbench />
       case 'documentation':
         return <DocumentationLayout onBack={() => handleToolChange('guide')} initialPath={docPath} />
       case 'chat':
