@@ -183,8 +183,14 @@ const DOEWorkbench: React.FC = () => {
   };
 
   const handleApplyTemplate = (templateId: string) => {
-    setSelectedPreset(templateId);
-    const template = DOE_TEMPLATES[templateId as keyof typeof DOE_TEMPLATES];
+    const normalizedId = templateId === 'none' ? '' : templateId;
+    setSelectedPreset(normalizedId);
+
+    if (!normalizedId) {
+      return;
+    }
+
+    const template = DOE_TEMPLATES[normalizedId as keyof typeof DOE_TEMPLATES];
     if (!template) {
       return;
     }
@@ -454,12 +460,12 @@ const DOEWorkbench: React.FC = () => {
 
             <div className="space-y-2">
               <Label>Experiment Templates</Label>
-              <Select value={selectedPreset} onValueChange={handleApplyTemplate}>
+              <Select value={selectedPreset || 'none'} onValueChange={handleApplyTemplate}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select template" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No template</SelectItem>
+                  <SelectItem value="none">No template</SelectItem>
                   {Object.values(DOE_TEMPLATES).map((template) => (
                     <SelectItem key={template.id} value={template.id}>
                       {template.name}
