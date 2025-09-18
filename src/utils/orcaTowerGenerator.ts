@@ -91,14 +91,23 @@ export abstract class TowerGeneratorBase {
    */
   protected calculateSections(): void {
     const { startValue, endValue, stepSize, baseHeight, sectionHeight } = this.params;
+
+    if (stepSize === 0) {
+      throw new Error('Section calculation failed: stepSize must be non-zero');
+    }
     
     const direction = endValue > startValue ? 1 : -1;
-    const steps = Math.floor(Math.abs(endValue - startValue) / Math.abs(stepSize)) + 1;
+    const totalSpan = Math.abs(endValue - startValue);
+    const rawSteps = totalSpan / Math.abs(stepSize);
+    const steps = Math.floor(rawSteps + 1e-6) + 1;
     
     let currentHeight = baseHeight!;
     
     for (let i = 0; i < steps; i++) {
-      const value = startValue + (i * stepSize * direction);
+      let value = startValue + (i * stepSize * direction);
+      if (i === steps - 1) {
+        value = endValue;
+      }
       this.sections.push({
         height: currentHeight,
         value: value,

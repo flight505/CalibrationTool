@@ -7,7 +7,9 @@ import JSZip from 'jszip';
 import { create } from 'xmlbuilder2';
 import { ParsedSTL, Triangle, Vertex } from './asciiStlUtils';
 import { GeneratedTower, OrcaSlicerSettings } from './orcaTowerGenerator';
-import { PostProcessingGenerator, FirmwareType, PostProcessingOptions } from './postProcessingGenerator';
+import { PostProcessingGenerator, PostProcessingOptions } from './postProcessingGenerator';
+import type { FirmwareType } from './firmwareTypes';
+import { mapModifierSettingsRecord, mapOrcaSettingsForFirmware } from './orcaSettingMapper';
 
 export interface ThreeMFExportOptions {
   projectName: string;
@@ -60,11 +62,15 @@ export class Orca3MFExporter {
     const mainSTL = this.parseSTLBlob(mainSTLContent);
     
     // Add 3D model with main tower and modifier meshes
-    await this.add3DModel(mainSTL, tower, options.orcaSettings);
-    
+    const mappedOrcaSettings = options.orcaSettings
+      ? mapOrcaSettingsForFirmware(options.orcaSettings, firmware)
+      : undefined;
+
+    await this.add3DModel(mainSTL, tower, mappedOrcaSettings, firmware);
+
     // Add OrcaSlicer-specific config
-    if (options.orcaSettings) {
-      this.addOrcaSlicerConfig(options.orcaSettings, towerType);
+    if (mappedOrcaSettings) {
+      this.addOrcaSlicerConfig(mappedOrcaSettings, towerType);
     }
     
     // Add post-processing G-code if enabled
@@ -144,7 +150,12 @@ export class Orca3MFExporter {
   /**
    * Add 3D model with geometry and components
    */
-  private async add3DModel(mainSTL: ParsedSTL, tower: GeneratedTower, settings?: OrcaSlicerSettings) {
+  private async add3DModel(
+    mainSTL: ParsedSTL,
+    tower: GeneratedTower,
+    settings: OrcaSlicerSettings | undefined,
+    firmware: FirmwareType
+  ) {
     const model = create({ encoding: 'UTF-8' })
       .ele('model', {
         unit: 'millimeter',
@@ -213,7 +224,10 @@ export class Orca3MFExporter {
           });
           
           // Add settings for this modifier
-          const modSettings = settings.modifierSettings[i].settings;
+          const modSettings = mapModifierSettingsRecord(
+            settings.modifierSettings[i].settings,
+            firmware
+          );
           Object.entries(modSettings).forEach(([key, value]) => {
             if (value !== undefined) {
               component.ele('slic3rpe:setting', {

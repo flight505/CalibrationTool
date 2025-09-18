@@ -29,7 +29,7 @@ export class FlowRateTowerGenerator extends TowerGeneratorBase {
     // Set defaults specific to flow rate towers
     const defaultParams: Partial<FlowRateTowerParameters> = {
       baseHeight: 1.0,
-      sectionHeight: 8.0,
+      sectionHeight: 10.0,
       towerWidth: 30,
       towerDepth: 30,
       startValue: 0.90,   // 90% flow

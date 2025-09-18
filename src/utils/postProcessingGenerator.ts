@@ -4,8 +4,10 @@
  */
 
 import { GeneratedTower, TowerSection, OrcaSlicerSettings } from './orcaTowerGenerator';
+import type { FirmwareType } from './firmwareTypes';
+import { mapModifierSettingsRecord } from './orcaSettingMapper';
 
-export type FirmwareType = 'marlin' | 'klipper' | 'rrf' | 'orcaslicer';
+export type { FirmwareType };
 
 export interface CalibrationCommand {
   zHeight: number;
@@ -356,41 +358,15 @@ export class PostProcessingGenerator {
     const modifierConfigs: Record<string, any>[] = [];
     
     settings.modifierSettings.forEach(modifier => {
-      const config: Record<string, any> = {};
-      
-      // Convert our generic settings to OrcaSlicer-specific keys
-      Object.entries(modifier.settings).forEach(([key, value]) => {
-        if (value !== undefined) {
-          // Map generic keys to OrcaSlicer keys if needed
-          const orcaKey = this.mapToOrcaSlicerKey(key, firmware);
-          if (orcaKey) {
-            config[orcaKey] = value;
-          }
-        }
-      });
-      
+      const config: Record<string, any> = mapModifierSettingsRecord(
+        modifier.settings,
+        firmware
+      );
+
       modifierConfigs.push(config);
     });
-    
-    return modifierConfigs;
-  }
 
-  /**
-   * Map generic setting keys to OrcaSlicer-specific keys
-   */
-  private mapToOrcaSlicerKey(key: string, firmware: FirmwareType): string {
-    const keyMap: Record<string, string> = {
-      'nozzle_temperature': 'temperature',
-      'fan_speed': 'fan_always_on',
-      'flow_ratio': 'filament_flow_ratio',
-      'pressure_advance': firmware === 'klipper' ? 'pressure_advance' : 'pressure_advance',
-      'retract_length': 'retraction_length',
-      'retract_speed': 'retraction_speed',
-      'print_speed': 'speed_print',
-      'max_volumetric_speed': 'filament_max_volumetric_speed'
-    };
-    
-    return keyMap[key] || key;
+    return modifierConfigs;
   }
 }
 
