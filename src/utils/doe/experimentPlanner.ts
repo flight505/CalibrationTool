@@ -13,8 +13,9 @@ import {
   ExperimentFactor
 } from './doeTypes';
 import { TEST_MODELS } from './testModels';
-import { generate3MF } from '../orca3mfExporter';
-import { parseSTL, ParsedSTL } from '../asciiStlUtils';
+import { Orca3MFExporter } from '../orca3mfExporter';
+import { parseAsciiStl, ParsedSTL, stlToString } from '../asciiStlUtils';
+import { GeneratedTower } from '../orcaTowerGenerator';
 
 // Map factors to OrcaSlicer settings
 const FACTOR_TO_ORCA_SETTINGS: Record<string, string> = {
@@ -103,7 +104,7 @@ export class ExperimentPlanner {
     }
 
     const stlContent = await response.text();
-    this.baseSTL = parseSTL(stlContent);
+    this.baseSTL = parseAsciiStl(stlContent);
   }
 
   /**
@@ -119,10 +120,12 @@ export class ExperimentPlanner {
 
     for (const [factorName, value] of Object.entries(run.factorSettings)) {
       const factor = this.experiment.factors.find(f => f.name === factorName);
-      if (factor && factor.slicerSetting) {
-        orcaSettings[factor.slicerSetting] = value;
-      } else if (FACTOR_TO_ORCA_SETTINGS[factor?.parameter || '']) {
-        orcaSettings[FACTOR_TO_ORCA_SETTINGS[factor.parameter]] = value;
+      if (factor) {
+        if (factor.slicerSetting) {
+          orcaSettings[factor.slicerSetting] = value;
+        } else if (FACTOR_TO_ORCA_SETTINGS[factor.parameter]) {
+          orcaSettings[FACTOR_TO_ORCA_SETTINGS[factor.parameter]] = value;
+        }
       }
     }
 
@@ -142,22 +145,41 @@ export class ExperimentPlanner {
 
     // Generate the 3MF project
     const projectName = `${this.experiment.name}_Run${run.runNumber}`;
-    const modelName = TEST_MODELS[this.experiment.testModel].name;
 
-    const threemfBlob = await generate3MF(
-      this.baseSTL!,
-      defaultSettings,
-      {
-        projectName,
-        modelName,
-        metadata: {
-          experiment_id: this.experiment.id,
-          run_number: run.runNumber,
-          factors: JSON.stringify(run.factorSettings),
-          created: new Date().toISOString()
-        }
+    const exporter = new Orca3MFExporter();
+
+    // Convert ParsedSTL to STL string and then to Blob
+    const stlString = stlToString(this.baseSTL!);
+    const stlBlob = new Blob([stlString], { type: 'application/octet-stream' });
+
+    // Create a GeneratedTower structure for the exporter
+    const towerData: GeneratedTower = {
+      mainSTL: stlBlob,
+      sections: [], // No sections for simple test models
+      instructions: `DOE Experiment ${this.experiment.id}, Run ${run.runNumber}\n` +
+                    `Test Model: ${TEST_MODELS[this.experiment.testModel].name}\n` +
+                    `Factor Settings: ${JSON.stringify(run.factorSettings, null, 2)}`,
+      orcaSettings: {
+        calibrationType: 'doe_experiment',
+        parameters: defaultSettings,
+        modifierSettings: []
       }
-    );
+    };
+
+    const project = await exporter.exportTower(towerData, {
+      projectName,
+      towerType: this.experiment.testModel,
+      mainSTL: this.baseSTL!,
+      orcaSettings: towerData.orcaSettings,
+      metadata: {
+        experiment_id: this.experiment.id,
+        run_number: run.runNumber,
+        factors: JSON.stringify(run.factorSettings),
+        created: new Date().toISOString()
+      }
+    });
+
+    const threemfBlob = project.file;
 
     return threemfBlob;
   }

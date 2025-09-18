@@ -4,7 +4,7 @@
  * Defines all available test models, their metrics, and scoring rubrics
  */
 
-import { TestModel, TestMetric, TestModelType } from './doeTypes';
+import { TestModel, TestModelType } from './doeTypes';
 
 // Calibration Cube - Dimensional Accuracy
 export const CALIBRATION_CUBE: TestModel = {
