@@ -48,6 +48,49 @@ function App() {
         return <Recommendations onNavigate={handleToolChange} />
       case 'doe':
         return <DOEWorkbench />
+      case 'doe-templates':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Experiment Templates</h2>
+            <p className="text-muted-foreground">
+              Pre-configured DOE templates for common calibration scenarios.
+            </p>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="border rounded-lg p-4">
+                <h3 className="font-semibold">PLA Basic Calibration</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  L9 array for temperature, flow, and retraction
+                </p>
+              </div>
+              <div className="border rounded-lg p-4">
+                <h3 className="font-semibold">PETG Optimization</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  L18 array for comprehensive PETG tuning
+                </p>
+              </div>
+              <div className="border rounded-lg p-4">
+                <h3 className="font-semibold">Speed Optimization</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Focus on speed, acceleration, and jerk settings
+                </p>
+              </div>
+            </div>
+          </div>
+        )
+      case 'doe-analysis':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Results Analysis</h2>
+            <p className="text-muted-foreground">
+              Analyze your DOE experiment results with statistical tools.
+            </p>
+            <div className="border rounded-lg p-6 bg-muted/30">
+              <p className="text-center text-muted-foreground">
+                No experiments available for analysis. Complete a DOE experiment first.
+              </p>
+            </div>
+          </div>
+        )
       case 'documentation':
         return <DocumentationLayout onBack={() => handleToolChange('guide')} initialPath={docPath} />
       case 'chat':
