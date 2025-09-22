@@ -3,9 +3,8 @@ import { Sidebar, SidebarBody, SidebarLink, SidebarGroup } from "@/components/ui
 import {
   Printer, Calculator, Thermometer, Move3D, RotateCcw, Github, Gauge, BookOpen,
   Settings, MessageCircle, Layers, Wind, Droplets, FlaskConical, Beaker,
-  BarChart3, FileText
+  BarChart3, FileText, ChevronLeft, ChevronRight
 } from "lucide-react";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,7 @@ interface SidebarLayoutProps {
 }
 
 const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children, currentTool, onToolChange }) => {
-  const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
 
   // Primary Tools - Standalone items at the top
   const primaryTools = [
@@ -144,12 +143,20 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children, currentTool, on
     <div className={cn(
       "flex h-screen bg-gray-100 dark:bg-neutral-900 w-full overflow-hidden"
     )}>
-      <Sidebar open={open} setOpen={setOpen}>
-        <SidebarBody className="justify-between gap-10 border-r border-neutral-200 dark:border-neutral-700">
+      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed}>
+        <SidebarBody className="justify-between gap-6 border-r border-neutral-200 dark:border-neutral-700">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
             {/* Logo Section */}
-            <div className="mb-8">
-              {open ? <Logo /> : <LogoIcon />}
+            <div className={cn("mb-6 flex items-center", collapsed ? "justify-center" : "justify-between")}>
+              {collapsed ? <LogoIcon /> : <Logo />}
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn("h-8 w-8", collapsed && "hidden")}
+                onClick={() => setCollapsed(true)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
             </div>
 
             {/* Navigation Groups */}
@@ -201,16 +208,26 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children, currentTool, on
           </div>
 
           {/* Footer Section */}
-          <div className="border-t border-neutral-200 dark:border-neutral-700 pt-4">
-            <div className="flex items-center justify-between gap-2 px-2">
-              <ThemeToggle />
-              {open && (
-                <Button variant="ghost" size="icon" asChild>
-                  <a href="https://github.com/flight505/CalibrationTool" target="_blank" rel="noopener noreferrer">
-                    <Github className="w-5 h-5" />
-                  </a>
+          <div className="border-t border-neutral-200 dark:border-neutral-700 pt-4 space-y-2">
+            {collapsed && (
+              <div className="flex justify-center">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setCollapsed(false)}
+                  className="h-10 w-10"
+                >
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
-              )}
+              </div>
+            )}
+            <div className={cn("flex items-center gap-2", collapsed ? "justify-center flex-col" : "justify-between px-2")}>
+              <ThemeToggle />
+              <Button variant="ghost" size="icon" asChild>
+                <a href="https://github.com/flight505/CalibrationTool" target="_blank" rel="noopener noreferrer">
+                  <Github className="w-5 h-5" />
+                </a>
+              </Button>
             </div>
           </div>
         </SidebarBody>
@@ -272,20 +289,16 @@ export const Logo = () => {
   return (
     <div className="font-normal flex space-x-2 items-center text-sm py-1 relative z-20">
       <Printer className="h-6 w-6 text-primary flex-shrink-0" />
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="font-medium text-neutral-900 dark:text-neutral-100 whitespace-pre"
-      >
-        OrcaSlicer Calibration
-      </motion.span>
+      <span className="font-medium text-neutral-900 dark:text-neutral-100 whitespace-nowrap">
+        OrcaSlicer
+      </span>
     </div>
   );
 };
 
 export const LogoIcon = () => {
   return (
-    <div className="font-normal flex space-x-2 items-center text-sm py-1 relative z-20">
+    <div className="font-normal flex items-center justify-center text-sm py-1 relative z-20">
       <Printer className="h-6 w-6 text-primary flex-shrink-0" />
     </div>
   );
