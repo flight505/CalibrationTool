@@ -9,14 +9,14 @@ import TemperatureTower from '@/components/TemperatureTower'
 import PressureAdvance from '@/components/PressureAdvance'
 import RetractionTest from '@/components/RetractionTest'
 import MaxVolumetricSpeed from '@/components/MaxVolumetricSpeed'
-import CalibrationGuide from '@/components/CalibrationGuide'
+import Welcome from '@/components/Welcome'
 import { DocumentationLayout } from '@/components/DocumentationLayout'
 import Recommendations from '@/components/Recommendations'
 import ChatPage from '@/components/ChatPage'
 import DOEWorkbench from '@/components/DOEWorkbench'
 
 function App() {
-  const [currentTool, setCurrentTool] = useState('guide')
+  const [currentTool, setCurrentTool] = useState('welcome')
   const [docPath, setDocPath] = useState<string | undefined>()
 
   const handleToolChange = (tool: string, path?: string) => {
@@ -26,8 +26,8 @@ function App() {
 
   const renderTool = () => {
     switch (currentTool) {
-      case 'guide':
-        return <CalibrationGuide onNavigateToTool={handleToolChange} />
+      case 'welcome':
+        return <Welcome onNavigateToTool={handleToolChange} />
       case 'firstlayer':
         return <FirstLayerCalibration onNavigate={handleToolChange} />
       case 'flow':
@@ -96,7 +96,7 @@ function App() {
       case 'chat':
         return <ChatPage />
       default:
-        return <CalibrationGuide onNavigateToTool={setCurrentTool} />
+        return <Welcome onNavigateToTool={handleToolChange} />
     }
   }
 

@@ -19,15 +19,26 @@ interface SidebarLayoutProps {
 const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children, currentTool, onToolChange }) => {
   const [open, setOpen] = useState(false);
 
-  // Quick Calibration Tools
-  const quickCalibrationLinks = [
+  // Primary Tools - Standalone items at the top
+  const primaryTools = [
+    {
+      label: "DOE Planner",
+      href: "#",
+      icon: <FlaskConical className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      onClick: () => onToolChange('doe'),
+      id: 'doe'
+    },
     {
       label: "Calibration Guide",
       href: "#",
       icon: <BookOpen className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-      onClick: () => onToolChange('guide'),
-      id: 'guide'
+      onClick: () => onToolChange('welcome'),
+      id: 'welcome'
     },
+  ];
+
+  // Quick Tests (formerly Quick Calibration)
+  const quickTestLinks = [
     {
       label: "First Layer",
       href: "#",
@@ -86,15 +97,8 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children, currentTool, on
     },
   ];
 
-  // DOE Tools
-  const doeToolsLinks = [
-    {
-      label: "DOE Planner",
-      href: "#",
-      icon: <FlaskConical className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-      onClick: () => onToolChange('doe'),
-      id: 'doe'
-    },
+  // DOE Analysis Tools
+  const doeAnalysisLinks = [
     {
       label: "Experiment Templates",
       href: "#",
@@ -150,9 +154,20 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children, currentTool, on
 
             {/* Navigation Groups */}
             <div className="flex flex-col gap-2">
-              {/* Quick Calibration Group */}
-              <SidebarGroup title="Quick Calibration">
-                {quickCalibrationLinks.map((link, idx) => (
+              {/* Primary Tools - Standalone */}
+              {primaryTools.map((link, idx) => (
+                <SidebarLink
+                  key={idx}
+                  link={link}
+                  isActive={currentTool === link.id}
+                />
+              ))}
+
+              <div className="border-t border-neutral-200 dark:border-neutral-700 mt-2 pt-2" />
+
+              {/* Quick Tests Group */}
+              <SidebarGroup title="Quick Tests">
+                {quickTestLinks.map((link, idx) => (
                   <SidebarLink
                     key={idx}
                     link={link}
@@ -161,9 +176,9 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children, currentTool, on
                 ))}
               </SidebarGroup>
 
-              {/* DOE Tools Group */}
-              <SidebarGroup title="DOE Tools">
-                {doeToolsLinks.map((link, idx) => (
+              {/* DOE Analysis Group */}
+              <SidebarGroup title="DOE Analysis">
+                {doeAnalysisLinks.map((link, idx) => (
                   <SidebarLink
                     key={idx}
                     link={link}
@@ -233,7 +248,7 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children, currentTool, on
 // Helper function to get tool name
 const getToolName = (toolId: string): string => {
   const toolNames: Record<string, string> = {
-    'guide': 'Calibration Guide',
+    'welcome': 'OrcaSlicer Calibration Suite',
     'firstlayer': 'First Layer Calibration',
     'temperature': 'Temperature Tower',
     'flow': 'Flow Cube Calibration',
