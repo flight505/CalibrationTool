@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import Layout from '@/components/Layout'
-import FirstLayerCalibration from '@/components/FirstLayerCalibration'
-import FlowRateCalibration from '@/components/FlowRateCalibration'
+import FirstLayerCalibrationV2 from '@/components/FirstLayerCalibrationV2'
+import FlowRateCalibrationV2 from '@/components/FlowRateCalibrationV2'
 import FlowRateTower from '@/components/FlowRateTower'
 import FanSpeedTower from '@/components/FanSpeedTower'
 import TemperatureTower from '@/components/TemperatureTower'
-import PressureAdvance from '@/components/PressureAdvance'
-import RetractionTest from '@/components/RetractionTest'
-import MaxVolumetricSpeed from '@/components/MaxVolumetricSpeed'
+import PressureAdvanceV2 from '@/components/PressureAdvanceV2'
+import RetractionTestV2 from '@/components/RetractionTestV2'
+import MaxVolumetricSpeedV2 from '@/components/MaxVolumetricSpeedV2'
 import Welcome from '@/components/Welcome'
 import { DocumentationLayout } from '@/components/DocumentationLayout'
 import Recommendations from '@/components/Recommendations'
@@ -29,9 +29,9 @@ function App() {
       case 'welcome':
         return <Welcome onNavigateToTool={handleToolChange} />
       case 'firstlayer':
-        return <FirstLayerCalibration onNavigate={handleToolChange} />
+        return <FirstLayerCalibrationV2 onNavigate={handleToolChange} />
       case 'flow':
-        return <FlowRateCalibration onNavigate={handleToolChange} />
+        return <FlowRateCalibrationV2 onNavigate={handleToolChange} />
       case 'flowtower':
         return <FlowRateTower onNavigate={handleToolChange} />
       case 'fanspeed':
@@ -39,11 +39,11 @@ function App() {
       case 'temperature':
         return <TemperatureTower onNavigate={handleToolChange} />
       case 'pressure':
-        return <PressureAdvance onNavigate={handleToolChange} />
+        return <PressureAdvanceV2 onNavigate={handleToolChange} />
       case 'retraction':
-        return <RetractionTest onNavigate={handleToolChange} />
+        return <RetractionTestV2 onNavigate={handleToolChange} />
       case 'maxspeed':
-        return <MaxVolumetricSpeed onNavigate={handleToolChange} />
+        return <MaxVolumetricSpeedV2 onNavigate={handleToolChange} />
       case 'recommendations':
         return <Recommendations onNavigate={handleToolChange} />
       case 'doe':

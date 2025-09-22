@@ -1,17 +1,23 @@
 import { useState } from 'react';
-import { Thermometer, Info, FileText, Download, Settings, Package } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Thermometer, Download, Settings, Package, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { HelpButton } from '@/components/HelpButton';
-import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateTemperatureTower } from '@/utils/orcaTemperatureTower';
 import { exportTowerAs3MF } from '@/utils/orca3mfExporter';
+import {
+  CalibrationToolLayout,
+  FormSection,
+  InfoCard,
+  ActionSection,
+  ResultCard,
+  TwoColumnLayout,
+} from '@/components/calibration/CalibrationToolLayout';
+import {
+  TextField,
+  SelectField,
+  SwitchField,
+  FieldGroup,
+} from '@/components/calibration/FormFields';
 
 interface TemperatureTowerProps {
   onNavigate?: (tool: string, path?: string) => void;
@@ -31,6 +37,14 @@ const TemperatureTower: React.FC<TemperatureTowerProps> = ({ onNavigate }) => {
   const [includeLabels, setIncludeLabels] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [towerInstructions, setTowerInstructions] = useState<string | null>(null);
+
+  const materialOptions = [
+    { value: 'PLA', label: 'PLA' },
+    { value: 'PETG', label: 'PETG' },
+    { value: 'ABS', label: 'ABS' },
+    { value: 'TPU', label: 'TPU' },
+    { value: 'PA-CF', label: 'PA-CF' },
+  ];
 
   const materialRanges = {
     PLA: { min: 190, max: 230, typical: 210, start: 220, end: 190 },
@@ -131,336 +145,238 @@ const TemperatureTower: React.FC<TemperatureTowerProps> = ({ onNavigate }) => {
     }
   };
 
+  // Sidebar content
+  const sidebarContent = (
+    <div className="space-y-4">
+      <InfoCard variant="info" title="What to Look For">
+        <ul className="space-y-1 text-xs">
+          <li>• Best layer adhesion without stringing</li>
+          <li>• Good overhang performance</li>
+          <li>• Smooth surface finish</li>
+          <li>• No drooping on bridges</li>
+        </ul>
+      </InfoCard>
+
+      <InfoCard variant="warning" title="Common Issues">
+        <ul className="space-y-1 text-xs">
+          <li>• <strong>Too hot:</strong> Stringing, drooping, glossy</li>
+          <li>• <strong>Too cold:</strong> Poor adhesion, rough surface</li>
+          <li>• <strong>Just right:</strong> Matte finish, strong layers</li>
+        </ul>
+      </InfoCard>
+
+      <InfoCard variant="tip" title="Material Ranges">
+        <ul className="space-y-1 text-xs">
+          <li>• <strong>PLA:</strong> 190-230°C (typical: 210°C)</li>
+          <li>• <strong>PETG:</strong> 230-250°C (typical: 240°C)</li>
+          <li>• <strong>ABS:</strong> 240-270°C (typical: 255°C)</li>
+          <li>• <strong>TPU:</strong> 210-240°C (typical: 225°C)</li>
+          <li>• <strong>PA-CF:</strong> 280-320°C (typical: 300°C)</li>
+        </ul>
+      </InfoCard>
+
+      <InfoCard variant="success" title="First Layer Temperature">
+        <p className="text-xs mb-1">For better bed adhesion, increase by:</p>
+        <ul className="space-y-1 text-xs">
+          <li>• <strong>PLA/ABS/TPU:</strong> +5°C</li>
+          <li>• <strong>PETG:</strong> +5-10°C</li>
+          <li>• <strong>PA-CF:</strong> +0-5°C</li>
+        </ul>
+      </InfoCard>
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="text-center relative">
-          {onNavigate && (
-            <div className="absolute right-4 top-4">
-              <HelpButton 
-                docPath="/docs/orca-slicer/calibration/calibration-guide.md"
-                tooltip="View temperature calibration documentation"
-                onNavigate={onNavigate}
-              />
-            </div>
-          )}
-          <CardTitle className="text-3xl font-bold flex items-center justify-center gap-3">
-            <Thermometer className="w-8 h-8" />
-            Temperature Tower Analysis
-          </CardTitle>
-          <CardDescription className="text-base">
-            Find the optimal printing temperature for your filament
-          </CardDescription>
-        </CardHeader>
-      </Card>
+    <CalibrationToolLayout
+      icon={<Thermometer className="w-6 h-6" />}
+      title="Temperature Tower"
+      description="Find the optimal printing temperature for your filament"
+      docPath="/docs/orca-slicer/calibration/calibration-guide.md"
+      onNavigate={onNavigate}
+      badge={{ text: 'Essential', variant: 'default' }}
+    >
 
-      <Tabs defaultValue="analyze" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="analyze">Analyze Results</TabsTrigger>
-          <TabsTrigger value="generate">Generate Tower</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="analyze">
-          <div className="grid md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Temperature Analysis</CardTitle>
-            <CardDescription>
-              Enter the best temperature from your tower test
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="material">Material Type</Label>
-              <Select value={material} onValueChange={handleMaterialChange}>
-                <SelectTrigger id="material">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="PLA">PLA</SelectItem>
-                  <SelectItem value="PETG">PETG</SelectItem>
-                  <SelectItem value="ABS">ABS</SelectItem>
-                  <SelectItem value="TPU">TPU</SelectItem>
-                  <SelectItem value="PA-CF">PA-CF</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      <TwoColumnLayout sidebar={sidebarContent}>
+        <Tabs defaultValue="analyze" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 max-w-lg">
+            <TabsTrigger value="analyze">Analyze Results</TabsTrigger>
+            <TabsTrigger value="generate">Generate Tower</TabsTrigger>
+          </TabsList>
 
-            <div className="space-y-2">
-              <Label htmlFor="best-temp">Best Temperature (°C)</Label>
-              <Input
-                id="best-temp"
-                type="number"
-                value={bestTemp}
-                onChange={(e) => setBestTemp(e.target.value)}
-                placeholder={materialRanges[material as keyof typeof materialRanges].typical.toString()}
-              />
-              <p className="text-sm text-muted-foreground">
-                Typical range: {materialRanges[material as keyof typeof materialRanges].min}°C - {materialRanges[material as keyof typeof materialRanges].max}°C
-              </p>
-            </div>
+          <TabsContent value="analyze" className="space-y-4">
+            <FormSection
+              title="Temperature Analysis"
+              description="Enter the best temperature from your tower test"
+              icon={<Thermometer className="h-4 w-4" />}
+            >
+              <FieldGroup>
+                <SelectField
+                  label="Material Type"
+                  id="material"
+                  value={material}
+                  onChange={handleMaterialChange}
+                  options={materialOptions}
+                />
+                <TextField
+                  label="Best Temperature"
+                  id="best-temp"
+                  type="number"
+                  value={bestTemp}
+                  onChange={setBestTemp}
+                  unit="°C"
+                  placeholder={materialRanges[material as keyof typeof materialRanges].typical.toString()}
+                  helperText={`Typical range: ${materialRanges[material as keyof typeof materialRanges].min}°C - ${materialRanges[material as keyof typeof materialRanges].max}°C`}
+                />
+              </FieldGroup>
 
-            <Button onClick={analyze} className="w-full">
-              <Thermometer className="mr-2 h-4 w-4" />
-              Analyze Temperature
-            </Button>
+              <ActionSection>
+                <Button onClick={analyze} className="w-full sm:w-auto">
+                  Analyze Temperature
+                </Button>
+              </ActionSection>
 
-            {result && (
-              <Alert className={result.includes('✅') ? "bg-green-50/50 dark:bg-green-950/20" : ""}>
-                <AlertDescription className="whitespace-pre-line">
+              {result && result.includes('✅') && (
+                <ResultCard
+                  title="Optimal Temperature"
+                  value={`${bestTemp}°C`}
+                  description={result.replace('✅ ', '').replace(`Optimal temperature for ${material}: ${bestTemp}°C\n`, '')}
+                  variant="success"
+                  icon={<CheckCircle2 className="h-5 w-5" />}
+                />
+              )}
+              {result && result.includes('⚠️') && (
+                <InfoCard variant="warning">
+                  {result.replace('⚠️ ', '')}
+                </InfoCard>
+              )}
+              {result && !result.includes('✅') && !result.includes('⚠️') && (
+                <InfoCard variant="warning">
                   {result}
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Temperature Guidelines</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 text-sm">
-              <div>
-                <h4 className="font-semibold mb-1">What to Look For:</h4>
-                <ul className="space-y-1 text-muted-foreground">
-                  <li>• Best layer adhesion without stringing</li>
-                  <li>• Good overhang performance</li>
-                  <li>• Smooth surface finish</li>
-                  <li>• No drooping on bridges</li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold mb-1">Common Issues:</h4>
-                <ul className="space-y-1 text-muted-foreground">
-                  <li>• Too hot: Stringing, drooping, glossy finish</li>
-                  <li>• Too cold: Poor adhesion, rough surface</li>
-                  <li>• Just right: Matte finish, strong layers</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-          </div>
-        </TabsContent>
+                </InfoCard>
+              )}
+            </FormSection>
+          </TabsContent>
         
-        <TabsContent value="generate" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Generate Temperature Tower</CardTitle>
-              <CardDescription>
-                Create a custom temperature calibration tower for your material
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="gen-material">Material Type</Label>
-                  <Select value={material} onValueChange={handleMaterialChange}>
-                    <SelectTrigger id="gen-material">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PLA">PLA</SelectItem>
-                      <SelectItem value="PETG">PETG</SelectItem>
-                      <SelectItem value="ABS">ABS</SelectItem>
-                      <SelectItem value="TPU">TPU</SelectItem>
-                      <SelectItem value="PA-CF">PA-CF</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="temp-step">Temperature Step (°C)</Label>
-                  <Input
-                    id="temp-step"
-                    type="number"
-                    value={tempStep}
-                    onChange={(e) => setTempStep(e.target.value)}
-                    min="1"
-                    max="10"
-                  />
-                </div>
+          <TabsContent value="generate" className="space-y-4">
+            <FormSection
+              title="Generate Temperature Tower"
+              description="Create a custom temperature calibration tower for your material"
+              icon={<Settings className="h-4 w-4" />}
+            >
+              <FieldGroup>
+                <SelectField
+                  label="Material Type"
+                  id="gen-material"
+                  value={material}
+                  onChange={handleMaterialChange}
+                  options={materialOptions}
+                />
+                <TextField
+                  label="Temperature Step"
+                  id="temp-step"
+                  type="number"
+                  value={tempStep}
+                  onChange={setTempStep}
+                  unit="°C"
+                  min={1}
+                  max={10}
+                  placeholder="5"
+                />
+              </FieldGroup>
+
+              <FieldGroup>
+                <TextField
+                  label="Start Temperature"
+                  id="start-temp"
+                  type="number"
+                  value={startTemp}
+                  onChange={setStartTemp}
+                  unit="°C"
+                  placeholder={materialRanges[material as keyof typeof materialRanges].start.toString()}
+                />
+                <TextField
+                  label="End Temperature"
+                  id="end-temp"
+                  type="number"
+                  value={endTemp}
+                  onChange={setEndTemp}
+                  unit="°C"
+                  placeholder={materialRanges[material as keyof typeof materialRanges].end.toString()}
+                />
+              </FieldGroup>
+
+              <div className="space-y-3">
+                <SwitchField
+                  label="Include Bridge Test"
+                  id="include-bridge"
+                  checked={includeBridge}
+                  onCheckedChange={setIncludeBridge}
+                />
+                <SwitchField
+                  label="Include Overhang Test"
+                  id="include-overhang"
+                  checked={includeOverhang}
+                  onCheckedChange={setIncludeOverhang}
+                  description="30°, 45°, 60°, 75° angles"
+                />
+                <SwitchField
+                  label="Include Temperature Labels"
+                  id="include-labels"
+                  checked={includeLabels}
+                  onCheckedChange={setIncludeLabels}
+                />
               </div>
-              
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="start-temp">Start Temperature (°C)</Label>
-                  <Input
-                    id="start-temp"
-                    type="number"
-                    value={startTemp}
-                    onChange={(e) => setStartTemp(e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="end-temp">End Temperature (°C)</Label>
-                  <Input
-                    id="end-temp"
-                    type="number"
-                    value={endTemp}
-                    onChange={(e) => setEndTemp(e.target.value)}
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="include-bridge" className="cursor-pointer">
-                    Include Bridge Test
-                  </Label>
-                  <Switch
-                    id="include-bridge"
-                    checked={includeBridge}
-                    onCheckedChange={setIncludeBridge}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="include-overhang" className="cursor-pointer">
-                    Include Overhang Test (30°, 45°, 60°, 75°)
-                  </Label>
-                  <Switch
-                    id="include-overhang"
-                    checked={includeOverhang}
-                    onCheckedChange={setIncludeOverhang}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="include-labels" className="cursor-pointer">
-                    Include Temperature Labels
-                  </Label>
-                  <Switch
-                    id="include-labels"
-                    checked={includeLabels}
-                    onCheckedChange={setIncludeLabels}
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <Button 
-                  onClick={() => generateTower(false)} 
-                  className="w-full"
-                  disabled={generating}
+
+              <ActionSection>
+                <Button
+                  onClick={() => generateTower(false)}
                   variant="outline"
+                  disabled={generating}
+                  className="w-full sm:w-auto"
                 >
-                  {generating ? (
-                    <>Generating...</>
-                  ) : (
+                  {generating ? 'Generating...' : (
                     <>
                       <Download className="mr-2 h-4 w-4" />
                       Download STL Files
                     </>
                   )}
                 </Button>
-                
-                <Button 
-                  onClick={() => generateTower(true)} 
-                  className="w-full"
+
+                <Button
+                  onClick={() => generateTower(true)}
                   disabled={generating}
+                  className="w-full sm:w-auto"
                 >
-                  {generating ? (
-                    <>Generating...</>
-                  ) : (
+                  {generating ? 'Generating...' : (
                     <>
                       <Package className="mr-2 h-4 w-4" />
                       Download 3MF Project
                     </>
                   )}
                 </Button>
-              </div>
-              
+              </ActionSection>
+
               {result && result.includes('tower generated') && (
-                <Alert className="bg-green-50/50 dark:bg-green-950/20">
-                  <AlertDescription className="whitespace-pre-line">
-                    {result}
-                  </AlertDescription>
-                </Alert>
+                <InfoCard variant="success">
+                  {result.replace('✅ ', '').replace('❌ ', '')}
+                </InfoCard>
               )}
-            </CardContent>
-          </Card>
+            </FormSection>
           
-          {towerInstructions && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="w-5 h-5" />
-                  Tower Setup Instructions
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+            {towerInstructions && (
+              <FormSection
+                title="Tower Setup Instructions"
+                icon={<Settings className="h-4 w-4" />}
+              >
                 <pre className="text-sm whitespace-pre-wrap bg-muted p-4 rounded-lg">
                   {towerInstructions}
                 </pre>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-      </Tabs>
-
-      <Accordion type="single" collapsible className="w-full">
-        <AccordionItem value="instructions">
-          <AccordionTrigger className="text-lg font-semibold">
-            <div className="flex items-center gap-2">
-              <Info className="w-5 h-5" />
-              How to Run a Temperature Tower Test
-            </div>
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-4 pt-4">
-              <Alert>
-                <FileText className="h-4 w-4" />
-                <AlertTitle>Test Procedure</AlertTitle>
-                <AlertDescription>
-                  <ol className="mt-2 space-y-2">
-                    <li><strong>1. Generate Tower:</strong> In Orca Slicer, go to Calibration → Temperature Tower</li>
-                    <li><strong>2. Set Range:</strong> Start 10°C above typical, end 10°C below</li>
-                    <li><strong>3. Print:</strong> The tower will change temperature every 5mm</li>
-                    <li><strong>4. Examine:</strong> Look for the height with best quality</li>
-                    <li><strong>5. Measure:</strong> Note the temperature at that height</li>
-                  </ol>
-                </AlertDescription>
-              </Alert>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Temperature Ranges by Material</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-1 text-sm">
-                      <li><strong>PLA:</strong> 190-230°C (typically 210°C)</li>
-                      <li><strong>PETG:</strong> 230-250°C (typically 240°C)</li>
-                      <li><strong>ABS:</strong> 240-270°C (typically 255°C)</li>
-                      <li><strong>TPU:</strong> 210-240°C (typically 225°C)</li>
-                      <li><strong>PA-CF:</strong> 280-320°C (typically 300°C)</li>
-                    </ul>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">First Layer Temperature</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm space-y-2">
-                    <p>For better bed adhesion, increase first layer temp by:</p>
-                    <ul className="space-y-1">
-                      <li>• <strong>PLA/ABS/TPU:</strong> +5°C</li>
-                      <li>• <strong>PETG:</strong> +5-10°C</li>
-                      <li>• <strong>PA-CF:</strong> +0-5°C</li>
-                    </ul>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-    </div>
+              </FormSection>
+            )}
+          </TabsContent>
+        </Tabs>
+      </TwoColumnLayout>
+    </CalibrationToolLayout>
   );
 };
 
