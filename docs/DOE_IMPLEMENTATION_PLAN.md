@@ -17,6 +17,25 @@ This document outlines the actionable implementation plan for integrating Design
 - The DOE planner converts those STL sources into Orca-compatible 3MF projects on-demand, embedding modifier settings and metadata
 - New geometry work should target STL first; no manual 3MF authoring is required beyond the automated export path
 
+### LLM‑Assisted DOE (New)
+
+- Goal: use an LLM (GPT‑5) to propose context‑aware factor sets/ranges and, when needed, synthesize simple ASCII STL test parts under strict constraints to reduce total runs and print time.
+- Inputs collected in UI: filament brand, material, printer model, printer type (bedslinger/CoreXY/Delta), nozzle size, target layer height. These feed a prompt that returns recommended factors and 3‑level ranges.
+- Library‑first: we prefer pre‑vetted parts. LLM proposals are validated and then frozen into a local library.
+- Export modes (user toggle): “Use Orca native modifiers” (recommended in OrcaSlicer) vs “Embed firmware G‑code” (portable SD prints).
+
+Constraints for generated parts
+- Simple solids only (rectangular extrusions), base ≥ 2.0 mm, minimum wall ≥ 0.4 mm, manifold STL; independent features must not be fused by caps or shared decks.
+- Output strictly ASCII STL (mm) with optional one‑line JSON meta header (name, size, features, factors) to aid QA.
+
+Validation pipeline
+- Automated: parse, triangle count, bounding box, degenerate/normal checks, min‑feature heuristics, quick Orca slice (no “empty layers”).
+- Manual: visual pass, measurement points, label legibility, metric coverage.
+- Accepted parts get `<model>.meta.json` and enter the library manifest.
+
+Library manifest
+- `public/templates/doe/library/manifest.json` lists all curated models with id, path, version, dimensions, targeted factors, metrics[], and recommended slicer defaults. Each model carries `<model>.meta.json` with notes.
+
 ## Phase 1: DOE Framework Implementation
 
 ### 1.1 Taguchi Orthogonal Array Generator

@@ -625,3 +625,18 @@ Key implementation priorities:
 3. Use simple quality metrics (1-10 scales)
 4. Gradually add advanced features (RSM, optimization)
 5. Validate against manual calibration results
+## LLM‑Generated Geometry (Findings)
+- GPT‑5 can emit valid ASCII STL for simple, rectangular‑solid geometries under strict constraints (mm units; base ≥ 2.0 mm; minimum wall ≥ 0.4 mm; no caps that fuse independent spans).
+- Reliability decreases with curved/topologically complex parts; keep to 2.5D extrusions and box primitives for test plates.
+- A single‑line JSON meta header preceding the STL (e.g., `{name, size_mm, features, factors}`) is useful for QA and can be stripped before saving.
+
+### Validation Pipeline (Proposed)
+1. ASCII parser: triangle count, bounding box, degenerate triangle and normal checks, min‑feature heuristics.
+2. Slicer smoke test in Orca (low‑time settings) to catch “empty layers” and fused features.
+3. Manual pass for measurement points and label legibility.
+4. Accept → add `<model>.meta.json` and manifest entry; else revise or reject.
+
+### DOE Run Reduction (Practice Notes)
+- Start with L9 for 4 core factors (temperature, fan, speed, flow) using brand/printer‑specific ranges; proceed with a small RSM only where effects are strongest.
+- Combine compatible metrics on one plate via region modifiers (e.g., bridge lanes + overhang ramp), capping each plate at ≤ 45 min.
+- Early stopping when SNR improvements plateau or quality thresholds (e.g., stringing) are met.

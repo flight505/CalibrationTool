@@ -28,7 +28,7 @@ For effective DOE, each test model should measure ONE specific aspect of print q
 | Test Model | Purpose | Design Specification | Measurable Outcome | Priority |
 |------------|---------|---------------------|-------------------|----------|
 | **20mm Calibration Cube** | Dimensional accuracy | Solid 20×20×20mm cube | X/Y/Z deviation (mm) | **HIGH** |
-| **Bridge Test Array** | Bridging capability | 5 bridges: 5,10,15,20,25mm spans | Success count (0-5), max span | **HIGH** |
+| **Bridge Test Array** | Bridging capability | 5 U-shaped bridges: 10,15,20,25,30mm spans (separate lanes) | Success count (0-5), max span | **HIGH** |
 | **Overhang Test** | Overhang capability | Progressive: 30°,45°,60°,70°,80° | Max successful angle | **HIGH** |
 | **Clearance Test** | Tolerance/fit | Holes/pins: 0.1-0.5mm steps | Min functional clearance (mm) | **MEDIUM** |
 | **Surface Quality Patch** | Top surface finish | 50×50×5mm flat patch | Roughness score (1-5) | **MEDIUM** |
@@ -147,3 +147,32 @@ For each DOE experimental run:
 - MakerWorld Test Models: https://makerworld.com/en/3d-models/903-test-models
 - Teaching Tech Calibration: https://teachingtechyt.github.io/calibration.html
 - OrcaSlicer Calibration Wiki: GitHub OrcaSlicer Wiki
+## Curated Library & Metadata (New)
+
+All DOE test parts are shipped as ASCII STL with an accompanying meta file.
+
+- Location: `public/templates/doe/library/<category>/<model>.stl`
+- Metadata: `public/templates/doe/library/<category>/<model>.meta.json`
+
+Meta schema (draft):
+```
+{
+  "id": "bridge_array_v2",
+  "name": "Bridge Test Array V2",
+  "version": "1.0.0",
+  "category": "bridging",
+  "path": "/templates/doe/library/bridging/bridge_array_v2.stl",
+  "dimensions_mm": { "x": 150, "y": 90, "z": 30 },
+  "factors": ["fan_speed", "temperature"],
+  "metrics": ["successful_bridges", "max_bridge_length", "bridge_quality"],
+  "recommended": {
+    "layer_height": 0.2,
+    "nozzle": 0.4,
+    "infill": 0,
+    "wall_loops": 2
+  },
+  "notes": "U-shaped spans, 6 mm lane clearance; embossed labels"
+}
+```
+
+Manifest: `public/templates/doe/library/manifest.json` consolidates all entries for the UI.

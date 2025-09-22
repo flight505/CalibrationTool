@@ -132,10 +132,11 @@ export async function generateSimpleSTL(params: Parameters): Promise<Blob> {
 ### Overview
 The post-processing system injects G-code commands at specific layer heights to change calibration parameters during printing.
 
-### Components
+### Components (with Mode Toggle)
 1. **PostProcessingGenerator** (`postProcessingGenerator.ts`)
    - Generates firmware-specific G-code commands
-   - Creates `custom_gcode_per_layer.xml` for OrcaSlicer
+   - Creates `custom_gcode_per_layer.xml` for OrcaSlicer (when firmware mode is selected)
+   - Skipped when “Use Orca native modifiers” is enabled in the UI
 
 2. **Tower Sections**
    - Each section has: height, value, label
@@ -145,7 +146,7 @@ The post-processing system injects G-code commands at specific layer heights to 
    - **Marlin**: `M104 S{temp}`, `M220 S{flow}`, etc.
    - **Klipper**: `SET_HEATER_TEMPERATURE`, `SET_PRESSURE_ADVANCE`
    - **RepRapFirmware**: `G10 P0 S{temp}`, `M572 D0 S{pa}`
-   - **OrcaSlicer**: Native modifier mesh support
+   - **OrcaSlicer**: Native modifier mesh support (recommended). Our exporter embeds modifier meshes; the UI switch disables firmware overrides for full slicer visualization.
 
 ### 3MF Export Features
 ```typescript

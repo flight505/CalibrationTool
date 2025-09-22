@@ -150,11 +150,17 @@ Last Updated: 2025-02-14
    - Add visual reference images to scoring hints
    - Persist measurement inputs between sessions
    - Polish matrix preview with charts/summary stats
+   - Add LLM context form and “Propose ranges” action (manual override allowed)
 
 3. **Extend analysis toolkit**
    - Interaction plots / two-factor analysis
    - Chart visualizations for main effects & SNR
    - Confirmation run assistant and PDF/Markdown report export
+
+4. **LLM‑assisted parts vetting**
+   - Define prompt pack and constraints for ASCII STL generation
+   - Build automated STL QA harness (parse + slice checks)
+   - Curate first 3 vetted LLM parts into library (with meta files)
 
 ### Short-term (Next Sprint)
 1. RSM implementation for advanced optimization

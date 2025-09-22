@@ -4,6 +4,24 @@
 
 This document outlines the design for a G-code parameter variation system that enables Design of Experiments (DOE) by generating multiple test prints with systematically varied parameters from a single base model.
 
+## Mode Selection: Orca Native vs Firmware G‑code (UI Toggle)
+
+We support two export modes because users slice in different environments and expect different preview/behavior:
+
+- Orca native modifiers (recommended when slicing in OrcaSlicer)
+  - Uses Orca’s height/region modifiers embedded in the 3MF.
+  - Section changes are visible in the slicer (color‑coded temperature/fan/etc.).
+  - No M104/M109/M106/M221 overrides are injected; the slicer owns parameter application.
+
+- Firmware post‑processing G‑code (portable SD/remote use)
+  - Injects M‑codes at section boundaries in a generated `Metadata/custom_gcode_per_layer.xml`.
+  - Works across Marlin/Klipper/RRF; preview stays single‑color in Orca.
+
+Implementation details
+- The UI presents a switch: “Use Orca native modifiers.” If enabled we pass `includePostProcessing = false` into the exporter, otherwise `true`.
+- The exporter still embeds Orca modifier metadata for compatibility; we simply skip the post‑processing bundle in native mode.
+- Mapping from generic keys (e.g. `flow_ratio`) to Orca keys (e.g. `filament_flow_ratio`) is centralized in `mapModifierSettingsRecord` to keep both modes consistent.
+
 ## System Architecture
 
 ```
