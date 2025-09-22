@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Gauge, Package, CheckCircle2, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -35,7 +35,7 @@ const MaxVolumetricSpeedV2: React.FC<MaxVolumetricSpeedProps> = ({ onNavigate })
   const [towerEnd, setTowerEnd] = useState('40');
   const [towerStep, setTowerStep] = useState('5');
   const [firmware, setFirmware] = useState<'marlin' | 'klipper' | 'rrf' | 'orcaslicer'>('marlin');
-  const [includePostProcessing, setIncludePostProcessing] = useState(true);
+  const [useNativeModifiers, setUseNativeModifiers] = useState(firmware === 'orcaslicer');
   const [generating, setGenerating] = useState(false);
   const [towerResult, setTowerResult] = useState<string | null>(null);
 
@@ -76,7 +76,7 @@ const MaxVolumetricSpeedV2: React.FC<MaxVolumetricSpeedProps> = ({ onNavigate })
       const project = await generateMaxVolumetricTower3MF(
         params,
         firmware,
-        includePostProcessing
+        !useNativeModifiers
       );
 
       const url = URL.createObjectURL(project.file);
@@ -87,7 +87,10 @@ const MaxVolumetricSpeedV2: React.FC<MaxVolumetricSpeedProps> = ({ onNavigate })
       URL.revokeObjectURL(url);
 
       const numSections = Math.floor(Math.abs(params.endValue - params.startValue) / params.stepSize) + 1;
-      setTowerResult(`Max Volumetric Speed tower generated successfully!\n${numSections} speed sections from ${towerStart} to ${towerEnd} mm³/s\n${includePostProcessing ? 'Post-processing G-code included' : 'Manual setup required'}`);
+      const modeMessage = useNativeModifiers
+        ? 'Orca native modifiers enabled'
+        : 'Firmware post-processing G-code included';
+      setTowerResult(`Max Volumetric Speed tower generated successfully!\n${numSections} speed sections from ${towerStart} to ${towerEnd} mm³/s\n${modeMessage}`);
     } catch (error) {
       console.error('Error generating tower:', error);
       setTowerResult('Error generating tower. Please try again.');
@@ -97,6 +100,18 @@ const MaxVolumetricSpeedV2: React.FC<MaxVolumetricSpeedProps> = ({ onNavigate })
   };
 
   // Sidebar content
+  const previousFirmware = useRef(firmware);
+
+  useEffect(() => {
+    if (firmware === 'orcaslicer' && previousFirmware.current !== 'orcaslicer') {
+      setUseNativeModifiers(true);
+    }
+    if (firmware !== 'orcaslicer' && previousFirmware.current === 'orcaslicer') {
+      setUseNativeModifiers(false);
+    }
+    previousFirmware.current = firmware;
+  }, [firmware]);
+
   const sidebarContent = (
     <div className="space-y-4">
       <InfoCard variant="info" title="Typical Hotend Values">
@@ -293,11 +308,11 @@ const MaxVolumetricSpeedV2: React.FC<MaxVolumetricSpeedProps> = ({ onNavigate })
               />
 
               <SwitchField
-                label="Include Post-Processing G-code"
-                id="post-processing"
-                checked={includePostProcessing}
-                onCheckedChange={setIncludePostProcessing}
-                description="Auto-inject speed changes at each height"
+                label="Use Orca native modifiers"
+                id="native-modifiers"
+                checked={useNativeModifiers}
+                onCheckedChange={setUseNativeModifiers}
+                description="Recommended when slicing in OrcaSlicer; disables firmware G-code overrides"
               />
 
               <ActionSection>

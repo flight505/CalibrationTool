@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Droplets, Package, CheckCircle2, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { generateFlowRateTower3MF } from '@/utils/orcaTower3MFExports';
@@ -26,7 +26,7 @@ const FlowRateTowerV2: React.FC<FlowRateTowerProps> = ({ onNavigate }) => {
   const [endFlow, setEndFlow] = useState('1.15');
   const [flowStep, setFlowStep] = useState('0.05');
   const [firmware, setFirmware] = useState<'marlin' | 'klipper' | 'rrf' | 'orcaslicer'>('marlin');
-  const [includePostProcessing, setIncludePostProcessing] = useState(true);
+  const [useNativeModifiers, setUseNativeModifiers] = useState(firmware === 'orcaslicer');
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
 
@@ -81,7 +81,7 @@ const FlowRateTowerV2: React.FC<FlowRateTowerProps> = ({ onNavigate }) => {
       const project = await generateFlowRateTower3MF(
         params,
         firmware,
-        includePostProcessing
+        !useNativeModifiers
       );
 
       const url = URL.createObjectURL(project.file);
@@ -92,7 +92,10 @@ const FlowRateTowerV2: React.FC<FlowRateTowerProps> = ({ onNavigate }) => {
       URL.revokeObjectURL(url);
 
       const numSections = Math.floor(Math.abs(params.endValue - params.startValue) / params.stepSize) + 1;
-      setResult(`Flow Rate tower generated successfully!\n${numSections} flow ratio sections from ${startFlow} to ${endFlow}\n${includePostProcessing ? 'Post-processing G-code included' : 'Manual setup required'}`);
+      const modeMessage = useNativeModifiers
+        ? 'Orca native modifiers enabled'
+        : 'Firmware post-processing G-code included';
+      setResult(`Flow Rate tower generated successfully!\n${numSections} flow ratio sections from ${startFlow} to ${endFlow}\n${modeMessage}`);
     } catch (error) {
       console.error('Error generating tower:', error);
       setResult('Error generating tower. Please try again.');
@@ -102,6 +105,18 @@ const FlowRateTowerV2: React.FC<FlowRateTowerProps> = ({ onNavigate }) => {
   };
 
   // Sidebar content
+  const previousFirmware = useRef(firmware);
+
+  useEffect(() => {
+    if (firmware === 'orcaslicer' && previousFirmware.current !== 'orcaslicer') {
+      setUseNativeModifiers(true);
+    }
+    if (firmware !== 'orcaslicer' && previousFirmware.current === 'orcaslicer') {
+      setUseNativeModifiers(false);
+    }
+    previousFirmware.current = firmware;
+  }, [firmware]);
+
   const sidebarContent = (
     <div className="space-y-4">
       <InfoCard variant="tip" title="Flow Format">
@@ -229,11 +244,11 @@ const FlowRateTowerV2: React.FC<FlowRateTowerProps> = ({ onNavigate }) => {
           />
 
           <SwitchField
-            label="Include Post-Processing"
-            id="post-processing"
-            checked={includePostProcessing}
-            onCheckedChange={setIncludePostProcessing}
-            description="Auto-inject flow changes at each height"
+            label="Use Orca native modifiers"
+            id="native-modifiers"
+            checked={useNativeModifiers}
+            onCheckedChange={setUseNativeModifiers}
+            description="Recommended when slicing in OrcaSlicer; disables firmware G-code overrides"
           />
 
           <ActionSection>

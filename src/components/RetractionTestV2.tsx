@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { RotateCcw, Download, Package, Calculator, CheckCircle2, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -39,7 +39,7 @@ const RetractionTestV2: React.FC<RetractionTestProps> = ({ onNavigate }) => {
   const [stlRetractionStep, setStlRetractionStep] = useState('0.1');
   const [isGenerating, setIsGenerating] = useState(false);
   const [firmware, setFirmware] = useState<FirmwareType>('marlin');
-  const [includePostProcessing, setIncludePostProcessing] = useState(true);
+  const [useNativeModifiers, setUseNativeModifiers] = useState(firmware === 'orcaslicer');
 
   const extruderOptions = [
     { value: 'Direct Drive', label: 'Direct Drive' },
@@ -123,7 +123,7 @@ const RetractionTestV2: React.FC<RetractionTestProps> = ({ onNavigate }) => {
           retractionSpeed: 30
         },
         firmware,
-        includePostProcessing
+        !useNativeModifiers
       );
 
       const url = URL.createObjectURL(project.file);
@@ -143,6 +143,18 @@ const RetractionTestV2: React.FC<RetractionTestProps> = ({ onNavigate }) => {
   const testSections = Math.floor((parseFloat(stlEndRetraction) - parseFloat(stlStartRetraction)) / parseFloat(stlRetractionStep)) + 1;
 
   // Sidebar content
+  const previousFirmware = useRef(firmware);
+
+  useEffect(() => {
+    if (firmware === 'orcaslicer' && previousFirmware.current !== 'orcaslicer') {
+      setUseNativeModifiers(true);
+    }
+    if (firmware !== 'orcaslicer' && previousFirmware.current === 'orcaslicer') {
+      setUseNativeModifiers(false);
+    }
+    previousFirmware.current = firmware;
+  }, [firmware]);
+
   const sidebarContent = (
     <div className="space-y-4">
       <InfoCard variant="tip" title={`${extruderType} Ranges`}>
@@ -277,11 +289,11 @@ const RetractionTestV2: React.FC<RetractionTestProps> = ({ onNavigate }) => {
               />
 
               <SwitchField
-                label="Include Post-Processing"
-                id="post-processing"
-                checked={includePostProcessing}
-                onCheckedChange={setIncludePostProcessing}
-                description="Auto-inject retraction changes at each height"
+                label="Use Orca native modifiers"
+                id="native-modifiers"
+                checked={useNativeModifiers}
+                onCheckedChange={setUseNativeModifiers}
+                description="Recommended when slicing in OrcaSlicer; disables firmware G-code overrides"
               />
 
               <ActionSection>

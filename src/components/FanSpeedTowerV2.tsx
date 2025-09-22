@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Wind, Package, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { generateFanSpeedTower3MF } from '@/utils/orcaTower3MFExports';
@@ -26,7 +26,7 @@ const FanSpeedTowerV2: React.FC<FanSpeedTowerProps> = ({ onNavigate }) => {
   const [endFan, setEndFan] = useState('100');
   const [fanStep, setFanStep] = useState('20');
   const [firmware, setFirmware] = useState<'marlin' | 'klipper' | 'rrf' | 'orcaslicer'>('marlin');
-  const [includePostProcessing, setIncludePostProcessing] = useState(true);
+  const [useNativeModifiers, setUseNativeModifiers] = useState(firmware === 'orcaslicer');
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
 
@@ -84,7 +84,7 @@ const FanSpeedTowerV2: React.FC<FanSpeedTowerProps> = ({ onNavigate }) => {
       const project = await generateFanSpeedTower3MF(
         params,
         firmware,
-        includePostProcessing
+        !useNativeModifiers
       );
 
       const url = URL.createObjectURL(project.file);
@@ -95,7 +95,10 @@ const FanSpeedTowerV2: React.FC<FanSpeedTowerProps> = ({ onNavigate }) => {
       URL.revokeObjectURL(url);
 
       const numSections = Math.floor(Math.abs(params.endValue - params.startValue) / params.stepSize) + 1;
-      setResult(`Fan Speed tower generated successfully!\n${numSections} fan speed sections from ${startFan}% to ${endFan}%\n${includePostProcessing ? 'Post-processing G-code included' : 'Manual setup required'}`);
+      const modeMessage = useNativeModifiers
+        ? 'Orca native modifiers enabled'
+        : 'Firmware post-processing G-code included';
+      setResult(`Fan Speed tower generated successfully!\n${numSections} fan speed sections from ${startFan}% to ${endFan}%\n${modeMessage}`);
     } catch (error) {
       console.error('Error generating tower:', error);
       setResult('Error generating tower. Please try again.');
@@ -105,6 +108,18 @@ const FanSpeedTowerV2: React.FC<FanSpeedTowerProps> = ({ onNavigate }) => {
   };
 
   // Sidebar content
+  const previousFirmware = useRef(firmware);
+
+  useEffect(() => {
+    if (firmware === 'orcaslicer' && previousFirmware.current !== 'orcaslicer') {
+      setUseNativeModifiers(true);
+    }
+    if (firmware !== 'orcaslicer' && previousFirmware.current === 'orcaslicer') {
+      setUseNativeModifiers(false);
+    }
+    previousFirmware.current = firmware;
+  }, [firmware]);
+
   const sidebarContent = (
     <div className="space-y-4">
       <InfoCard variant="info" title="Material Cooling">
@@ -223,11 +238,11 @@ const FanSpeedTowerV2: React.FC<FanSpeedTowerProps> = ({ onNavigate }) => {
           />
 
           <SwitchField
-            label="Include Post-Processing"
-            id="post-processing"
-            checked={includePostProcessing}
-            onCheckedChange={setIncludePostProcessing}
-            description="Auto-inject fan speed changes at each height"
+            label="Use Orca native modifiers"
+            id="native-modifiers"
+            checked={useNativeModifiers}
+            onCheckedChange={setUseNativeModifiers}
+            description="Recommended when slicing in OrcaSlicer; disables firmware G-code overrides"
           />
 
           <ActionSection>
