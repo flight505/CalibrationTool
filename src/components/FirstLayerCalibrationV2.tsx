@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Layers, Download, Calculator, Wrench, Info, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Layers, Download, Calculator, Wrench, Info, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateFirstLayerCalibration } from '@/utils/stlGenerator';
@@ -16,7 +16,6 @@ import {
   SelectField,
   SwitchField,
   FieldGroup,
-  Fieldset,
 } from '@/components/calibration/FormFields';
 
 interface FirstLayerCalibrationProps {
