@@ -3,7 +3,7 @@ import { Sidebar, SidebarBody, SidebarLink, SidebarGroup } from "@/components/ui
 import {
   Printer, Calculator, Thermometer, Move3D, RotateCcw, Github, Gauge, BookOpen,
   Settings, MessageCircle, Layers, Wind, Droplets, FlaskConical, Beaker,
-  BarChart3, FileText, ChevronLeft, ChevronRight
+  BarChart3, FileText, ChevronLeft, ChevronRight, Grid3x3
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -79,6 +79,13 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children, currentTool, on
       icon: <Move3D className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
       onClick: () => onToolChange('pressure'),
       id: 'pressure'
+    },
+    {
+      label: "PA Pattern",
+      href: "#",
+      icon: <Grid3x3 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      onClick: () => onToolChange('pressure-pattern'),
+      id: 'pressure-pattern'
     },
     {
       label: "Retraction",
@@ -272,6 +279,7 @@ const getToolName = (toolId: string): string => {
     'flowtower': 'Flow Tower',
     'fanspeed': 'Fan Speed Optimization',
     'pressure': 'Pressure Advance',
+    'pressure-pattern': 'PA Pattern Calibration',
     'retraction': 'Retraction Test',
     'maxspeed': 'Max Volumetric Speed',
     'doe': 'DOE Planner',
