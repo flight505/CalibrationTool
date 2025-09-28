@@ -25,37 +25,37 @@ This document specifies the test parts we will ship (or accept after vetting) fo
 
 ### 3) Stringing Towers — `stringing_towers_v2`
 - Purpose: evaluate stringing as a function of retraction distance/speed and fan.
-- Geometry: six pillars 10×10×40 mm; centers spaced 25 mm; travel path should traverse diagonals (slicer setting); optional small catch cones on top.
-- Metrics: `string_count`, `string_mass_score`.
-- DOE: use as a region for retraction sweeps; combine on a plate with a small cube for dimensional check.
+- Geometry: base 90×60×1.2 mm; six pillars 6×6×35 mm arranged in a 2×3 grid at centers (22,22), (45,22), (68,22), (22,44), (45,44), (68,44); rectangular ID tick bars in front of each pillar.
+- Metrics: `string_count` (smaller-is-better).
+- DOE: use as the single-purpose stringing probe in L9 screening and refinement.
 
 ### 4) Thin‑Wall Flow Patch — `thin_wall_patch_v2`
 - Purpose: measure single‑line width and multi‑wall accuracy vs flow ratio.
-- Geometry: grid with lanes targeting 0.40/0.45/0.50 mm; adjacent 3‑wall blocks targeting 1.2/1.35/1.5 mm; overall 120×80×2 base; labels for target widths.
+- Geometry: base 120×80×2 mm; three long single-line ridges (0.40/0.45/0.50 mm thick, 90 mm long, 12 mm tall) at Y centers 24/32/40; three multi-wall strips (1.20/1.35/1.50 mm thick, 90 mm long, 8 mm tall) at Y centers 58/66/74; each row has rectangular ID tick bars near the left edge.
 - Metrics: `measured_line_width`, `wall_accuracy`, `surface_score`.
-- DOE: use for flow factor confirmation after screening.
+- DOE: use after L9 screening to confirm flow settings or when flow ratio is refined.
 
 ### 5) Dimensional Cube V2 — `dimensional_cube_v2`
 - Purpose: XY dimension and Z accuracy checks; elephant‑foot mitigation.
-- Geometry: 20×20×20 solid cube, chamfered 0.4 mm on first‑layer edges; optional XY calibration tabs.
+- Geometry: solid cube 20×20×20 mm. Base step (elephant-foot relief): first 0.4 mm of height inset by 0.4 mm on all sides (i.e. bottom block 19.2×19.2×0.4 mm centered, topped by 20×20×19.6 mm block). Optional orientation tick can be added via printed marker—no integrated protrusions to preserve measurement.
 - Metrics: `x_dim`, `y_dim`, `z_dim`, `corner_quality`.
 - DOE: general health check; quick to print; can be tiled as part of composite plates.
 
 ### 6) Clearance Gauge V2 — `clearance_gauge_v2`
 - Purpose: minimum functional clearance.
-- Geometry: paired walls/posts with gaps 0.2/0.3/0.4/0.5/0.6 mm; cap markers; base 120×60×2 mm.
-- Metrics: `smallest_free_fit`.
-- DOE: used after initial tuning to verify practical tolerances.
+- Geometry: base 120×60×2 mm. Five lanes across X, each lane contains a pair of posts 10 mm wide, 40 mm long (Y) with a precise gap between them (0.20, 0.30, 0.40, 0.50, 0.60 mm). Posts span Z = 2→24 mm. ID bars (rectangular ticks) centered ahead of each lane identify the gap size.
+- Metrics: `smallest_free_fit` (smallest gap that allows free movement).
+- DOE: validate tolerance capability after initial tuning.
 
 ### 7) Surface Quality Plate — `surface_plate_v2`
 - Purpose: surface finish variability vs speed/acceleration.
-- Geometry: four 40×40 zones on a 120×100×2 base; ridges to expose banding; optional ring for seam inspection.
+- Geometry: base 120×100×2 mm. Four 40×40 pads (raised to Z = 2.6) arranged in a 2×2 grid; each pad carries a simple ridge pattern (parallel rectangular ribs 1.0 mm wide × 0.4 mm tall) with different orientations (0°, 90°, 45°, crosshatch). ID bars at the front edge index pad numbers.
 - Metrics: `surface_band_score`, `seam_quality`.
-- DOE: confirms speed/accel trade‑offs.
+- DOE: confirms speed/accel trade-offs.
 
 ### 8) PA Corner Pattern — `pa_corner_v2`
 - Purpose: corner bulging vs pressure advance / linear advance.
-- Geometry: square path with sharp internal/external corners; base for adhesion; seam indicator.
+- Geometry: base 70×70×2 mm. Raised L-shaped track made from 1.2 mm wide rectangular bars forming a closed square path (outer square 60×60 mm). A seam indicator pillar (3×3×20 mm) at the start corner. ID bars on the base mark the start corner.
 - Metrics: `corner_sharpness_score`, `seam_quality`.
 - DOE: used when PA is included as a factor.
 
@@ -95,4 +95,3 @@ Provide a tight prompt including: required dimensions, base thickness, min featu
 - No degenerate triangles; normal magnitudes ~1; min feature ≥ 0.4 mm.
 - Orca slice has no empty layers; intended features are separated; labels readable.
 - Metrics measurable with calipers or clear visual rubric.
-
