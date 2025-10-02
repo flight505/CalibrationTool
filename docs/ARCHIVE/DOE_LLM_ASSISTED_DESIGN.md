@@ -1,7 +1,8 @@
-# LLM‑Assisted DOE Design Guide
+# [ARCHIVED] LLM‑Assisted DOE Design Guide (Geometry)
 
 ## Purpose
-This document defines how we use an LLM (e.g., GPT‑5 with web search) to assist the Design of Experiments (DOE) workflow in CalibrationTool without compromising reliability. It covers inputs, prompting constraints, artifacts, and the adaptive strategy we use to reduce print counts while still collecting high‑value data.
+This document described geometry generation via LLM. That approach is superseded.
+Active plan: docs/LLM_ASSISTED_DOE_REVISED.md (LLM assists ranges/analysis, not STL).
 
 ## Scope and Principles
 - Library‑first: prefer curated, pre‑vetted test parts; only ask the LLM to propose new parts when a gap exists.
@@ -104,12 +105,12 @@ TITLE: Generate ASCII STL for clearance_gauge_v2 (rectangular solids only)
 - Output only the ASCII STL (optional meta header may be used for QA but strip before saving). Final file must start with `solid clearance_gauge_v2`.
 - Units: millimeters, Z up. Rectangular solids only.
 - Geometry:
-  - Base: 120 × 60 × 2.0, lower-left at (0,0,0).
+  - Base: 90 × 35 × 1.2, lower-left at (0,0,0).
   - Five gap lanes indexed 1..5 from left to right with gap sizes [0.20, 0.30, 0.40, 0.50, 0.60] mm.
-    - For lane i, center X positions: 20, 40, 60, 80, 100.
-    - Each lane has two posts: 10 × 40 mm footprint (X × Y) and 22 mm tall (Z 2→24).
-    - Left post X span: [cx − gap/2 − 10, cx − gap/2]. Right post X span: [cx + gap/2, cx + gap/2 + 10]. Y span for both posts: [10, 50].
-  - ID tick bars: rectangular bars on the base (Z 2→2.6), each 1.5 × 3.0 × 0.6 with 0.5 mm gaps, centered at X=cx and located at Y=6→9. Place i bars for lane index i.
+    - Lane centers X = 15, 30, 45, 60, 75.
+    - Each lane has two posts: 5 × 20 mm footprint (X × Y) from Y=8 to Y=28, height 15 mm (Z 1.2→16.2).
+    - Left post X span: [cx − gap/2 − 5, cx − gap/2]; Right post X span: [cx + gap/2, cx + gap/2 + 5].
+  - ID tick bars: rectangular bars on the base (Z 1.2→1.8), each 1.5 × 2.5 × 0.6 with 0.5 mm gaps, centered on X=cx at Y=3→5.5. Place i bars for lane index i.
 - Ensure minimum air gap equals target gap ± 0.01 tolerance. No overlaps or caps.
 - Triangulate each face with two triangles; outward normals axis-aligned. No coordinate below Z=0.
 - If constraints can’t be met, respond `ERROR: cannot satisfy manifold/constraints`.
@@ -121,14 +122,14 @@ TITLE: Generate ASCII STL for surface_plate_v2 (rectangular solids only)
 - Output only the ASCII STL. Final file must start with `solid surface_plate_v2`.
 - Units: millimeters, Z up. Rectangular solids only.
 - Geometry:
-  - Base: 120 × 100 × 2.0, lower-left (0,0,0).
-  - Four pads: 40 × 40 × 0.6 each, located at rectangles [10–50]×[10–50], [60–100]×[10–50], [10–50]×[60–100], [60–100]×[60–100] (X×Y). Pads rise from Z=2→2.6.
-  - Ridge patterns on pads (rectangular ribs 1.0 wide × 0.4 tall (Z 2.6→3.0)):
-    1. Pad A (front-left): ribs parallel to X (run along X, spaced 3 mm in Y).
-    2. Pad B (front-right): ribs parallel to Y (run along Y, spaced 3 mm in X).
-    3. Pad C (rear-left): ribs at +45° approximated by staggered rectangular bars (e.g., 3 mm wide strips forming diagonal steps).
-    4. Pad D (rear-right): crosshatch by combining both orientations (X and Y ribs overlayed as separate rectangular solids).
-  - ID tick bars: for each pad, place N bars (N=1..4) on the base at Y=5–8 mm, centered with respect to pad X positions (front pads) or along right edge for rear pads; same bar dimensions as earlier (1.5×2.5×0.6 with 0.5 gaps).
+  - Pads occupy a 70 × 70 mm footprint. Add two connector bars 70×1×0.4 (one at Y=33.5–34.5, one at X=33.5–34.5) to tie pads together.
+  - Four pads: 30 × 30 × 0.4 each, located at rectangles [0–30]×[0–30], [35–65]×[0–30], [0–30]×[35–65], [35–65]×[35–65].
+  - Ridge patterns (rectangular ribs 1.0 × 0.4):
+    1. Pad A (front-left): ribs parallel to X, spaced 3 mm in Y.
+    2. Pad B (front-right): ribs parallel to Y, spaced 3 mm in X.
+    3. Pad C (rear-left): stepped diagonal strips 4 mm apart forming a 45° approximation.
+    4. Pad D (rear-right): crosshatch with 1 mm ribs every 4 mm in both X and Y.
+  - ID tick bars: place N bars (N=1..4) within each pad (front pads at Y=2, rear pads at Y=68), bar size 1.2×2.0×0.6 with 0.5 mm gaps; center around pad center X positions (15 or 50 mm).
 - Triangulate faces with two triangles; outward normals axis-aligned. No coordinates below Z=0.
 - If constraints can’t be met, respond `ERROR: cannot satisfy manifold/constraints`.
 
@@ -139,11 +140,10 @@ TITLE: Generate ASCII STL for pa_corner_v2 (rectangular solids only)
 - Output only ASCII STL (optionally meta header). Final file must begin `solid pa_corner_v2`.
 - Units: millimeters, Z up. Rectangular solids only.
 - Geometry:
-  - Base: 70 × 70 × 2.0 (lower-left at 0,0,0).
-  - Track: four rectangular bars forming a closed square path 60 × 60 mm centered on the base. Bar width 1.2 mm, height 20 mm above base (Z 2→22). Build each side as a separate rectangular prism, leaving a 1.2 mm seam gap at the start corner.
-    - Outer coordinates: track along edges at X=5.0 and X=65.0, Y=5.0 and Y=65.0, forming the perimeter. Each segment should adjoin at corners without overlaps.
-  - Seam indicator: square pillar 3 × 3 × 22 mm at the start corner (e.g., centered at (5,5)).
-  - ID tick bars: place 1–2 rectangular bars on base near the start corner to identify orientation.
+  - Base frame: four strips 70×2.5×1.0 mm along the edges (bottom, top, left, right) providing adhesion while keeping the center open.
+  - Track: continuous square loop 60 × 60 mm centered within the frame. Bar width 1.2 mm, height 18 mm above the frame (Z 1.0→19.0). The loop runs along inner offsets X,Y = 5→65.
+  - Seam indicator: square pillar 3 × 3 × 20 mm (above the frame) at the start corner near (5,5).
+  - Orientation bars: two 1.2 × 2.5 × 0.6 bars on the base near the start corner.
 - Ensure no overlapping solids except shared faces. Triangulate each face with two triangles; outward normals axis-aligned; no coordinates below Z=0.
 - If constraints can’t be met, respond `ERROR: cannot satisfy manifold/constraints`.
 

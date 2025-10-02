@@ -36,28 +36,28 @@ This document specifies the test parts we will ship (or accept after vetting) fo
 - DOE: use after L9 screening to confirm flow settings or when flow ratio is refined.
 
 ### 5) Dimensional Cube V2 — `dimensional_cube_v2`
-- Purpose: XY dimension and Z accuracy checks; elephant‑foot mitigation.
+- Purpose: XY dimension and Z accuracy checks; elephant-foot mitigation.
 - Geometry: solid cube 20×20×20 mm. Base step (elephant-foot relief): first 0.4 mm of height inset by 0.4 mm on all sides (i.e. bottom block 19.2×19.2×0.4 mm centered, topped by 20×20×19.6 mm block). Optional orientation tick can be added via printed marker—no integrated protrusions to preserve measurement.
 - Metrics: `x_dim`, `y_dim`, `z_dim`, `corner_quality`.
 - DOE: general health check; quick to print; can be tiled as part of composite plates.
 
 ### 6) Clearance Gauge V2 — `clearance_gauge_v2`
 - Purpose: minimum functional clearance.
-- Geometry: base 120×60×2 mm. Five lanes across X, each lane contains a pair of posts 10 mm wide, 40 mm long (Y) with a precise gap between them (0.20, 0.30, 0.40, 0.50, 0.60 mm). Posts span Z = 2→24 mm. ID bars (rectangular ticks) centered ahead of each lane identify the gap size.
+- Geometry: base 90×35×1.2 mm. Each of five lanes (X centers 15/30/45/60/75) has two posts 5×20 mm (X×Y) rising from Z=1.2→16.2 with gaps 0.20/0.30/0.40/0.50/0.60 mm. ID tick bars (1.5×2.5×0.6) at the front identify lanes 1–5.
 - Metrics: `smallest_free_fit` (smallest gap that allows free movement).
 - DOE: validate tolerance capability after initial tuning.
 
 ### 7) Surface Quality Plate — `surface_plate_v2`
 - Purpose: surface finish variability vs speed/acceleration.
-- Geometry: base 120×100×2 mm. Four 40×40 pads (raised to Z = 2.6) arranged in a 2×2 grid; each pad carries a simple ridge pattern (parallel rectangular ribs 1.0 mm wide × 0.4 mm tall) with different orientations (0°, 90°, 45°, crosshatch). ID bars at the front edge index pad numbers.
+- Geometry: four 30×30×0.4 mm pads arranged within a 70×70 mm rim. Pad A (front-left) has horizontal ribs (1 mm × 0.4 every 3 mm), Pad B vertical ribs, Pad C stepped diagonal strips, Pad D crosshatch. ID tick bars sit on the rim at each pad’s edge.
 - Metrics: `surface_band_score`, `seam_quality`.
-- DOE: confirms speed/accel trade-offs.
+- DOE: confirms speed/accel trade-offs with short prints.
 
 ### 8) PA Corner Pattern — `pa_corner_v2`
 - Purpose: corner bulging vs pressure advance / linear advance.
-- Geometry: base 70×70×2 mm. Raised L-shaped track made from 1.2 mm wide rectangular bars forming a closed square path (outer square 60×60 mm). A seam indicator pillar (3×3×20 mm) at the start corner. ID bars on the base mark the start corner.
-- Metrics: `corner_sharpness_score`, `seam_quality`.
-- DOE: used when PA is included as a factor.
+- Geometry: lightweight frame (64×64×0.6 mm) composed of four 2 mm flange strips. A 60×60 mm loop (1.2 mm width, 25 mm tall) sits flush on the flange with a 1.2 mm seam gap at the start corner. A 3×3×25.6 mm seam pillar and two orientation tick bars sit on the front rim.
+- Metrics: `corner_sharpness_score` (1–5 visual, larger-is-better) and seam quality notes.
+- DOE: used when PA is included as a factor; prints in ~10 minutes.
 
 ## Composite Plates (to cut prints)
 - Bridge+Overhang Plate: place Bridge Array V2 and Overhang Ramp V2 side‑by‑side on a 180×140 base; apply region modifiers (fan/temp) per half or per band to compare regimes in one print.

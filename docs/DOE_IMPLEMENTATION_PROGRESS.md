@@ -1,11 +1,11 @@
 # DOE Implementation Progress Tracker
 Last Updated: 2025-02-14
 
-## 📊 Overall Progress: ~70% Complete
+## 📊 Overall Progress: ~80% Complete
 
 ### Phase Completion Status
 - ✅ **Phase 1: DOE Framework** - 85% Complete
-- 🔄 **Phase 2: Test Models & Metrics** - 60% Complete
+- ✅ **Phase 2: Test Models & Metrics** - 100% Complete
 - ⏳ **Phase 3: Experiment Execution** - 10% Complete
 - ⏳ **Phase 4: Optimization & Analysis** - 5% Complete
 
@@ -78,13 +78,13 @@ Last Updated: 2025-02-14
 - ✅ Measurement types
 - ✅ Export format definitions
 
-### 🔄 3.2 UI Components [70% Complete]
 - ✅ DOE experiment workbench (`src/components/DOEWorkbench.tsx`)
 - ✅ Factor selection interface with presets
 - ✅ Level configuration inputs
 - ✅ Experiment matrix preview & CSV tools
 - ✅ Results input + download workflow
 - ❌ Visual scoring guides with reference images
+- 🔄 LLM context form + “Propose ranges” action (planned)
 
 ### ⏳ 3.3 Database Integration [NOT STARTED]
 - ❌ Experiment storage schema
@@ -143,24 +143,24 @@ Last Updated: 2025-02-14
 ## 🎯 Next Priority Tasks
 
 ### Immediate (Required for MVP)
-1. **Finalize geometry library**
-   - Iterate from print feedback (bridge sag, clearance fit, surface differentials)
+1. **LLM integration (Phase 1/4)**
+   - Implement GPT-5 Responses API calls for spec retrieval, factor selection, orthogonal array recommendation
+   - Implement GPT-5 analysis call for Taguchi SNR/main-effects and final settings table
+   - Add Zod validation schemas for all LLM JSON payloads
 
 2. **Enhance DOE UI**
-   - Add visual reference images to scoring hints
-   - Persist measurement inputs between sessions
-   - Polish matrix preview with charts/summary stats
-   - Add LLM context form and “Propose ranges” action (manual override allowed)
+   - Add LLM context form + “Propose ranges” action (with manual override and audit log)
+   - Persist measurement inputs and notes between sessions
+   - Add visual scoring guides with reference photos/diagrams
+   - Add chart preview (main effects/SNR) to results pane
 
 3. **Extend analysis toolkit**
-   - Interaction plots / two-factor analysis
-   - Chart visualizations for main effects & SNR
+   - Interaction detection / optional follow-up suggestions
    - Confirmation run assistant and PDF/Markdown report export
 
-4. **LLM‑assisted parts vetting**
-   - Define prompt pack and constraints for ASCII STL generation
-   - Build automated STL QA harness (parse + slice checks)
-   - Curate first 3 vetted LLM parts into library (with meta files)
+4. **Data & storage**
+   - Define experiment persistence model (local IndexedDB + optional backend)
+   - Store manifest/meta entries for curated parts (JSON already present)
 
 ### Short-term (Next Sprint)
 1. RSM implementation for advanced optimization

@@ -183,4 +183,4 @@ Manifest: `public/templates/doe/library/manifest.json` consolidates all entries 
 - `dimensional_cube_v2.stl` – solid cube (20×20×20 mm) with a 0.4 mm inset base relief (19.2×19.2×0.4 mm) to mitigate elephant foot; metrics: x_dim, y_dim, z_dim, corner_quality.
 - `clearance_gauge_v2.stl` – base 120×60×2 mm with five post pairs (10 mm wide, 40 mm long, 22 mm tall) generating gaps 0.20–0.60 mm; ID bars per lane; metric: smallest_free_fit.
 - `surface_plate_v2.stl` – base 120×100×2 mm with four 40×40 pads, each carrying rectangular ridge patterns (horizontal, vertical, stepped diagonal, crosshatch) and ID bars; metrics: surface_band_score, seam_quality.
-- `pa_corner_v2.stl` – base 70×70×2 mm with a 60×60 mm square track (1.2 mm width, 20 mm tall), a seam indicator pillar, and orientation bars; metrics: corner_sharpness_score, seam_quality.
+- `pa_corner_v2.stl` – 64×64×0.6 mm rim supporting a 60×60 mm loop (1.2 mm width, 25 mm tall) with seam gap, seam pillar, and orientation bars; metrics: corner_sharpness_score (1–5 visual), seam_quality.

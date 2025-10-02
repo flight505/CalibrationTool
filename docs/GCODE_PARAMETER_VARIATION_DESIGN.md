@@ -1,4 +1,7 @@
-# G-code Parameter Variation System Design
+# G-code Parameter Variation System Design (Reference)
+
+Status: This document is a reference for parameter mapping and post-processing.
+The active DOE process is defined in docs/LLM_ASSISTED_DOE_REVISED.md.
 
 ## Overview
 

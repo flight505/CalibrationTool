@@ -1,4 +1,4 @@
-# DOE Test Models Inventory
+# [ARCHIVED] DOE Test Models Inventory
 
 ## Current Test Models Available
 
@@ -20,7 +20,7 @@
 | First Layer Patch | `first_layer_calibration_ascii.stl` | Z-offset, adhesion | ⚠️ Limited |
 | Flow Calibration Cube | `flow_calibration_cube_template.stl` | Flow ratio | ✅ Yes |
 
-## Missing Test Models for DOE
+## Missing Test Models for DOE (historic)
 
 ### Priority 1: Essential DOE Models (Must Create/Import)
 

@@ -1,8 +1,8 @@
-# DOE Implementation Plan - CalibrationTool
+# [ARCHIVED] DOE Implementation Plan - CalibrationTool
 
 ## Executive Summary
 
-This document outlines the actionable implementation plan for integrating Design of Experiments (DOE) methodology into the CalibrationTool application. The goal is to transform the application from a single-parameter calibration tool into a comprehensive multi-factor optimization platform using statistical experimental design.
+This document has been archived. See docs/LLM_ASSISTED_DOE_REVISED.md for the current plan.
 
 ## Core Objectives
 

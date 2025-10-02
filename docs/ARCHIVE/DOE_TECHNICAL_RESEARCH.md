@@ -1,4 +1,4 @@
-# DOE Technical Research: Taguchi Methods and Response Surface Methodology
+# [ARCHIVED] DOE Technical Research: Taguchi Methods and Response Surface Methodology
 
 ## Executive Summary
 
@@ -625,6 +625,8 @@ Key implementation priorities:
 3. Use simple quality metrics (1-10 scales)
 4. Gradually add advanced features (RSM, optimization)
 5. Validate against manual calibration results
+Note: This file is kept for historical context. The active plan removes LLM-based geometry generation in favor of a curated STL library. See docs/LLM_ASSISTED_DOE_REVISED.md.
+
 ## LLM‑Generated Geometry (Findings)
 - GPT‑5 can emit valid ASCII STL for simple, rectangular‑solid geometries under strict constraints (mm units; base ≥ 2.0 mm; minimum wall ≥ 0.4 mm; no caps that fuse independent spans).
 - Reliability decreases with curved/topologically complex parts; keep to 2.5D extrusions and box primitives for test plates.
