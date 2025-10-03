@@ -18,6 +18,15 @@ export type TestModelType =
   | 'speed_tower'
   | 'pressure_advance';
 
+export type MaterialType =
+  | 'PLA'
+  | 'PETG'
+  | 'ABS'
+  | 'ASA'
+  | 'TPU'
+  | 'Nylon'
+  | 'PC';
+
 // Measurement types for scoring
 export type MeasurementType = 'numeric' | 'count' | 'score' | 'boolean';
 
@@ -187,4 +196,87 @@ export interface ChartData {
   xLabel: string;
   yLabel: string;
   data: any[];
+}
+
+export interface Phase1FormInput {
+  filamentBrand: string;
+  materialType: MaterialType;
+  printerModel: string;
+  printerType: 'bedslinger' | 'CoreXY' | 'Delta';
+  nozzleDiameter: number;
+  targetLayerHeight: number;
+  enclosure?: boolean;
+  knownIssues?: string;
+  printObjectives?: Array<'strength' | 'speed' | 'surface_quality' | 'dimensional_accuracy'>;
+}
+
+export interface Phase1LLMFactorPlan {
+  parameter: string;
+  levels: number[];
+  unit: string;
+  rationale: string;
+  name?: string;
+  slicerSetting?: string;
+  citations?: string[];
+}
+
+export interface Phase1LLMSourceSummary {
+  title: string;
+  url: string;
+  snippet?: string;
+}
+
+export interface Phase1LLMResult {
+  selectedArray: 'L9' | 'L18' | 'L27';
+  factorPlans: Phase1LLMFactorPlan[];
+  testParts: TestModelType[];
+  printInstructions?: string;
+  sourceSummary?: Phase1LLMSourceSummary[];
+  reasoningSummary?: string;
+}
+
+export interface Phase2LLMOptimalLevels {
+  [parameter: string]: number | string;
+}
+
+export interface Phase2LLMEffectTrend {
+  factor: string;
+  trend: number[];
+  notes?: string;
+}
+
+export interface Phase2LLMSNRDelta {
+  factor: string;
+  delta: number;
+  interpretation?: string;
+}
+
+export interface Phase2LLMConfirmationRun {
+  recommended: boolean;
+  settings: Record<string, number | string>;
+  expectedQualityGain?: number;
+  notes?: string;
+}
+
+export interface Phase2LLMResult {
+  optimalLevels: Phase2LLMOptimalLevels;
+  snr: Phase2LLMSNRDelta[];
+  mainEffects: Phase2LLMEffectTrend[];
+  confirmationRun?: Phase2LLMConfirmationRun;
+  notes?: string;
+}
+
+export interface Phase1RequestPayload {
+  form: Phase1FormInput;
+  objectives: string[];
+  knownIssues?: string;
+}
+
+export interface Phase2RequestPayload {
+  experimentName: string;
+  arrayType: 'L9' | 'L18' | 'L27';
+  factors: ExperimentFactor[];
+  runs: ExperimentRun[];
+  primaryMetricId?: string;
+  testModel: TestModelType;
 }
