@@ -20,6 +20,9 @@ import {
   ExperimentFactor,
   ExperimentRun,
   MainEffectAnalysis,
+  MaterialType,
+  Phase1LLMResult,
+  Phase1RequestPayload,
   SNRAnalysis,
   TestModel,
   TestModelType
@@ -32,6 +35,9 @@ import type { ResponseType } from '@/utils/doe/doeTypes';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { callPhase1LLM, DOECallError, WebSearchStatus } from '@/lib/utils/openai';
 
 interface GeneratedFile {
   filename: string;
@@ -41,6 +47,21 @@ interface GeneratedFile {
 
 const ARRAY_TYPES: Array<'L9' | 'L18' | 'L27'> = ['L9', 'L18', 'L27'];
 const STORAGE_KEY = 'doe-workbench-state';
+const MATERIAL_OPTIONS: MaterialType[] = ['PLA', 'PETG', 'ABS', 'ASA', 'TPU', 'Nylon', 'PC'];
+const PRINTER_TYPES: Array<'bedslinger' | 'CoreXY' | 'Delta'> = ['bedslinger', 'CoreXY', 'Delta'];
+const OBJECTIVE_OPTIONS = ['strength', 'speed', 'surface_quality', 'dimensional_accuracy'] as const;
+type ObjectiveOption = typeof OBJECTIVE_OPTIONS[number];
+
+interface Phase1ContextState {
+  filamentBrand: string;
+  materialType: MaterialType;
+  printerModel: string;
+  printerType: 'bedslinger' | 'CoreXY' | 'Delta';
+  nozzleDiameter: string;
+  targetLayerHeight: string;
+  enclosure: boolean;
+  knownIssues: string;
+}
 
 const metricLabel = (metric: TestModel['metrics'][number]) =>
   `${metric.name} (${metric.responseType.replace(/-/g, ' ')})`;
@@ -65,6 +86,22 @@ const DOEWorkbench: React.FC = () => {
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [anovaSummary, setAnovaSummary] = useState<string>('');
   const [csvPreview, setCsvPreview] = useState<string>('');
+  const [llmContext, setLlmContext] = useState<Phase1ContextState>({
+    filamentBrand: '',
+    materialType: 'PLA',
+    printerModel: '',
+    printerType: 'bedslinger',
+    nozzleDiameter: '0.4',
+    targetLayerHeight: '0.2',
+    enclosure: false,
+    knownIssues: ''
+  });
+  const [llmObjectives, setLlmObjectives] = useState<ObjectiveOption[]>([]);
+  const [isProposingRanges, setIsProposingRanges] = useState(false);
+  const [llmError, setLlmError] = useState<string | null>(null);
+  const [llmStatus, setLlmStatus] = useState<WebSearchStatus | null>(null);
+  const [llmStreamPreview, setLlmStreamPreview] = useState<string>('');
+  const [llmResult, setLlmResult] = useState<Phase1LLMResult | null>(null);
   const plannerRef = useRef<ExperimentPlanner | null>(null);
   const urlCache = useRef<string[]>([]);
   const csvDownloadUrl = useRef<string | null>(null);
@@ -205,6 +242,126 @@ const DOEWorkbench: React.FC = () => {
       .filter((factor): factor is ExperimentFactor => Boolean(factor));
 
     setFactors(expandedFactors);
+  };
+
+  const handleObjectiveToggle = (objective: ObjectiveOption) => {
+    setLlmObjectives((prev) =>
+      prev.includes(objective)
+        ? prev.filter((item) => item !== objective)
+        : [...prev, objective]
+    );
+  };
+
+  const handleProposeRanges = async () => {
+    if (isProposingRanges) return;
+
+    const nozzleDiameter = Number.parseFloat(llmContext.nozzleDiameter);
+    const targetLayerHeight = Number.parseFloat(llmContext.targetLayerHeight);
+
+    if (!Number.isFinite(nozzleDiameter) || nozzleDiameter <= 0) {
+      setLlmError('Enter a valid nozzle diameter (mm).');
+      return;
+    }
+
+    if (!Number.isFinite(targetLayerHeight) || targetLayerHeight <= 0) {
+      setLlmError('Enter a valid target layer height (mm).');
+      return;
+    }
+
+    if (!llmContext.filamentBrand.trim() || !llmContext.printerModel.trim()) {
+      setLlmError('Provide both filament brand and printer model.');
+      return;
+    }
+
+    const normalizedKnownIssues = llmContext.knownIssues.trim();
+
+    const payload: Phase1RequestPayload = {
+      form: {
+        filamentBrand: llmContext.filamentBrand.trim(),
+        materialType: llmContext.materialType,
+        printerModel: llmContext.printerModel.trim(),
+        printerType: llmContext.printerType,
+        nozzleDiameter,
+        targetLayerHeight,
+        enclosure: llmContext.enclosure,
+        knownIssues: normalizedKnownIssues ? normalizedKnownIssues : undefined,
+        printObjectives: llmObjectives
+      },
+      objectives: llmObjectives,
+      knownIssues: normalizedKnownIssues ? normalizedKnownIssues : undefined
+    };
+
+    setIsProposingRanges(true);
+    setLlmError(null);
+    setLlmStatus(null);
+    setLlmStreamPreview('');
+    setLlmResult(null);
+
+    try {
+      const result = await callPhase1LLM({
+        payload,
+        stream: true,
+        handlers: {
+          onWebSearchStatus: (status) => setLlmStatus(status),
+          onTextDelta: (delta) =>
+            setLlmStreamPreview((prev) => {
+              const next = prev + delta;
+              return next.length > 4000 ? next.slice(next.length - 4000) : next;
+            }),
+          onCompleted: (data) => {
+            setLlmResult(data);
+            setLlmStreamPreview('');
+            setLlmStatus(null);
+          },
+          onError: (error) => {
+            setLlmError(error.message ?? 'LLM request failed.');
+          }
+        }
+      });
+
+      setLlmResult(result);
+      setLlmStatus(null);
+      setLlmStreamPreview('');
+    } catch (error) {
+      const message = (error as DOECallError)?.message ?? 'Failed to fetch GPT-5 proposal.';
+      setLlmError(message);
+    } finally {
+      setIsProposingRanges(false);
+    }
+  };
+
+  const handleApplyLlmResult = () => {
+    if (!llmResult) {
+      return;
+    }
+
+    resetGeneratedArtifacts();
+    setSelectedPreset('');
+    setArrayType(llmResult.selectedArray);
+
+    const normalizedFactors: ExperimentFactor[] = llmResult.factorPlans.map((plan) => ({
+      name: plan.name ?? plan.parameter,
+      parameter: plan.parameter,
+      levels: plan.levels,
+      unit: plan.unit,
+      description: plan.rationale,
+      slicerSetting: plan.slicerSetting
+    }));
+
+    setFactors(normalizedFactors);
+
+    if (llmResult.testParts?.length) {
+      const recommendedModel = llmResult.testParts.find((part) => TEST_MODELS[part]);
+      if (recommendedModel) {
+        setTestModelId(recommendedModel);
+      }
+    }
+
+    if (llmResult.printInstructions) {
+      setDescription((prev) =>
+        prev && prev.length > 0 ? `${prev}\n${llmResult.printInstructions}` : llmResult.printInstructions ?? prev
+      );
+    }
   };
 
   const resetGeneratedArtifacts = () => {
@@ -480,6 +637,241 @@ const DOEWorkbench: React.FC = () => {
               )}
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>LLM-Assisted Parameter Planning</CardTitle>
+          <CardDescription>
+            Provide printer and filament context, then let GPT-5 propose DOE factor ranges and arrays.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {llmError && (
+            <Alert variant="destructive">
+              <AlertDescription>{llmError}</AlertDescription>
+            </Alert>
+          )}
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="llm-filament">Filament Brand</Label>
+              <Input
+                id="llm-filament"
+                value={llmContext.filamentBrand}
+                onChange={(event) =>
+                  setLlmContext((prev) => ({ ...prev, filamentBrand: event.target.value }))
+                }
+                placeholder="e.g. Prusament"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="llm-material">Material Type</Label>
+              <Select
+                value={llmContext.materialType}
+                onValueChange={(value) =>
+                  setLlmContext((prev) => ({ ...prev, materialType: value as MaterialType }))
+                }
+              >
+                <SelectTrigger id="llm-material">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {MATERIAL_OPTIONS.map((material) => (
+                    <SelectItem key={material} value={material}>
+                      {material}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="llm-printer">Printer Model</Label>
+              <Input
+                id="llm-printer"
+                value={llmContext.printerModel}
+                onChange={(event) =>
+                  setLlmContext((prev) => ({ ...prev, printerModel: event.target.value }))
+                }
+                placeholder="e.g. Bambu P1S"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="llm-printer-type">Printer Architecture</Label>
+              <Select
+                value={llmContext.printerType}
+                onValueChange={(value) =>
+                  setLlmContext((prev) => ({ ...prev, printerType: value as Phase1ContextState['printerType'] }))
+                }
+              >
+                <SelectTrigger id="llm-printer-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRINTER_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="llm-nozzle">Nozzle Diameter (mm)</Label>
+              <Input
+                id="llm-nozzle"
+                type="number"
+                min="0"
+                step="0.05"
+                value={llmContext.nozzleDiameter}
+                onChange={(event) =>
+                  setLlmContext((prev) => ({ ...prev, nozzleDiameter: event.target.value }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="llm-layer">Target Layer Height (mm)</Label>
+              <Input
+                id="llm-layer"
+                type="number"
+                min="0"
+                step="0.01"
+                value={llmContext.targetLayerHeight}
+                onChange={(event) =>
+                  setLlmContext((prev) => ({ ...prev, targetLayerHeight: event.target.value }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="llm-enclosure">Enclosure</Label>
+              <div className="flex items-center gap-3 rounded-lg border px-3 py-2">
+                <Switch
+                  id="llm-enclosure"
+                  checked={llmContext.enclosure}
+                  onCheckedChange={(checked) =>
+                    setLlmContext((prev) => ({ ...prev, enclosure: checked }))
+                  }
+                />
+                <span className="text-sm text-muted-foreground">Printer is enclosed</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="llm-known-issues">Known Issues / Constraints</Label>
+              <Textarea
+                id="llm-known-issues"
+                rows={3}
+                value={llmContext.knownIssues}
+                onChange={(event) =>
+                  setLlmContext((prev) => ({ ...prev, knownIssues: event.target.value }))
+                }
+                placeholder="e.g. ringing on X at 120mm/s"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Print Objectives</Label>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {OBJECTIVE_OPTIONS.map((objective) => {
+                  const id = `objective-${objective}`;
+                  const isChecked = llmObjectives.includes(objective);
+                  return (
+                    <label key={objective} htmlFor={id} className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
+                      <input
+                        id={id}
+                        type="checkbox"
+                        className="h-4 w-4"
+                        checked={isChecked}
+                        onChange={() => handleObjectiveToggle(objective)}
+                      />
+                      <span className="capitalize">{objective.replace(/_/g, ' ')}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Button onClick={handleProposeRanges} disabled={isProposingRanges}>
+              {isProposingRanges ? 'Requesting…' : 'Propose ranges with GPT-5'}
+            </Button>
+            {llmStatus && <Badge variant="outline">Web search: {llmStatus.replace('_', ' ')}</Badge>}
+            {isProposingRanges && !llmStatus && (
+              <span className="text-sm text-muted-foreground">Waiting for GPT-5…</span>
+            )}
+          </div>
+
+          {isProposingRanges && llmStreamPreview && (
+            <Textarea value={llmStreamPreview} readOnly className="font-mono text-xs" rows={4} />
+          )}
+
+          {llmResult && (
+            <div className="space-y-4 rounded-lg border bg-muted/40 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="font-semibold">LLM Recommendation</p>
+                  <p className="text-sm text-muted-foreground">Suggested orthogonal array: {llmResult.selectedArray}</p>
+                </div>
+                <Button size="sm" onClick={handleApplyLlmResult}>
+                  Apply to experiment
+                </Button>
+              </div>
+              <div className="space-y-3">
+                {llmResult.factorPlans.map((plan) => (
+                  <div key={plan.parameter} className="rounded border bg-background p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="font-medium">{plan.name ?? plan.parameter}</p>
+                      <Badge variant="secondary">{plan.unit}</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Levels: {plan.levels.join(', ')}</p>
+                    <p className="text-xs text-muted-foreground mt-2">{plan.rationale}</p>
+                    {plan.citations && (
+                      <div className="mt-2 space-x-2 text-xs">
+                        {plan.citations.map((url) => (
+                          <a key={url} href={url} target="_blank" rel="noreferrer" className="underline">
+                            Source
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {llmResult.testParts?.length ? (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Recommended test parts</p>
+                  <div className="flex flex-wrap gap-2">
+                    {llmResult.testParts.map((part) => (
+                      <Badge key={part} variant="outline" className="capitalize">
+                        {part.replace(/_/g, ' ')}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+              {llmResult.reasoningSummary && (
+                <p className="text-sm text-muted-foreground">{llmResult.reasoningSummary}</p>
+              )}
+              {llmResult.sourceSummary?.length ? (
+                <div className="space-y-2 text-sm">
+                  <p className="font-medium">Sources</p>
+                  <ul className="space-y-1">
+                    {llmResult.sourceSummary.map((source) => (
+                      <li key={source.url}>
+                        <a href={source.url} target="_blank" rel="noreferrer" className="underline">
+                          {source.title}
+                        </a>
+                        {source.snippet ? ` — ${source.snippet}` : ''}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+          )}
         </CardContent>
       </Card>
 

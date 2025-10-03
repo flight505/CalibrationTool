@@ -268,7 +268,7 @@ export interface Phase2LLMResult {
 
 export interface Phase1RequestPayload {
   form: Phase1FormInput;
-  objectives: string[];
+  objectives: Array<'strength' | 'speed' | 'surface_quality' | 'dimensional_accuracy'>;
   knownIssues?: string;
 }
 
