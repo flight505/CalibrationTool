@@ -23,6 +23,8 @@ import {
   MaterialType,
   Phase1LLMResult,
   Phase1RequestPayload,
+  Phase2LLMResult,
+  Phase2RequestPayload,
   SNRAnalysis,
   TestModel,
   TestModelType
@@ -37,7 +39,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { callPhase1LLM, DOECallError, WebSearchStatus } from '@/lib/utils/openai';
+import { callPhase1LLM, callPhase2LLM, DOECallError, WebSearchStatus } from '@/lib/utils/openai';
 
 interface GeneratedFile {
   filename: string;
@@ -102,6 +104,10 @@ const DOEWorkbench: React.FC = () => {
   const [llmStatus, setLlmStatus] = useState<WebSearchStatus | null>(null);
   const [llmStreamPreview, setLlmStreamPreview] = useState<string>('');
   const [llmResult, setLlmResult] = useState<Phase1LLMResult | null>(null);
+  const [llmAnalysis, setLlmAnalysis] = useState<Phase2LLMResult | null>(null);
+  const [isAnalyzingWithLLM, setIsAnalyzingWithLLM] = useState(false);
+  const [llmAnalysisError, setLlmAnalysisError] = useState<string | null>(null);
+  const [llmAnalysisStream, setLlmAnalysisStream] = useState<string>('');
   const plannerRef = useRef<ExperimentPlanner | null>(null);
   const urlCache = useRef<string[]>([]);
   const csvDownloadUrl = useRef<string | null>(null);
@@ -361,6 +367,66 @@ const DOEWorkbench: React.FC = () => {
       setDescription((prev) =>
         prev && prev.length > 0 ? `${prev}\n${llmResult.printInstructions}` : llmResult.printInstructions ?? prev
       );
+    }
+  };
+
+  const handleAnalyzeWithLLM = async () => {
+    if (!selectedMetricId) {
+      setLlmAnalysisError('Select a metric to analyze before requesting GPT-5.');
+      return;
+    }
+
+    const completedRuns = runs.filter(
+      (run) => typeof run.measurements?.[selectedMetricId] === 'number' && !Number.isNaN(run.measurements![selectedMetricId]!)
+    );
+
+    if (!completedRuns.length || completedRuns.length < runs.length) {
+      setLlmAnalysisError('Enter measurements for every run before requesting GPT-5.');
+      return;
+    }
+
+    const payload: Phase2RequestPayload = {
+      experimentName,
+      arrayType,
+      factors,
+      runs: runs,
+      primaryMetricId: selectedMetricId,
+      testModel: testModelId
+    };
+
+    setIsAnalyzingWithLLM(true);
+    setLlmAnalysisError(null);
+    setLlmAnalysisStream('');
+    setLlmAnalysis(null);
+
+    try {
+      const result = await callPhase2LLM({
+        payload,
+        stream: true,
+        handlers: {
+          onTextDelta: (delta) =>
+            setLlmAnalysisStream((prev) => {
+              const next = prev + delta;
+              return next.length > 4000 ? next.slice(next.length - 4000) : next;
+            }),
+          onCompleted: (data) => {
+            setLlmAnalysis(data);
+            setLlmAnalysisStream('');
+          },
+          onError: (error) => {
+            setLlmAnalysisError(error.message ?? 'LLM analysis failed.');
+            setLlmAnalysisStream('');
+          }
+        }
+      });
+
+      setLlmAnalysis(result);
+      setLlmAnalysisStream('');
+    } catch (error) {
+      const message = (error as DOECallError)?.message ?? 'Failed to analyze with GPT-5.';
+      setLlmAnalysisError(message);
+    } finally {
+      setIsAnalyzingWithLLM(false);
     }
   };
 
@@ -1101,7 +1167,12 @@ const DOEWorkbench: React.FC = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={computeAnalysis}>Analyze Results</Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button onClick={computeAnalysis}>Analyze Results</Button>
+                  <Button variant="outline" onClick={handleAnalyzeWithLLM} disabled={isAnalyzingWithLLM}>
+                    {isAnalyzingWithLLM ? 'Analyzing with GPT-5…' : 'Analyze with GPT-5'}
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -1141,6 +1212,16 @@ const DOEWorkbench: React.FC = () => {
               <Alert>
                 <AlertDescription>{analysisError}</AlertDescription>
               </Alert>
+            )}
+
+            {llmAnalysisError && (
+              <Alert variant="destructive">
+                <AlertDescription>{llmAnalysisError}</AlertDescription>
+              </Alert>
+            )}
+
+            {isAnalyzingWithLLM && llmAnalysisStream && (
+              <Textarea value={llmAnalysisStream} readOnly className="font-mono text-xs" rows={4} />
             )}
           </CardContent>
         </Card>
@@ -1209,6 +1290,85 @@ const DOEWorkbench: React.FC = () => {
                 <pre className="bg-muted p-3 rounded-md text-sm whitespace-pre-wrap">{anovaSummary}</pre>
               </div>
             )}
+        </CardContent>
+      </Card>
+      )}
+
+      {llmAnalysis && (
+        <Card>
+          <CardHeader>
+            <CardTitle>GPT-5 Analysis Summary</CardTitle>
+            <CardDescription>
+              Structured recommendations derived from the Response API (Phase 2).
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <h3 className="font-semibold">Recommended Optimal Levels</h3>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(llmAnalysis.optimalLevels).map(([factorName, value]) => (
+                  <Badge key={factorName} variant="outline">
+                    {factorName}: {value}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {llmAnalysis.snr.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="font-semibold">Signal-to-Noise Insights</h3>
+                <ul className="space-y-1 text-sm text-muted-foreground">
+                  {llmAnalysis.snr.map((entry) => (
+                    <li key={entry.factor}>
+                      <span className="font-medium">{entry.factor}</span>: ΔSNR {entry.delta.toFixed(2)}
+                      {entry.interpretation ? ` — ${entry.interpretation}` : ''}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {llmAnalysis.mainEffects.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="font-semibold">Factor Trends</h3>
+                <div className="space-y-1 text-sm text-muted-foreground">
+                  {llmAnalysis.mainEffects.map((effect) => (
+                    <p key={effect.factor}>
+                      <span className="font-medium">{effect.factor}:</span> {effect.trend.join(' → ')}
+                      {effect.notes ? ` — ${effect.notes}` : ''}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {llmAnalysis.confirmationRun && (
+              <div className="space-y-2 rounded border bg-muted/40 p-3">
+                <h3 className="font-semibold">Confirmation Run</h3>
+                <p className="text-sm text-muted-foreground">
+                  {llmAnalysis.confirmationRun.recommended
+                    ? 'GPT-5 recommends running a confirmation print with the following settings:'
+                    : 'Confirmation run not required, but settings below may be useful for documentation.'}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(llmAnalysis.confirmationRun.settings).map(([key, value]) => (
+                    <Badge key={key} variant="outline">
+                      {key}: {value}
+                    </Badge>
+                  ))}
+                </div>
+                {typeof llmAnalysis.confirmationRun.expectedQualityGain === 'number' && (
+                  <p className="text-xs text-muted-foreground">
+                    Expected quality gain: {Math.round(llmAnalysis.confirmationRun.expectedQualityGain * 100) / 100}
+                  </p>
+                )}
+                {llmAnalysis.confirmationRun.notes && (
+                  <p className="text-xs text-muted-foreground">{llmAnalysis.confirmationRun.notes}</p>
+                )}
+              </div>
+            )}
+
+            {llmAnalysis.notes && <p className="text-sm text-muted-foreground">{llmAnalysis.notes}</p>}
           </CardContent>
         </Card>
       )}
