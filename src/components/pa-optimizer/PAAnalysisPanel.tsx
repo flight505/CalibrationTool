@@ -11,6 +11,8 @@ interface PAAnalysisPanelProps {
 export const PAAnalysisPanel: React.FC<PAAnalysisPanelProps> = ({ analysis }) => {
   const { trends, statistics, outliers, qualityScore } = analysis;
 
+  const formatScore = (value: number) => value.toFixed(2);
+
   const getTrendIcon = (direction: string) => {
     if (direction === 'correct') return <CheckCircle2 className="h-5 w-5 text-green-500" />;
     if (direction === 'inverted') return <AlertTriangle className="h-5 w-5 text-red-500" />;
@@ -37,7 +39,7 @@ export const PAAnalysisPanel: React.FC<PAAnalysisPanelProps> = ({ analysis }) =>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{qualityScore.overallScore}</div>
+              <div className="text-3xl font-bold">{formatScore(qualityScore.overallScore)}</div>
               <p className="text-xs text-muted-foreground mt-1 uppercase tracking-wide">
                 {qualityScore.confidence} Confidence
               </p>
@@ -65,7 +67,7 @@ export const PAAnalysisPanel: React.FC<PAAnalysisPanelProps> = ({ analysis }) =>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{qualityScore.variabilityScore}/30</div>
+              <div className="text-2xl font-bold">{`${formatScore(qualityScore.variabilityScore)}/30`}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 CV: {statistics.coefficientOfVariation.toFixed(1)}%
               </p>

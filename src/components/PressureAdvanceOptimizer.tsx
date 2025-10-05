@@ -105,7 +105,7 @@ const PressureAdvanceOptimizer: React.FC<PressureAdvanceOptimizerProps> = ({ onN
         >
           <div className="text-center">
             <div className="text-3xl font-bold mb-1">
-              {analysis.qualityScore.overallScore}
+              {analysis.qualityScore.overallScore.toFixed(2)}
             </div>
             <div className="text-xs text-muted-foreground uppercase tracking-wide">
               {analysis.qualityScore.confidence} Confidence
