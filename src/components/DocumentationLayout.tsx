@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, Menu, X, BookOpen, FileText, Home } from 'lucide-react';
+import { ChevronRight, Menu, X, BookOpen, FileText, Home, FlaskConical } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DocumentationViewer } from './DocumentationViewer';
@@ -13,6 +13,28 @@ interface DocSection {
 }
 
 const docStructure: DocSection[] = [
+  {
+    title: 'DOE Planner',
+    icon: <FlaskConical className="w-4 h-4" />,
+    children: [
+      {
+        title: 'DOE Overview',
+        path: '/docs/doe/overview.md',
+      },
+      {
+        title: 'Planner Walkthrough',
+        path: '/docs/doe/planner-guide.md',
+      },
+      {
+        title: 'Taguchi Reference',
+        path: '/docs/doe/taguchi-reference.md',
+      },
+      {
+        title: 'Scoring & Best Practices',
+        path: '/docs/doe/scoring-guide.md',
+      },
+    ],
+  },
   {
     title: 'Overview',
     path: '/docs/orca-slicer/README.md',
