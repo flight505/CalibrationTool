@@ -130,7 +130,7 @@ export function detectOutliersResidual(
   data: PATestResult[],
   model: FittedModel
 ): OutlierResult[] {
-  const residuals = data.map((result, i) => {
+  const residuals = data.map((result) => {
     const predicted = model.predict(result.flow, result.accel);
     return Math.abs(result.paValue - predicted);
   });
@@ -235,7 +235,6 @@ function determineConfidence(score: number): ConfidenceLevel {
 function generateQualityMessages(
   score: number,
   trendScore: number,
-  variabilityScore: number,
   modelFitScore: number,
   stats: StatisticalAnalysis,
   outlierCount: number
@@ -301,7 +300,6 @@ export function calculateQualityScore(
   const { warnings, recommendations } = generateQualityMessages(
     overallScore,
     trendScore,
-    variabilityScore,
     modelFitScore,
     stats,
     outlierCount

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Move3D, BarChart3, Activity, FileDown, LineChart, HelpCircle } from 'lucide-react';
+import { Move3D, BarChart3, Activity, FileDown, LineChart } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { CalibrationToolLayout, TwoColumnLayout, InfoCard } from '@/components/calibration/CalibrationToolLayout';

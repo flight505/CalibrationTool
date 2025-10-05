@@ -3,7 +3,7 @@
  * Implements multiple mathematical models for fitting PA data
  */
 
-import type { PATestResult, FittedModel, ModelType } from './types';
+import type { PATestResult, FittedModel } from './types';
 
 /**
  * Calculate R² (coefficient of determination)

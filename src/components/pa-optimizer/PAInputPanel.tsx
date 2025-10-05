@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Grid3x3, Table2, Download, Trash2, Upload } from 'lucide-react';
+import { Grid3x3, Table2, Download, Trash2 } from 'lucide-react';
 import { FormSection, InfoCard } from '@/components/calibration/CalibrationToolLayout';
-import { TextField, SelectField, FieldGroup } from '@/components/calibration/FormFields';
+import { TextField, FieldGroup } from '@/components/calibration/FormFields';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

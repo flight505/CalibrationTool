@@ -40,15 +40,6 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
 
   // Group by acceleration for flow chart
   const uniqueAccels = [...new Set(testData.map(d => d.accel))].sort((a, b) => a - b);
-  const flowChartData = uniqueAccels.map(accel => {
-    const points = testData.filter(d => d.accel === accel).sort((a, b) => a.flow - b.flow);
-    return points.map(p => ({
-      flow: p.flow,
-      pa: p.paValue,
-      predicted: selectedModel.predict(p.flow, p.accel),
-      accel: accel,
-    }));
-  }).flat();
 
   // Prepare data for Accel vs PA chart
   const uniqueFlows = [...new Set(testData.map(d => d.flow))].sort((a, b) => a - b);
@@ -63,7 +54,7 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
   }).flat();
 
   // Residuals data
-  const residualsData = testData.map((d, i) => {
+  const residualsData = testData.map((d) => {
     const predicted = selectedModel.predict(d.flow, d.accel);
     const residual = d.paValue - predicted;
     return {
@@ -132,7 +123,7 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
                     label={{ value: 'PA Value', angle: -90, position: 'insideLeft' }}
                   />
                   <ChartTooltip
-                    content={<ChartTooltipContent />}
+                    content={(props) => <ChartTooltipContent {...props} />}
                     cursor={{ strokeDasharray: '3 3' }}
                   />
                   <ChartLegend content={<ChartLegendContent />} />
@@ -189,7 +180,7 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
                     label={{ value: 'PA Value', angle: -90, position: 'insideLeft' }}
                     domain={['auto', 'auto']}
                   />
-                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <ChartTooltip content={(props) => <ChartTooltipContent {...props} />} />
                   <ChartLegend content={<ChartLegendContent />} />
 
                   <Line
@@ -237,7 +228,7 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
                   <YAxis
                     label={{ value: 'Residual', angle: -90, position: 'insideLeft' }}
                   />
-                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <ChartTooltip content={(props) => <ChartTooltipContent {...props} />} />
                   <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />
 
                   <Bar
@@ -296,7 +287,7 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
                     label={{ value: 'PA Value', angle: -90, position: 'insideLeft' }}
                     domain={['auto', 'auto']}
                   />
-                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <ChartTooltip content={(props) => <ChartTooltipContent {...props} />} />
                   <ChartLegend content={<ChartLegendContent />} />
 
                   <Bar

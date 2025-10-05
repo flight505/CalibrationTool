@@ -1,4 +1,4 @@
-import { Activity, CheckCircle2, AlertCircle } from 'lucide-react';
+import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { FormSection, InfoCard } from '@/components/calibration/CalibrationToolLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -170,7 +170,7 @@ export const PAModelingPanel: React.FC<PAModelingPanelProps> = ({ analysis }) =>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {analysis.testData.map((test, i) => {
+            {analysis.testData.map((test) => {
                 const predicted = selectedModel.predict(test.flow, test.accel);
                 const residual = test.paValue - predicted;
                 const absResidual = Math.abs(residual);

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Copy, Check, FileDown } from 'lucide-react';
+import { Copy, Check, FileDown } from 'lucide-react';
 import { FormSection, InfoCard } from '@/components/calibration/CalibrationToolLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
