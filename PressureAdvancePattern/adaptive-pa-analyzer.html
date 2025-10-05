@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive Pressure Advance Analyzer</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 30px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab:hover {
+            color: #667eea;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section h3 {
+            font-size: 1.3rem;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        
+        .card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: start;
+            gap: 12px;
+        }
+        
+        .alert.warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+        
+        .alert.info {
+            background: #cfe2ff;
+            border-left: 4px solid #0d6efd;
+            color: #084298;
+        }
+        
+        .alert.success {
+            background: #d1e7dd;
+            border-left: 4px solid #198754;
+            color: #0f5132;
+        }
+        
+        .alert.danger {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #842029;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .input-group input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .button.secondary {
+            background: #6c757d;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            color: white;
+        }
+        
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .plot-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .badge.normal {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+        
+        .badge.inverted {
+            background: #f8d7da;
+            color: #842029;
+        }
+        
+        .formula {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+        }
+        
+        code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // PCHIP Interpolation Implementation
+        class PCHIPInterpolator {
+            constructor(x, y) {
+                if (x.length !== y.length || x.length < 2) {
+                    throw new Error("x and y must have the same length and contain at least 2 points");
+                }
+                
+                this.x = [...x];
+                this.y = [...y];
+                this.n = x.length;
+                this.derivatives = this.computeDerivatives();
+            }
+            
+            computeDerivatives() {
+                const n = this.n;
+                const d = new Array(n);
+                const h = new Array(n - 1);
+                const delta = new Array(n - 1);
+                
+                // Calculate intervals and slopes
+                for (let i = 0; i < n - 1; i++) {
+                    h[i] = this.x[i + 1] - this.x[i];
+                    delta[i] = (this.y[i + 1] - this.y[i]) / h[i];
+                }
+                
+                // Compute interior derivatives using weighted harmonic mean
+                for (let i = 1; i < n - 1; i++) {
+                    // Check for sign change or zero slope
+                    if (delta[i - 1] * delta[i] <= 0) {
+                        d[i] = 0;
+                    } else {
+                        const w1 = 2 * h[i] + h[i - 1];
+                        const w2 = h[i] + 2 * h[i - 1];
+                        d[i] = (w1 + w2) / (w1 / delta[i - 1] + w2 / delta[i]);
+                    }
+                }
+                
+                // Compute boundary derivatives using one-sided differences
+                d[0] = this.endDerivative(h[0], h[1], delta[0], delta[1]);
+                d[n - 1] = this.endDerivative(h[n - 2], h[n - 3] || h[n - 2], delta[n - 2], delta[n - 3] || delta[n - 2]);
+                
+                return d;
+            }
+            
+            endDerivative(h1, h2, delta1, delta2) {
+                // Compute end derivative using one-sided formula
+                const d = ((2 * h1 + h2) * delta1 - h1 * delta2) / (h1 + h2);
+                
+                // Check if d and delta1 have different signs
+                if (d * delta1 < 0) {
+                    return 0;
+                } else if (delta1 * delta2 < 0 && Math.abs(d) > Math.abs(3 * delta1)) {
+                    return 3 * delta1;
+                }
+                
+                return d;
+            }
+            
+            interpolate(xQuery) {
+                // Find the interval containing xQuery
+                let i = 0;
+                for (i = 0; i < this.n - 1; i++) {
+                    if (xQuery <= this.x[i + 1]) break;
+                }
+                
+                // Clamp to valid range
+                i = Math.max(0, Math.min(i, this.n - 2));
+                
+                // Compute the interpolated value using Hermite basis functions
+                const h = this.x[i + 1] - this.x[i];
+                const t = (xQuery - this.x[i]) / h;
+                const t2 = t * t;
+                const t3 = t2 * t;
+                
+                // Hermite basis functions
+                const h00 = 2 * t3 - 3 * t2 + 1;
+                const h10 = t3 - 2 * t2 + t;
+                const h01 = -2 * t3 + 3 * t2;
+                const h11 = t3 - t2;
+                
+                return h00 * this.y[i] + h10 * h * this.derivatives[i] + 
+                       h01 * this.y[i + 1] + h11 * h * this.derivatives[i + 1];
+            }
+        }
+
+        // 2D PCHIP interpolation for PA(flow, acceleration)
+        function interpolate2D(data, queryFlow, queryAccel) {
+            // Extract unique accelerations and flows
+            const accels = [...new Set(data.map(d => d.accel))].sort((a, b) => a - b);
+            const flows = [...new Set(data.map(d => d.flow))].sort((a, b) => a - b);
+            
+            if (accels.length < 2 || flows.length < 2) {
+                // Not enough data for 2D interpolation, return nearest value
+                const nearest = data.reduce((prev, curr) => {
+                    const prevDist = Math.abs(prev.flow - queryFlow) + Math.abs(prev.accel - queryAccel);
+                    const currDist = Math.abs(curr.flow - queryFlow) + Math.abs(curr.accel - queryAccel);
+                    return currDist < prevDist ? curr : prev;
+                });
+                return nearest.pa;
+            }
+            
+            // Interpolate along acceleration for each flow
+            const paAtFlows = flows.map(flow => {
+                const dataAtFlow = data.filter(d => d.flow === flow).sort((a, b) => a.accel - b.accel);
+                const x = dataAtFlow.map(d => d.accel);
+                const y = dataAtFlow.map(d => d.pa);
+                
+                if (x.length < 2) return null;
+                
+                try {
+                    const interpolator = new PCHIPInterpolator(x, y);
+                    return {
+                        flow: flow,
+                        pa: interpolator.interpolate(queryAccel)
+                    };
+                } catch (e) {
+                    return null;
+                }
+            }).filter(v => v !== null);
+            
+            if (paAtFlows.length < 2) {
+                return paAtFlows.length > 0 ? paAtFlows[0].pa : data[0].pa;
+            }
+            
+            // Interpolate along flow
+            const x = paAtFlows.map(d => d.flow);
+            const y = paAtFlows.map(d => d.pa);
+            
+            try {
+                const interpolator = new PCHIPInterpolator(x, y);
+                return interpolator.interpolate(queryFlow);
+            } catch (e) {
+                return y[0];
+            }
+        }
+
+        function AdaptivePAAnalyzer() {
+            const [activeTab, setActiveTab] = useState('analyze');
+            const [paData, setPAData] = useState(`0.014,9.75,4000
+0.017,12.16,4000
+0.020,16.25,4000
+0.013,9.75,6000
+0.016,12.19,6000
+0.018,16.28,6000
+0.012,9.75,10000
+0.015,12.19,10000
+0.017,16.25,10000`);
+            
+            const [queryFlow, setQueryFlow] = useState(12);
+            const [queryAccel, setQueryAccel] = useState(5000);
+            
+            const parsedData = useMemo(() => {
+                try {
+                    return paData.split('\n')
+                        .filter(line => line.trim())
+                        .map(line => {
+                            const [pa, flow, accel] = line.split(',').map(v => parseFloat(v.trim()));
+                            return { pa, flow, accel };
+                        })
+                        .filter(d => !isNaN(d.pa) && !isNaN(d.flow) && !isNaN(d.accel));
+                } catch (e) {
+                    return [];
+                }
+            }, [paData]);
+            
+            const analysis = useMemo(() => {
+                if (parsedData.length === 0) return null;
+                
+                const accels = [...new Set(parsedData.map(d => d.accel))].sort((a, b) => a - b);
+                const flows = [...new Set(parsedData.map(d => d.flow))].sort((a, b) => a - b);
+                
+                // Analyze trends
+                const flowTrend = [];
+                const accelTrend = [];
+                
+                for (const accel of accels) {
+                    const dataAtAccel = parsedData.filter(d => d.accel === accel).sort((a, b) => a.flow - b.flow);
+                    if (dataAtAccel.length >= 2) {
+                        const increasing = dataAtAccel[dataAtAccel.length - 1].pa > dataAtAccel[0].pa;
+                        flowTrend.push({ accel, increasing, data: dataAtAccel });
+                    }
+                }
+                
+                for (const flow of flows) {
+                    const dataAtFlow = parsedData.filter(d => Math.abs(d.flow - flow) < 0.5).sort((a, b) => a.accel - b.accel);
+                    if (dataAtFlow.length >= 2) {
+                        const increasing = dataAtFlow[dataAtFlow.length - 1].pa > dataAtFlow[0].pa;
+                        accelTrend.push({ flow, increasing, data: dataAtFlow });
+                    }
+                }
+                
+                const flowIncreasingCount = flowTrend.filter(t => t.increasing).length;
+                const flowDecreasingCount = flowTrend.filter(t => !t.increasing).length;
+                const accelIncreasingCount = accelTrend.filter(t => t.increasing).length;
+                const accelDecreasingCount = accelTrend.filter(t => !t.increasing).length;
+                
+                return {
+                    dataPoints: parsedData.length,
+                    uniqueAccels: accels.length,
+                    uniqueFlows: flows.length,
+                    accels,
+                    flows,
+                    flowTrend: flowIncreasingCount > flowDecreasingCount ? 'increasing' : 'decreasing',
+                    accelTrend: accelIncreasingCount > accelDecreasingCount ? 'increasing' : 'decreasing',
+                    flowTrendDetails: flowTrend,
+                    accelTrendDetails: accelTrend,
+                    paRange: [Math.min(...parsedData.map(d => d.pa)), Math.max(...parsedData.map(d => d.pa))],
+                    flowRange: [Math.min(...parsedData.map(d => d.flow)), Math.max(...parsedData.map(d => d.flow))],
+                    accelRange: [Math.min(...parsedData.map(d => d.accel)), Math.max(...parsedData.map(d => d.accel))]
+                };
+            }, [parsedData]);
+            
+            const interpolatedValue = useMemo(() => {
+                if (parsedData.length < 2) return null;
+                try {
+                    return interpolate2D(parsedData, queryFlow, queryAccel);
+                } catch (e) {
+                    return null;
+                }
+            }, [parsedData, queryFlow, queryAccel]);
+            
+            useEffect(() => {
+                if (activeTab === 'visualize' && parsedData.length > 0) {
+                    create3DPlot();
+                    create2DPlots();
+                }
+            }, [activeTab, parsedData]);
+            
+            const create3DPlot = () => {
+                if (parsedData.length === 0) return;
+                
+                const accels = [...new Set(parsedData.map(d => d.accel))].sort((a, b) => a - b);
+                const flows = [...new Set(parsedData.map(d => d.flow))].sort((a, b) => a - b);
+                
+                // Create interpolated surface
+                const flowGrid = [];
+                const accelGrid = [];
+                const paGrid = [];
+                
+                const flowMin = Math.min(...flows);
+                const flowMax = Math.max(...flows);
+                const accelMin = Math.min(...accels);
+                const accelMax = Math.max(...accels);
+                
+                const flowStep = (flowMax - flowMin) / 30;
+                const accelStep = (accelMax - accelMin) / 30;
+                
+                for (let f = flowMin; f <= flowMax; f += flowStep) {
+                    const paRow = [];
+                    for (let a = accelMin; a <= accelMax; a += accelStep) {
+                        paRow.push(interpolate2D(parsedData, f, a));
+                    }
+                    paGrid.push(paRow);
+                }
+                
+                for (let f = flowMin; f <= flowMax; f += flowStep) {
+                    flowGrid.push(f);
+                }
+                
+                for (let a = accelMin; a <= accelMax; a += accelStep) {
+                    accelGrid.push(a);
+                }
+                
+                const surfaceTrace = {
+                    type: 'surface',
+                    x: accelGrid,
+                    y: flowGrid,
+                    z: paGrid,
+                    colorscale: 'Viridis',
+                    showscale: true,
+                    name: 'Interpolated PA',
+                    hovertemplate: 'Accel: %{x:.0f} mm/s²<br>Flow: %{y:.2f} mm³/s<br>PA: %{z:.4f}<extra></extra>'
+                };
+                
+                const scatterTrace = {
+                    type: 'scatter3d',
+                    mode: 'markers',
+                    x: parsedData.map(d => d.accel),
+                    y: parsedData.map(d => d.flow),
+                    z: parsedData.map(d => d.pa),
+                    marker: {
+                        size: 8,
+                        color: 'red',
+                        symbol: 'circle',
+                        line: { color: 'white', width: 2 }
+                    },
+                    name: 'Measured Points',
+                    hovertemplate: 'Accel: %{x:.0f} mm/s²<br>Flow: %{y:.2f} mm³/s<br>PA: %{z:.4f}<extra></extra>'
+                };
+                
+                const layout = {
+                    title: 'Adaptive PA 3D Surface (PCHIP Interpolation)',
+                    scene: {
+                        xaxis: { title: 'Acceleration (mm/s²)' },
+                        yaxis: { title: 'Flow Rate (mm³/s)' },
+                        zaxis: { title: 'Pressure Advance' }
+                    },
+                    height: 600
+                };
+                
+                Plotly.newPlot('plot3d', [surfaceTrace, scatterTrace], layout);
+            };
+            
+            const create2DPlots = () => {
+                if (parsedData.length === 0) return;
+                
+                const accels = [...new Set(parsedData.map(d => d.accel))].sort((a, b) => a - b);
+                const flows = [...new Set(parsedData.map(d => d.flow))].sort((a, b) => a - b);
+                
+                // PA vs Flow at different accelerations
+                const traces1 = accels.map(accel => {
+                    const dataAtAccel = parsedData.filter(d => d.accel === accel).sort((a, b) => a.flow - b.flow);
+                    
+                    // Create interpolated line
+                    const flowMin = Math.min(...dataAtAccel.map(d => d.flow));
+                    const flowMax = Math.max(...dataAtAccel.map(d => d.flow));
+                    const flowInterp = [];
+                    const paInterp = [];
+                    
+                    for (let f = flowMin; f <= flowMax; f += (flowMax - flowMin) / 50) {
+                        flowInterp.push(f);
+                        paInterp.push(interpolate2D(parsedData, f, accel));
+                    }
+                    
+                    return [
+                        {
+                            x: flowInterp,
+                            y: paInterp,
+                            mode: 'lines',
+                            name: `${accel} mm/s² (interpolated)`,
+                            line: { width: 2 }
+                        },
+                        {
+                            x: dataAtAccel.map(d => d.flow),
+                            y: dataAtAccel.map(d => d.pa),
+                            mode: 'markers',
+                            name: `${accel} mm/s² (measured)`,
+                            marker: { size: 10 }
+                        }
+                    ];
+                }).flat();
+                
+                const layout1 = {
+                    title: 'PA vs Flow Rate at Different Accelerations',
+                    xaxis: { title: 'Flow Rate (mm³/s)' },
+                    yaxis: { title: 'Pressure Advance' },
+                    height: 500
+                };
+                
+                Plotly.newPlot('plot-flow', traces1, layout1);
+                
+                // PA vs Acceleration at different flows
+                const traces2 = flows.map(flow => {
+                    const dataAtFlow = parsedData.filter(d => Math.abs(d.flow - flow) < 0.5).sort((a, b) => a.accel - b.accel);
+                    
+                    if (dataAtFlow.length < 2) return null;
+                    
+                    // Create interpolated line
+                    const accelMin = Math.min(...dataAtFlow.map(d => d.accel));
+                    const accelMax = Math.max(...dataAtFlow.map(d => d.accel));
+                    const accelInterp = [];
+                    const paInterp = [];
+                    
+                    for (let a = accelMin; a <= accelMax; a += (accelMax - accelMin) / 50) {
+                        accelInterp.push(a);
+                        paInterp.push(interpolate2D(parsedData, flow, a));
+                    }
+                    
+                    return [
+                        {
+                            x: accelInterp,
+                            y: paInterp,
+                            mode: 'lines',
+                            name: `${flow.toFixed(2)} mm³/s (interpolated)`,
+                            line: { width: 2 }
+                        },
+                        {
+                            x: dataAtFlow.map(d => d.accel),
+                            y: dataAtFlow.map(d => d.pa),
+                            mode: 'markers',
+                            name: `${flow.toFixed(2)} mm³/s (measured)`,
+                            marker: { size: 10 }
+                        }
+                    ];
+                }).filter(t => t !== null).flat();
+                
+                const layout2 = {
+                    title: 'PA vs Acceleration at Different Flow Rates',
+                    xaxis: { title: 'Acceleration (mm/s²)' },
+                    yaxis: { title: 'Pressure Advance' },
+                    height: 500
+                };
+                
+                Plotly.newPlot('plot-accel', traces2, layout2);
+            };
+            
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>🎯 Adaptive Pressure Advance Analyzer</h1>
+                        <p>Visualize, Analyze & Optimize Your PA Profile with PCHIP Interpolation</p>
+                    </div>
+                    
+                    <div className="content">
+                        <div className="tabs">
+                            <button 
+                                className={`tab ${activeTab === 'analyze' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('analyze')}
+                            >
+                                📊 Analysis
+                            </button>
+                            <button 
+                                className={`tab ${activeTab === 'visualize' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('visualize')}
+                            >
+                                📈 Visualization
+                            </button>
+                            <button 
+                                className={`tab ${activeTab === 'theory' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('theory')}
+                            >
+                                📚 Theory & Math
+                            </button>
+                            <button 
+                                className={`tab ${activeTab === 'optimize' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('optimize')}
+                            >
+                                ⚡ Optimization
+                            </button>
+                        </div>
+                        
+                        {activeTab === 'analyze' && (
+                            <div>
+                                <div className="section">
+                                    <h2>📋 Input Your PA Data</h2>
+                                    <div className="input-group">
+                                        <label>Paste your adaptive PA measurements (PA, Flow, Acceleration per line):</label>
+                                        <textarea 
+                                            rows="12"
+                                            value={paData}
+                                            onChange={(e) => setPAData(e.target.value)}
+                                            placeholder="0.036,3.84,1000&#10;0.036,7.68,1000&#10;..."
+                                        />
+                                    </div>
+                                </div>
+                                
+                                {analysis && (
+                                    <>
+                                        <div className="section">
+                                            <h2>📈 Data Statistics</h2>
+                                            <div className="grid">
+                                                <div className="stat-card">
+                                                    <h3>Data Points</h3>
+                                                    <div className="value">{analysis.dataPoints}</div>
+                                                </div>
+                                                <div className="stat-card">
+                                                    <h3>Unique Accelerations</h3>
+                                                    <div className="value">{analysis.uniqueAccels}</div>
+                                                </div>
+                                                <div className="stat-card">
+                                                    <h3>Unique Flow Rates</h3>
+                                                    <div className="value">{analysis.uniqueFlows}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="section">
+                                            <h2>🔍 Trend Analysis</h2>
+                                            
+                                            {analysis.flowTrend === 'increasing' && (
+                                                <div className="alert danger">
+                                                    <span style={{fontSize: '1.5rem'}}>⚠️</span>
+                                                    <div>
+                                                        <strong>CRITICAL: Inverted Flow Trend Detected!</strong>
+                                                        <p>Your PA values are <strong>increasing</strong> with higher flow rates. This is <strong>opposite</strong> of what research indicates!</p>
+                                                        <p><strong>Expected behavior:</strong> PA should DECREASE as flow rate increases (faster printing = less time for pressure buildup = lower PA needed)</p>
+                                                        <p><strong>Your data shows:</strong> PA increases from {analysis.paRange[0].toFixed(4)} to {analysis.paRange[1].toFixed(4)} as flow increases</p>
+                                                        <p>💡 <strong>Recommendation:</strong> Re-calibrate your PA tests. The pattern method may have been misread, or tests were done with inconsistent settings.</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            
+                                            {analysis.flowTrend === 'decreasing' && (
+                                                <div className="alert success">
+                                                    <span style={{fontSize: '1.5rem'}}>✅</span>
+                                                    <div>
+                                                        <strong>Correct Flow Trend</strong>
+                                                        <p>Your PA values correctly <strong>decrease</strong> with higher flow rates. This matches expected behavior!</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            
+                                            {analysis.accelTrend === 'increasing' && (
+                                                <div className="alert warning">
+                                                    <span style={{fontSize: '1.5rem'}}>⚠️</span>
+                                                    <div>
+                                                        <strong>Unexpected Acceleration Trend</strong>
+                                                        <p>Your PA values are <strong>increasing</strong> with higher acceleration. This is unusual!</p>
+                                                        <p><strong>Expected:</strong> PA typically decreases with higher acceleration (less time at speed = less pressure buildup)</p>
+                                                        <p>This might indicate mechanical issues or inconsistent test conditions.</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            
+                                            {analysis.accelTrend === 'decreasing' && (
+                                                <div className="alert success">
+                                                    <span style={{fontSize: '1.5rem'}}>✅</span>
+                                                    <div>
+                                                        <strong>Correct Acceleration Trend</strong>
+                                                        <p>Your PA values correctly <strong>decrease</strong> with higher acceleration. This matches expected behavior!</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            
+                                            <div className="card">
+                                                <h3>Detailed Trends by Acceleration</h3>
+                                                <table className="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Acceleration</th>
+                                                            <th>Flow Trend</th>
+                                                            <th>PA Range</th>
+                                                            <th>Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {analysis.flowTrendDetails.map((trend, idx) => {
+                                                            const paMin = Math.min(...trend.data.map(d => d.pa));
+                                                            const paMax = Math.max(...trend.data.map(d => d.pa));
+                                                            const expected = !trend.increasing;
+                                                            return (
+                                                                <tr key={idx}>
+                                                                    <td><strong>{trend.accel} mm/s²</strong></td>
+                                                                    <td>{trend.increasing ? '📈 Increasing' : '📉 Decreasing'}</td>
+                                                                    <td>{paMin.toFixed(4)} → {paMax.toFixed(4)}</td>
+                                                                    <td>
+                                                                        <span className={`badge ${expected ? 'normal' : 'inverted'}`}>
+                                                                            {expected ? '✓ Normal' : '✗ Inverted'}
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="section">
+                                            <h2>🎯 PA Value Prediction</h2>
+                                            <div className="card">
+                                                <p>Test the interpolation model by querying PA for any flow rate and acceleration:</p>
+                                                <div className="grid">
+                                                    <div className="input-group">
+                                                        <label>Flow Rate (mm³/s):</label>
+                                                        <input 
+                                                            type="number" 
+                                                            value={queryFlow}
+                                                            onChange={(e) => setQueryFlow(parseFloat(e.target.value))}
+                                                            step="0.1"
+                                                        />
+                                                    </div>
+                                                    <div className="input-group">
+                                                        <label>Acceleration (mm/s²):</label>
+                                                        <input 
+                                                            type="number" 
+                                                            value={queryAccel}
+                                                            onChange={(e) => setQueryAccel(parseFloat(e.target.value))}
+                                                            step="100"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                {interpolatedValue !== null && (
+                                                    <div className="alert info">
+                                                        <span style={{fontSize: '1.5rem'}}>📊</span>
+                                                        <div>
+                                                            <strong>Interpolated PA Value:</strong>
+                                                            <p style={{fontSize: '1.5rem', marginTop: '10px'}}>
+                                                                <code>{interpolatedValue.toFixed(4)}</code>
+                                                            </p>
+                                                            <p style={{marginTop: '10px'}}>
+                                                                For flow rate {queryFlow.toFixed(2)} mm³/s and acceleration {queryAccel} mm/s²
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                        
+                        {activeTab === 'visualize' && (
+                            <div>
+                                <div className="section">
+                                    <h2>📊 3D Surface Visualization</h2>
+                                    {parsedData.length > 0 ? (
+                                        <div className="plot-container">
+                                            <div id="plot3d"></div>
+                                        </div>
+                                    ) : (
+                                        <div className="alert info">
+                                            <span>ℹ️</span>
+                                            <div>Enter your PA data in the Analysis tab to see visualizations.</div>
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                <div className="section">
+                                    <h2>📈 2D Cross-Section Plots</h2>
+                                    {parsedData.length > 0 ? (
+                                        <>
+                                            <div className="plot-container">
+                                                <div id="plot-flow"></div>
+                                            </div>
+                                            <div className="plot-container">
+                                                <div id="plot-accel"></div>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="alert info">
+                                            <span>ℹ️</span>
+                                            <div>Enter your PA data in the Analysis tab to see visualizations.</div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                        
+                        {activeTab === 'theory' && (
+                            <div>
+                                <div className="section">
+                                    <h2>📚 Understanding Adaptive Pressure Advance</h2>
+                                    
+                                    <div className="card">
+                                        <h3>What is Pressure Advance?</h3>
+                                        <p>Pressure advance compensates for the lag between extruder motor movement and actual filament flow. When the toolhead accelerates, PA pushes extra filament to build pressure. When decelerating, it pulls back to prevent oozing.</p>
+                                        
+                                        <div className="formula">
+                                            PA_compensation = pressure_advance × acceleration × E_steps
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="card">
+                                        <h3>Why Adaptive PA?</h3>
+                                        <p>Standard PA uses a single value, but optimal PA varies with:</p>
+                                        <ul style={{marginLeft: '20px', marginTop: '10px'}}>
+                                            <li><strong>Flow Rate (mm³/s):</strong> Higher flow = more viscous resistance = different pressure dynamics</li>
+                                            <li><strong>Acceleration (mm/s²):</strong> Faster acceleration = less time at speed = different pressure buildup</li>
+                                            <li><strong>Layer Height:</strong> Affects flow rate (thicker layers = higher flow)</li>
+                                        </ul>
+                                        <p style={{marginTop: '10px'}}>Adaptive PA adjusts PA value dynamically based on these parameters for each print feature.</p>
+                                    </div>
+                                    
+                                    <div className="card">
+                                        <h3>Expected Trends</h3>
+                                        <table className="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Parameter</th>
+                                                    <th>Effect on PA</th>
+                                                    <th>Reason</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>⬆️ Flow Rate Increases</td>
+                                                    <td>⬇️ PA Decreases</td>
+                                                    <td>Higher flow means faster material movement, less time for pressure accumulation</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>⬆️ Acceleration Increases</td>
+                                                    <td>⬇️ PA Decreases</td>
+                                                    <td>Higher acceleration means less time at each speed point, reduced pressure buildup</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>⬆️ Layer Height Increases</td>
+                                                    <td>⬇️ PA Decreases</td>
+                                                    <td>Indirectly through increased flow rate</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <div className="card">
+                                        <h3>PCHIP Interpolation Mathematics</h3>
+                                        <p><strong>P</strong>iecewise <strong>C</strong>ubic <strong>H</strong>ermite <strong>I</strong>nterpolating <strong>P</strong>olynomial</p>
+                                        
+                                        <p style={{marginTop: '15px'}}>OrcaSlicer uses PCHIP to fit a smooth 3D surface through your calibration points. For each interval [x_k, x_{k+1}], PCHIP constructs a cubic polynomial:</p>
+                                        
+                                        <div className="formula">
+                                            P(x) = h₀₀(t)·y_k + h₁₀(t)·d_k + h₀₁(t)·y_{k+1} + h₁₁(t)·d_{k+1}
+                                        </div>
+                                        
+                                        <p style={{marginTop: '10px'}}>Where t = (x - x_k) / (x_{k+1} - x_k) and the Hermite basis functions are:</p>
+                                        
+                                        <div className="formula">
+                                            h₀₀(t) = 2t³ - 3t² + 1<br/>
+                                            h₁₀(t) = t³ - 2t² + t<br/>
+                                            h₀₁(t) = -2t³ + 3t²<br/>
+                                            h₁₁(t) = t³ - t²
+                                        </div>
+                                        
+                                        <p style={{marginTop: '10px'}}>The derivatives d_k are calculated using weighted harmonic mean:</p>
+                                        
+                                        <div className="formula">
+                                            (w₁ + w₂) / d_k = w₁/δ_{k-1} + w₂/δ_k<br/>
+                                            where w₁ = 2h_k + h_{k-1}, w₂ = h_k + 2h_{k-1}<br/>
+                                            and δ_k = (y_{k+1} - y_k) / h_k
+                                        </div>
+                                        
+                                        <p style={{marginTop: '15px'}}><strong>Key Properties:</strong></p>
+                                        <ul style={{marginLeft: '20px'}}>
+                                            <li>✓ Preserves monotonicity (no spurious oscillations)</li>
+                                            <li>✓ C¹ continuous (smooth first derivative)</li>
+                                            <li>✓ No overshooting beyond data bounds</li>
+                                            <li>✓ Locally determined (changing one point only affects nearby segments)</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div className="card">
+                                        <h3>2D Interpolation Process</h3>
+                                        <p>For PA(flow, accel), OrcaSlicer performs two sequential PCHIP interpolations:</p>
+                                        <ol style={{marginLeft: '20px', marginTop: '10px'}}>
+                                            <li>For each flow value, interpolate PA across accelerations using 1D PCHIP</li>
+                                            <li>Interpolate the resulting PA values across flow rates using 1D PCHIP</li>
+                                        </ol>
+                                        <p style={{marginTop: '10px'}}>This creates a smooth 3D surface that respects the shape of your calibration data without overshooting.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        
+                        {activeTab === 'optimize' && (
+                            <div>
+                                <div className="section">
+                                    <h2>⚡ Optimization Recommendations</h2>
+                                    
+                                    <div className="alert info">
+                                        <span style={{fontSize: '1.5rem'}}>💡</span>
+                                        <div>
+                                            <strong>Your Situation:</strong>
+                                            <p>You found PA = 0.048 optimal in standalone tests, but your adaptive PA fallback is 0.016.</p>
+                                            <p>Your current adaptive PA table shows inverted trends (PA increasing with flow), suggesting calibration issues.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="card">
+                                        <h3>🎯 Recommended Action Plan</h3>
+                                        
+                                        <h4 style={{marginTop: '15px'}}>Step 1: Verify Your 0.048 Value</h4>
+                                        <p>Since you found 0.048 optimal in PA line tests, this is likely correct for your specific test conditions. However, verify:</p>
+                                        <ul style={{marginLeft: '20px', marginTop: '10px'}}>
+                                            <li>What speed was the test printed at? (This determines the flow rate)</li>
+                                            <li>What acceleration was used? (Check your printer profile)</li>
+                                            <li>What layer height? (This affects volumetric flow)</li>
+                                        </ul>
+                                        
+                                        <h4 style={{marginTop: '20px'}}>Step 2: Run Systematic PA Tests</h4>
+                                        <p>For your FLSun S1 Pro delta printer with PETG, I recommend these test points:</p>
+                                        
+                                        <div className="formula">
+                                            <strong>Accelerations:</strong> 3000, 6000, 10000 mm/s²<br/>
+                                            <strong>Speeds:</strong> 50, 100, 150, 200 mm/s<br/>
+                                            <strong>Total tests:</strong> 3 × 4 = 12 tests
+                                        </div>
+                                        
+                                        <p style={{marginTop: '10px'}}>Use the OrcaSlicer PA Pattern method with these exact settings for each test. Record the optimal PA value where corners are sharp without gaps.</p>
+                                        
+                                        <h4 style={{marginTop: '20px'}}>Step 3: Check for Expected Trends</h4>
+                                        <p>After running tests, verify your data shows:</p>
+                                        <ul style={{marginLeft: '20px', marginTop: '10px'}}>
+                                            <li>✓ PA decreases as speed increases (at same acceleration)</li>
+                                            <li>✓ PA decreases as acceleration increases (at same speed)</li>
+                                            <li>✓ Higher PA values at lower speeds/accelerations</li>
+                                        </ul>
+                                        
+                                        <p style={{marginTop: '10px'}}>If you see the opposite, you're likely misreading the test results. Look for:</p>
+                                        <ul style={{marginLeft: '20px', marginTop: '10px'}}>
+                                            <li><strong>Too Low PA:</strong> Bulging corners with excess material</li>
+                                            <li><strong>Too High PA:</strong> Gaps at corners, perimeter separation</li>
+                                            <li><strong>Optimal PA:</strong> Sharp corners, no gaps, smooth perimeters</li>
+                                        </ul>
+                                        
+                                        <h4 style={{marginTop: '20px'}}>Step 4: Calculate Flow Rates</h4>
+                                        <p>After slicing each PA test, switch to "Flow" view in preview and hover over the herringbone patterns to see the actual volumetric flow rate (mm³/s). Record this for each speed test.</p>
+                                        
+                                        <h4 style={{marginTop: '20px'}}>Step 5: Build Corrected Table</h4>
+                                        <p>Format your results as: <code>PA_value,Flow_rate,Acceleration</code></p>
+                                        
+                                        <div className="formula">
+                                            Example (typical expected values):<br/>
+                                            0.048,5.0,3000<br/>
+                                            0.042,10.0,3000<br/>
+                                            0.038,15.0,3000<br/>
+                                            0.035,20.0,3000<br/>
+                                            0.040,5.0,6000<br/>
+                                            0.035,10.0,6000<br/>
+                                            ...
+                                        </div>
+                                        
+                                        <h4 style={{marginTop: '20px'}}>Step 6: Set Fallback Value</h4>
+                                        <p>The "Pressure advance" field (fallback) should be set to a median value. If your tests range from 0.032 to 0.048, use <strong>0.040</strong> as fallback.</p>
+                                        
+                                        <h4 style={{marginTop: '20px'}}>Step 7: Verify Bridge PA</h4>
+                                        <p>Your cantilever test showed bridge quality doesn't depend on outer wall speed. Set "Pressure advance for bridges" to approximately <strong>half your median PA</strong>, so around 0.020-0.024.</p>
+                                    </div>
+                                    
+                                    <div className="card">
+                                        <h3>🔧 Quick Fixes for Current Data</h3>
+                                        
+                                        <p><strong>Option 1: Disable Adaptive PA</strong></p>
+                                        <p>Since your current table is inverted, disable adaptive PA and use a single static value of 0.048 (or whatever you found optimal) until you can recalibrate properly.</p>
+                                        
+                                        <p style={{marginTop: '15px'}}><strong>Option 2: Invert Your Table</strong></p>
+                                        <p>As a temporary fix, you could manually invert your PA values. Replace your highest values with lowest and vice versa. This is NOT ideal but might help until proper recalibration:</p>
+                                        
+                                        <div className="formula">
+                                            0.020,9.75,4000  → 0.012,9.75,4000<br/>
+                                            0.017,12.16,4000 → 0.015,12.16,4000<br/>
+                                            0.014,16.25,4000 → 0.018,16.25,4000<br/>
+                                            (pattern continues...)
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="card">
+                                        <h3>🎓 Understanding Your 0.016 vs 0.048 Discrepancy</h3>
+                                        <p>Your adaptive PA fallback of 0.016 being much lower than your optimal 0.048 suggests:</p>
+                                        <ul style={{marginLeft: '20px', marginTop: '10px'}}>
+                                            <li>The original calibration was done at very high speeds/accelerations where PA naturally decreases</li>
+                                            <li>OR the 0.016 was copied from a different printer/material profile</li>
+                                            <li>OR there's a misunderstanding about PA units (Klipper uses different scale than some slicers)</li>
+                                        </ul>
+                                        <p style={{marginTop: '10px'}}>For PETG on direct drive (like your S1 Pro), PA typically ranges 0.030-0.060, so 0.048 is very reasonable. Definitely use 0.048 or close to it as your baseline.</p>
+                                    </div>
+                                    
+                                    <div className="alert warning">
+                                        <span style={{fontSize: '1.5rem'}}>⚠️</span>
+                                        <div>
+                                            <strong>Critical Note:</strong>
+                                            <p>Adaptive PA only helps if you print with varying speeds, accelerations, and layer heights. If you print everything at the same settings, disable adaptive PA and use a single optimized value (0.048).</p>
+                                            <p>The complexity of calibrating 12+ PA values is only worth it for printers that frequently switch between fast internal features and slow external features.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<AdaptivePAAnalyzer />, document.getElementById('root'));
+    </script>
+</body>
+</html>

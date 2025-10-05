@@ -1389,6 +1389,11 @@ Stream printer data during test prints
 
 ## Implementation Checklist (GPT-5 Responses API)
 ### Developer Tooling Follow-up
+### Documentation Work
+- Research and draft a comprehensive DOE Planner guide covering methodology, math, 3D printing use-cases, workflows, and UI walkthroughs.
+- Ensure DOE documentation appears at the top of the in-app documentation TOC, with cross-links to related calibration guides.
+
+
 - Migrate from legacy `.eslintrc` to `eslint.config.ts` (or pin ESLint < 9) so `npm run lint` succeeds.
 - Add a `scripts/check.sh` helper that runs build + lint + future tests for automated verification.
 - Wire the new checker into CI once the lint config migration is complete.

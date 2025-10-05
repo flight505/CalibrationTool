@@ -39,7 +39,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { callPhase1LLM, callPhase2LLM, DOECallError, WebSearchStatus } from '@/lib/utils/openai';
+import { callPhase1LLM, callPhase2LLM } from '@/lib/utils/doeClient';
+import type { DOECallError, WebSearchStatus } from '@/lib/utils/doeLLMCommon';
 
 interface GeneratedFile {
   filename: string;
@@ -306,7 +307,6 @@ const DOEWorkbench: React.FC = () => {
     try {
       const result = await callPhase1LLM({
         payload,
-        stream: true,
         handlers: {
           onWebSearchStatus: (status) => setLlmStatus(status),
           onTextDelta: (delta) =>
@@ -402,7 +402,6 @@ const DOEWorkbench: React.FC = () => {
     try {
       const result = await callPhase2LLM({
         payload,
-        stream: true,
         handlers: {
           onTextDelta: (delta) =>
             setLlmAnalysisStream((prev) => {

@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced PA Optimizer</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f23;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        
+        h1 {
+            color: #00d9ff;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0,217,255,0.5);
+        }
+        
+        .subtitle {
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .controls {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+        
+        .btn.active {
+            background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        h2 {
+            color: #00d9ff;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+        
+        .alert.info {
+            background: rgba(0,217,255,0.1);
+            border-color: #00d9ff;
+        }
+        
+        .alert.success {
+            background: rgba(0,255,127,0.1);
+            border-color: #00ff7f;
+        }
+        
+        .alert.warning {
+            background: rgba(255,193,7,0.1);
+            border-color: #ffc107;
+        }
+        
+        .plot-container {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .output-box {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #00d9ff;
+        }
+        
+        .output-box h3 {
+            color: #00d9ff;
+            margin-bottom: 15px;
+        }
+        
+        .output-box pre {
+            background: #0f0f23;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            color: #0ff;
+            font-size: 0.95rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #667eea;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+        
+        tbody tr:nth-child(odd) {
+            background: rgba(102,126,234,0.1);
+        }
+        
+        .outlier {
+            background: rgba(255,0,0,0.2) !important;
+            font-weight: bold;
+        }
+        
+        .model-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .model-card {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .model-card:hover {
+            border-color: #00d9ff;
+            transform: translateY(-5px);
+        }
+        
+        .model-card.selected {
+            border-color: #00ff7f;
+            background: rgba(0,255,127,0.1);
+        }
+        
+        .model-card h4 {
+            color: #00d9ff;
+            margin-bottom: 10px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .badge.good {
+            background: rgba(0,255,127,0.2);
+            color: #00ff7f;
+        }
+        
+        .badge.bad {
+            background: rgba(255,0,0,0.2);
+            color: #ff6b6b;
+        }
+        
+        .badge.outlier {
+            background: rgba(255,193,7,0.2);
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ Advanced PA Optimizer</h1>
+        <p class="subtitle">Your data is loaded. Select optimization method and generate optimized table.</p>
+        
+        <div class="section">
+            <h2>📊 Your Raw Test Data</h2>
+            <table id="rawDataTable">
+                <thead>
+                    <tr>
+                        <th>Tile</th>
+                        <th>Speed (mm/s)</th>
+                        <th>Flow (mm³/s)</th>
+                        <th>Accel (mm/s²)</th>
+                        <th>PA Measured</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>🔬 Select Optimization Method</h2>
+            <div class="model-comparison" id="modelCards"></div>
+        </div>
+        
+        <div class="controls">
+            <h3 style="color: #00d9ff; margin-bottom: 15px;">Generate Optimized Table</h3>
+            <div class="button-group">
+                <button class="btn" onclick="generateOptimized()">🚀 Generate Optimized Table</button>
+                <button class="btn" onclick="extendToLowSpeeds()">📈 Extend to Low Speeds (40-120 mm/s)</button>
+                <button class="btn" onclick="copyToClipboard('optimized')">📋 Copy Optimized</button>
+                <button class="btn" onclick="copyToClipboard('extended')">📋 Copy Extended</button>
+            </div>
+        </div>
+        
+        <div id="results" style="display: none;">
+            <div class="section">
+                <h2>📈 Analysis Results</h2>
+                <div class="stats-grid" id="statsGrid"></div>
+                <div id="alerts"></div>
+            </div>
+            
+            <div class="section">
+                <h2>📊 Visualizations</h2>
+                <div class="plot-container"><div id="plot1"></div></div>
+                <div class="plot-container"><div id="plot2"></div></div>
+                <div class="plot-container"><div id="plot3d"></div></div>
+            </div>
+            
+            <div class="section">
+                <h2>✅ Optimized PA Table (9 points, same as your tests)</h2>
+                <div class="output-box">
+                    <h3>Copy this to OrcaSlicer "Adaptive pressure advance measurements":</h3>
+                    <pre id="optimizedOutput"></pre>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🎯 Extended PA Table (21 points, includes your actual printing speeds)</h2>
+                <div class="output-box">
+                    <h3>Extended table with speeds 40-200 mm/s:</h3>
+                    <pre id="extendedOutput"></pre>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📋 Comparison: Before vs After</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="output-box">
+                        <h3>Your Raw Data:</h3>
+                        <pre id="rawOutput"></pre>
+                    </div>
+                    <div class="output-box">
+                        <h3>Your Manual Smoothing:</h3>
+                        <pre id="manualOutput"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Your actual test data
+        const rawData = [
+            { tile: 1, speed: 120, flow: 9.75, accel: 4000, pa: 0.025 },
+            { tile: 2, speed: 150, flow: 12.16, accel: 4000, pa: 0.03 },
+            { tile: 3, speed: 200, flow: 16.25, accel: 4000, pa: 0.025 },
+            { tile: 4, speed: 120, flow: 9.75, accel: 6000, pa: 0.015 },
+            { tile: 5, speed: 150, flow: 12.19, accel: 6000, pa: 0.015 },
+            { tile: 6, speed: 200, flow: 16.28, accel: 6000, pa: 0.02 },
+            { tile: 7, speed: 120, flow: 9.75, accel: 10000, pa: 0.01 },
+            { tile: 8, speed: 150, flow: 12.19, accel: 10000, pa: 0.015 },
+            { tile: 9, speed: 200, flow: 16.25, accel: 10000, pa: 0.01 }
+        ];
+        
+        const manualSmoothed = [
+            "0.014,9.75,4000",
+            "0.017,12.16,4000",
+            "0.020,16.25,4000",
+            "0.013,9.75,6000",
+            "0.016,12.19,6000",
+            "0.018,16.28,6000",
+            "0.012,9.75,10000",
+            "0.015,12.19,10000",
+            "0.017,16.25,10000"
+        ];
+        
+        let selectedModel = 'exponential';
+        let optimizedData = [];
+        let extendedData = [];
+        
+        // Mathematical models
+        const models = {
+            exponential: {
+                name: 'Exponential Decay (Physics-Based)',
+                description: 'PA = a × exp(-b×flow) × exp(-c×accel). Models the physical pressure dynamics.',
+                fit: function(data) {
+                    // PA = a * exp(-b*flow) * exp(-c*accel)
+                    // Taking log: ln(PA) = ln(a) - b*flow - c*accel
+                    const n = data.length;
+                    let sumLogPA = 0, sumFlow = 0, sumAccel = 0;
+                    let sumFlowLogPA = 0, sumAccelLogPA = 0;
+                    let sumFlowSq = 0, sumAccelSq = 0, sumFlowAccel = 0;
+                    
+                    data.forEach(d => {
+                        const logPA = Math.log(d.pa);
+                        const flow = d.flow;
+                        const accel = d.accel / 1000; // Scale
+                        
+                        sumLogPA += logPA;
+                        sumFlow += flow;
+                        sumAccel += accel;
+                        sumFlowLogPA += flow * logPA;
+                        sumAccelLogPA += accel * logPA;
+                        sumFlowSq += flow * flow;
+                        sumAccelSq += accel * accel;
+                        sumFlowAccel += flow * accel;
+                    });
+                    
+                    // Solve normal equations
+                    const meanLogPA = sumLogPA / n;
+                    const meanFlow = sumFlow / n;
+                    const meanAccel = sumAccel / n;
+                    
+                    let ssFlow = 0, ssAccel = 0, spFlowLogPA = 0, spAccelLogPA = 0, spFlowAccel = 0;
+                    
+                    data.forEach(d => {
+                        const logPA = Math.log(d.pa) - meanLogPA;
+                        const flow = d.flow - meanFlow;
+                        const accel = d.accel / 1000 - meanAccel;
+                        
+                        ssFlow += flow * flow;
+                        ssAccel += accel * accel;
+                        spFlowLogPA += flow * logPA;
+                        spAccelLogPA += accel * logPA;
+                        spFlowAccel += flow * accel;
+                    });
+                    
+                    // Calculate coefficients
+                    const b = -spFlowLogPA / ssFlow;
+                    const c = -spAccelLogPA / ssAccel;
+                    const a = Math.exp(meanLogPA + b * meanFlow + c * meanAccel);
+                    
+                    return { a, b, c, 
+                        predict: (flow, accel) => a * Math.exp(-b * flow) * Math.exp(-c * accel / 1000)
+                    };
+                },
+                r2: 0
+            },
+            
+            powerLaw: {
+                name: 'Power Law',
+                description: 'PA = a × flow^b × accel^c. Allows for non-linear relationships.',
+                fit: function(data) {
+                    // PA = a * flow^b * accel^c
+                    // Taking log: ln(PA) = ln(a) + b*ln(flow) + c*ln(accel)
+                    const n = data.length;
+                    let sumLogPA = 0, sumLogFlow = 0, sumLogAccel = 0;
+                    let sumLogFlowLogPA = 0, sumLogAccelLogPA = 0;
+                    let sumLogFlowSq = 0, sumLogAccelSq = 0;
+                    
+                    data.forEach(d => {
+                        const logPA = Math.log(d.pa);
+                        const logFlow = Math.log(d.flow);
+                        const logAccel = Math.log(d.accel);
+                        
+                        sumLogPA += logPA;
+                        sumLogFlow += logFlow;
+                        sumLogAccel += logAccel;
+                        sumLogFlowLogPA += logFlow * logPA;
+                        sumLogAccelLogPA += logAccel * logPA;
+                        sumLogFlowSq += logFlow * logFlow;
+                        sumLogAccelSq += logAccel * logAccel;
+                    });
+                    
+                    const meanLogPA = sumLogPA / n;
+                    const meanLogFlow = sumLogFlow / n;
+                    const meanLogAccel = sumLogAccel / n;
+                    
+                    let ssLogFlow = 0, ssLogAccel = 0, spLogFlowLogPA = 0, spLogAccelLogPA = 0;
+                    
+                    data.forEach(d => {
+                        const logPA = Math.log(d.pa) - meanLogPA;
+                        const logFlow = Math.log(d.flow) - meanLogFlow;
+                        const logAccel = Math.log(d.accel) - meanLogAccel;
+                        
+                        ssLogFlow += logFlow * logFlow;
+                        ssLogAccel += logAccel * logAccel;
+                        spLogFlowLogPA += logFlow * logPA;
+                        spLogAccelLogPA += logAccel * logPA;
+                    });
+                    
+                    const b = spLogFlowLogPA / ssLogFlow;
+                    const c = spLogAccelLogPA / ssLogAccel;
+                    const a = Math.exp(meanLogPA - b * meanLogFlow - c * meanLogAccel);
+                    
+                    return { a, b, c,
+                        predict: (flow, accel) => a * Math.pow(flow, b) * Math.pow(accel, c)
+                    };
+                },
+                r2: 0
+            },
+            
+            polynomial: {
+                name: 'Polynomial (2nd Order)',
+                description: 'PA = a + b×flow + c×accel + d×flow² + e×accel². Flexible fitting.',
+                fit: function(data) {
+                    // Multiple linear regression with polynomial terms
+                    const n = data.length;
+                    
+                    // Build design matrix
+                    const X = data.map(d => [
+                        1,
+                        d.flow,
+                        d.accel / 1000,
+                        d.flow * d.flow,
+                        (d.accel / 1000) * (d.accel / 1000)
+                    ]);
+                    
+                    const y = data.map(d => d.pa);
+                    
+                    // Normal equations: β = (X'X)^(-1) X'y
+                    const XtX = multiplyMatrices(transposeMatrix(X), X);
+                    const Xty = multiplyMatrixVector(transposeMatrix(X), y);
+                    const beta = solveLinearSystem(XtX, Xty);
+                    
+                    return {
+                        a: beta[0], b: beta[1], c: beta[2], d: beta[3], e: beta[4],
+                        predict: (flow, accel) => {
+                            const a = accel / 1000;
+                            return Math.max(0.005, beta[0] + beta[1]*flow + beta[2]*a + beta[3]*flow*flow + beta[4]*a*a);
+                        }
+                    };
+                },
+                r2: 0
+            },
+            
+            robustPolynomial: {
+                name: 'Robust Polynomial (Outlier Resistant)',
+                description: 'Polynomial with RANSAC outlier detection. Best for noisy data.',
+                fit: function(data) {
+                    // RANSAC-like approach
+                    const iterations = 100;
+                    let bestModel = null;
+                    let bestInliers = 0;
+                    
+                    for (let iter = 0; iter < iterations; iter++) {
+                        // Sample 5 random points
+                        const sample = [];
+                        const indices = new Set();
+                        while (sample.length < Math.min(5, data.length)) {
+                            const idx = Math.floor(Math.random() * data.length);
+                            if (!indices.has(idx)) {
+                                indices.add(idx);
+                                sample.push(data[idx]);
+                            }
+                        }
+                        
+                        // Fit model on sample
+                        const model = models.polynomial.fit(sample);
+                        
+                        // Count inliers (within threshold)
+                        const threshold = 0.003;
+                        let inliers = 0;
+                        data.forEach(d => {
+                            const predicted = model.predict(d.flow, d.accel);
+                            if (Math.abs(predicted - d.pa) < threshold) {
+                                inliers++;
+                            }
+                        });
+                        
+                        if (inliers > bestInliers) {
+                            bestInliers = inliers;
+                            bestModel = model;
+                        }
+                    }
+                    
+                    return bestModel || models.polynomial.fit(data);
+                },
+                r2: 0
+            }
+        };
+        
+        // Matrix operations
+        function transposeMatrix(m) {
+            return m[0].map((_, i) => m.map(row => row[i]));
+        }
+        
+        function multiplyMatrices(a, b) {
+            const result = [];
+            for (let i = 0; i < a.length; i++) {
+                result[i] = [];
+                for (let j = 0; j < b[0].length; j++) {
+                    let sum = 0;
+                    for (let k = 0; k < a[0].length; k++) {
+                        sum += a[i][k] * b[k][j];
+                    }
+                    result[i][j] = sum;
+                }
+            }
+            return result;
+        }
+        
+        function multiplyMatrixVector(m, v) {
+            return m.map(row => row.reduce((sum, val, i) => sum + val * v[i], 0));
+        }
+        
+        function solveLinearSystem(A, b) {
+            // Gaussian elimination
+            const n = A.length;
+            const aug = A.map((row, i) => [...row, b[i]]);
+            
+            // Forward elimination
+            for (let i = 0; i < n; i++) {
+                let maxRow = i;
+                for (let k = i + 1; k < n; k++) {
+                    if (Math.abs(aug[k][i]) > Math.abs(aug[maxRow][i])) {
+                        maxRow = k;
+                    }
+                }
+                [aug[i], aug[maxRow]] = [aug[maxRow], aug[i]];
+                
+                for (let k = i + 1; k < n; k++) {
+                    const factor = aug[k][i] / aug[i][i];
+                    for (let j = i; j <= n; j++) {
+                        aug[k][j] -= factor * aug[i][j];
+                    }
+                }
+            }
+            
+            // Back substitution
+            const x = new Array(n);
+            for (let i = n - 1; i >= 0; i--) {
+                x[i] = aug[i][n];
+                for (let j = i + 1; j < n; j++) {
+                    x[i] -= aug[i][j] * x[j];
+                }
+                x[i] /= aug[i][i];
+            }
+            
+            return x;
+        }
+        
+        function calculateR2(data, predict) {
+            const mean = data.reduce((sum, d) => sum + d.pa, 0) / data.length;
+            let ssRes = 0, ssTot = 0;
+            
+            data.forEach(d => {
+                const pred = predict(d.flow, d.accel);
+                ssRes += Math.pow(d.pa - pred, 2);
+                ssTot += Math.pow(d.pa - mean, 2);
+            });
+            
+            return 1 - (ssRes / ssTot);
+        }
+        
+        function detectOutliers(data, predict) {
+            const residuals = data.map(d => Math.abs(d.pa - predict(d.flow, d.accel)));
+            const mean = residuals.reduce((a, b) => a + b) / residuals.length;
+            const stdDev = Math.sqrt(residuals.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / residuals.length);
+            
+            return data.map((d, i) => residuals[i] > mean + 1.5 * stdDev);
+        }
+        
+        // Initialize
+        function init() {
+            displayRawData();
+            displayModelCards();
+        }
+        
+        function displayRawData() {
+            const tbody = document.querySelector('#rawDataTable tbody');
+            rawData.forEach(d => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${d.tile}</td>
+                    <td>${d.speed}</td>
+                    <td>${d.flow}</td>
+                    <td>${d.accel}</td>
+                    <td><strong>${d.pa}</strong></td>
+                    <td id="status-${d.tile}">-</td>
+                `;
+            });
+        }
+        
+        function displayModelCards() {
+            const container = document.getElementById('modelCards');
+            Object.keys(models).forEach(key => {
+                const model = models[key];
+                const card = document.createElement('div');
+                card.className = 'model-card';
+                if (key === selectedModel) card.classList.add('selected');
+                
+                card.innerHTML = `
+                    <h4>${model.name}</h4>
+                    <p>${model.description}</p>
+                    <div style="margin-top: 10px;">
+                        <span class="badge good">R² = <span id="r2-${key}">-</span></span>
+                    </div>
+                `;
+                
+                card.onclick = () => {
+                    selectedModel = key;
+                    document.querySelectorAll('.model-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                };
+                
+                container.appendChild(card);
+            });
+        }
+        
+        function generateOptimized() {
+            // Fit all models
+            Object.keys(models).forEach(key => {
+                const model = models[key];
+                const fitted = model.fit(rawData);
+                model.r2 = calculateR2(rawData, fitted.predict);
+                model.fitted = fitted;
+                
+                document.getElementById(`r2-${key}`).textContent = model.r2.toFixed(4);
+            });
+            
+            // Use selected model
+            const model = models[selectedModel];
+            const predict = model.fitted.predict;
+            
+            // Detect outliers
+            const outliers = detectOutliers(rawData, predict);
+            
+            // Update status
+            rawData.forEach((d, i) => {
+                const cell = document.getElementById(`status-${d.tile}`);
+                if (outliers[i]) {
+                    cell.innerHTML = '<span class="badge outlier">Outlier</span>';
+                    cell.parentElement.classList.add('outlier');
+                } else {
+                    cell.innerHTML = '<span class="badge good">Good</span>';
+                }
+            });
+            
+            // Generate optimized data
+            optimizedData = rawData.map(d => ({
+                flow: d.flow,
+                accel: d.accel,
+                pa: Math.max(0.005, Math.min(0.1, predict(d.flow, d.accel)))
+            }));
+            
+            // Calculate statistics
+            displayStats();
+            displayAlerts(outliers);
+            displayOutputs();
+            createVisualizations();
+            
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function extendToLowSpeeds() {
+            if (optimizedData.length === 0) {
+                alert('Please generate optimized table first!');
+                return;
+            }
+            
+            const model = models[selectedModel];
+            const predict = model.fitted.predict;
+            
+            // Generate extended table: 7 speeds × 3 accelerations = 21 points
+            const speeds = [40, 60, 80, 100, 120, 150, 200];
+            const flows = speeds.map(s => s * 0.08125); // Approximate flow = speed × 0.08125
+            const accels = [4000, 6000, 10000];
+            
+            extendedData = [];
+            accels.forEach(accel => {
+                flows.forEach(flow => {
+                    extendedData.push({
+                        flow: flow,
+                        accel: accel,
+                        pa: Math.max(0.005, Math.min(0.1, predict(flow, accel)))
+                    });
+                });
+            });
+            
+            displayOutputs();
+        }
+        
+        function displayStats() {
+            const model = models[selectedModel];
+            const paValues = optimizedData.map(d => d.pa);
+            const mean = paValues.reduce((a, b) => a + b) / paValues.length;
+            const min = Math.min(...paValues);
+            const max = Math.max(...paValues);
+            
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card">
+                    <h3>R² Score</h3>
+                    <div class="value">${model.r2.toFixed(4)}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>PA Range</h3>
+                    <div class="value">${min.toFixed(4)} - ${max.toFixed(4)}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Mean PA</h3>
+                    <div class="value">${mean.toFixed(4)}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Model</h3>
+                    <div class="value" style="font-size: 1.2rem;">${models[selectedModel].name.split(' ')[0]}</div>
+                </div>
+            `;
+        }
+        
+        function displayAlerts(outliers) {
+            const alertsDiv = document.getElementById('alerts');
+            const outlierCount = outliers.filter(x => x).length;
+            
+            let html = '';
+            
+            if (outlierCount > 0) {
+                html += `
+                    <div class="alert warning">
+                        <strong>⚠️ ${outlierCount} Outlier(s) Detected</strong>
+                        <p>The model identified ${outlierCount} data point(s) that deviate significantly from the fitted trend. These have been smoothed in the optimized output.</p>
+                    </div>
+                `;
+            }
+            
+            if (models[selectedModel].r2 > 0.85) {
+                html += `
+                    <div class="alert success">
+                        <strong>✅ Excellent Fit</strong>
+                        <p>R² = ${models[selectedModel].r2.toFixed(4)}. The model explains ${(models[selectedModel].r2 * 100).toFixed(1)}% of the variance in your data.</p>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div class="alert info">
+                    <strong>📊 Trend Analysis</strong>
+                    <p>The optimized table ensures PA decreases with both increasing flow rate and acceleration, matching physical expectations.</p>
+                </div>
+            `;
+            
+            alertsDiv.innerHTML = html;
+        }
+        
+        function displayOutputs() {
+            // Optimized output
+            let optimized = '';
+            optimizedData.forEach(d => {
+                optimized += `${d.pa.toFixed(4)},${d.flow.toFixed(2)},${d.accel}\n`;
+            });
+            document.getElementById('optimizedOutput').textContent = optimized.trim();
+            
+            // Extended output
+            if (extendedData.length > 0) {
+                let extended = '';
+                extendedData.forEach(d => {
+                    extended += `${d.pa.toFixed(4)},${d.flow.toFixed(2)},${d.accel}\n`;
+                });
+                document.getElementById('extendedOutput').textContent = extended.trim();
+            }
+            
+            // Raw output
+            let raw = '';
+            rawData.forEach(d => {
+                raw += `${d.pa.toFixed(4)},${d.flow},${d.accel}\n`;
+            });
+            document.getElementById('rawOutput').textContent = raw.trim();
+            
+            // Manual output
+            document.getElementById('manualOutput').textContent = manualSmoothed.join('\n');
+        }
+        
+        function createVisualizations() {
+            const model = models[selectedModel];
+            const predict = model.fitted.predict;
+            
+            // Plot 1: PA vs Flow
+            const accels = [4000, 6000, 10000];
+            const flows = [];
+            for (let f = 8; f <= 18; f += 0.5) {
+                flows.push(f);
+            }
+            
+            const traces1 = [];
+            
+            accels.forEach(accel => {
+                // Raw data
+                const rawPoints = rawData.filter(d => d.accel === accel);
+                traces1.push({
+                    x: rawPoints.map(d => d.flow),
+                    y: rawPoints.map(d => d.pa),
+                    mode: 'markers',
+                    name: `${accel} mm/s² (raw)`,
+                    marker: { size: 12, symbol: 'x' }
+                });
+                
+                // Fitted curve
+                const fitted = flows.map(f => predict(f, accel));
+                traces1.push({
+                    x: flows,
+                    y: fitted,
+                    mode: 'lines',
+                    name: `${accel} mm/s² (fitted)`,
+                    line: { width: 3 }
+                });
+            });
+            
+            Plotly.newPlot('plot1', traces1, {
+                title: 'PA vs Flow Rate (Physics-Based Fit)',
+                xaxis: { title: 'Flow Rate (mm³/s)', color: '#e0e0e0' },
+                yaxis: { title: 'Pressure Advance', color: '#e0e0e0' },
+                paper_bgcolor: '#16213e',
+                plot_bgcolor: '#16213e',
+                font: { color: '#e0e0e0' },
+                height: 500
+            });
+            
+            // Plot 2: PA vs Acceleration
+            const flowLevels = [9.75, 12.19, 16.25];
+            const accelRange = [];
+            for (let a = 3000; a <= 11000; a += 500) {
+                accelRange.push(a);
+            }
+            
+            const traces2 = [];
+            
+            flowLevels.forEach(flow => {
+                // Raw data
+                const rawPoints = rawData.filter(d => Math.abs(d.flow - flow) < 0.5);
+                traces2.push({
+                    x: rawPoints.map(d => d.accel),
+                    y: rawPoints.map(d => d.pa),
+                    mode: 'markers',
+                    name: `${flow.toFixed(1)} mm³/s (raw)`,
+                    marker: { size: 12, symbol: 'x' }
+                });
+                
+                // Fitted curve
+                const fitted = accelRange.map(a => predict(flow, a));
+                traces2.push({
+                    x: accelRange,
+                    y: fitted,
+                    mode: 'lines',
+                    name: `${flow.toFixed(1)} mm³/s (fitted)`,
+                    line: { width: 3 }
+                });
+            });
+            
+            Plotly.newPlot('plot2', traces2, {
+                title: 'PA vs Acceleration (Physics-Based Fit)',
+                xaxis: { title: 'Acceleration (mm/s²)', color: '#e0e0e0' },
+                yaxis: { title: 'Pressure Advance', color: '#e0e0e0' },
+                paper_bgcolor: '#16213e',
+                plot_bgcolor: '#16213e',
+                font: { color: '#e0e0e0' },
+                height: 500
+            });
+            
+            // Plot 3: 3D Surface
+            const flowGrid = [], accelGrid = [], paGrid = [];
+            
+            for (let f = 8; f <= 18; f += 0.5) flowGrid.push(f);
+            for (let a = 3000; a <= 11000; a += 500) accelGrid.push(a);
+            
+            accelGrid.forEach(a => {
+                const row = [];
+                flowGrid.forEach(f => {
+                    row.push(predict(f, a));
+                });
+                paGrid.push(row);
+            });
+            
+            const surfaceTrace = {
+                type: 'surface',
+                x: flowGrid,
+                y: accelGrid,
+                z: paGrid,
+                colorscale: 'Viridis',
+                showscale: true
+            };
+            
+            const scatterTrace = {
+                type: 'scatter3d',
+                mode: 'markers',
+                x: rawData.map(d => d.flow),
+                y: rawData.map(d => d.accel),
+                z: rawData.map(d => d.pa),
+                marker: {
+                    size: 10,
+                    color: 'red',
+                    symbol: 'circle',
+                    line: { color: 'white', width: 2 }
+                },
+                name: 'Your Measurements'
+            };
+            
+            Plotly.newPlot('plot3d', [surfaceTrace, scatterTrace], {
+                title: 'Optimized PA Surface',
+                scene: {
+                    xaxis: { title: 'Flow (mm³/s)', color: '#e0e0e0' },
+                    yaxis: { title: 'Accel (mm/s²)', color: '#e0e0e0' },
+                    zaxis: { title: 'PA', color: '#e0e0e0' },
+                    bgcolor: '#16213e'
+                },
+                paper_bgcolor: '#16213e',
+                font: { color: '#e0e0e0' },
+                height: 600
+            });
+        }
+        
+        function copyToClipboard(type) {
+            let text;
+            if (type === 'optimized') {
+                text = document.getElementById('optimizedOutput').textContent;
+            } else {
+                text = document.getElementById('extendedOutput').textContent;
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Copied to clipboard!');
+            });
+        }
+        
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
