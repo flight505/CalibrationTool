@@ -88,6 +88,13 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children, currentTool, on
       id: 'pressure-pattern'
     },
     {
+      label: "PA Optimizer",
+      href: "#",
+      icon: <BarChart3 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      onClick: () => onToolChange('pressure-optimizer'),
+      id: 'pressure-optimizer'
+    },
+    {
       label: "Retraction",
       href: "#",
       icon: <RotateCcw className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
