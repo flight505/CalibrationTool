@@ -24,9 +24,21 @@ import {
 } from '@/utils/doe/doeTypes';
 import { PHASE1_SYSTEM_PROMPT, PHASE2_SYSTEM_PROMPT } from '@/utils/doe/llmPrompts';
 
-// Initialize OpenAI client
+const browserEnv = typeof import.meta !== 'undefined' ? (import.meta as any).env : undefined;
+const apiKey =
+  (typeof process !== 'undefined' && process.env?.OPENAI_API_KEY) ||
+  (browserEnv ? browserEnv.VITE_OPENAI_API_KEY : undefined);
+
+if (!apiKey) {
+  throw new Error(
+    'OPENAI_API_KEY (or VITE_OPENAI_API_KEY) is not defined. Set the environment variable before using GPT features.'
+  );
+}
+
+// Initialize OpenAI client (allow browser usage when running in the frontend bundle)
 export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey,
+  dangerouslyAllowBrowser: typeof window !== 'undefined'
 });
 
 export type WebSearchStatus = 'in_progress' | 'searching' | 'completed';
