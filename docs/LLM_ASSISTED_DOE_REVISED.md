@@ -11,7 +11,15 @@ This document specifies how to integrate LLM capabilities into the CalibrationTo
 4. Analyze scored test results and interpolate optimal settings
 5. Generate final OrcaSlicer configuration table
 
-**Model recommendation:** Use Claude Sonnet 4.5 (`claude-sonnet-4-5-20250929`) for this workflow due to web search integration, tool use capabilities, and structured reasoning.
+**Model recommendation:** Use GPT-5 (`gpt-5`, fallback `gpt-5-mini`) through the OpenAI Responses API. The CalibrationTool DOE workbench now streams web-search progress and structured JSON outputs directly into the UI.
+
+
+## Current Implementation Snapshot (2025-10)
+
+- Phase 1 GPT-5 integration (context capture, web-search streaming, factor application) is live in `DOEWorkbench`.
+- Phase 2 GPT-5 analysis streams optimal settings, SNR commentary, and confirmation-run guidance.
+- Core helper logic resides in `src/lib/utils/openai.ts`, `src/utils/doe/llmSchemas.ts`, and `src/utils/doe/llmPrompts.ts`.
+- Remaining work: persist GPT outputs, export structured reports, migrate ESLint config, and add an end-to-end test script.
 
 ---
 
@@ -63,7 +71,12 @@ LLM Phase 2: Results Analysis & Optimization
 - `known_issues`: Text area (e.g., "printer has X-axis ringing at high speeds")
 - `print_objectives`: Multi-select ["strength", "speed", "surface_quality", "dimensional_accuracy"]
 
-### LLM Task 1.1: Retrieve Ground Truth Specifications
+### LLM Task 1.1: Retrieve Ground Truth Specifications *(implemented)*
+
+**UI:** The `DOEWorkbench` now includes an "LLM-Assisted Parameter Planning" card that captures filament/printer context, enclosure, known issues, and objectives. GPT-5 web-search progress is streamed as badges (`in_progress → searching → completed`).
+
+**Implementation:** `callPhase1LLM` (see `src/lib/utils/openai.ts`) enforces a strict JSON schema and streams partial text into the UI until the final payload arrives. Users can apply the recommended factors directly to the experiment.
+
 
 **API call structure:**
 ```typescript
@@ -138,7 +151,10 @@ Cite sources for each specification retrieved.
 }
 ```
 
-### LLM Task 1.2: Select Parameter Ranges for DOE
+### LLM Task 1.2: Select Parameter Ranges for DOE *(implemented)*
+
+**Workflow:** GPT-5 returns factor plans with levels, units, rationales, and optional citations. The UI renders each recommendation with an "Apply to experiment" button that swaps the manual factor list and orthogonal array.
+
 
 **LLM prompt template:**
 ```
@@ -776,7 +792,7 @@ Based on test results, expect:
 
 ---
 
-## Implementation Details for Claude Code
+## Implementation Details for GPT-5 Responses API
 
 ### Directory Structure
 
@@ -908,78 +924,24 @@ Get final settings table (markdown format for display or export)
 
 ### LLM Integration Pattern
 
-**Use Claude Sonnet 4.5 with tool calling:**
+**Use GPT-5 via OpenAI Responses API (tool calling + json_schema):**
 
 ```typescript
-import Anthropic from '@anthropic-ai/sdk';
+import { callPhase1LLM } from '@/lib/utils/openai';
+import type { Phase1RequestPayload } from '@/utils/doe/doeTypes';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.CLAUDE_API_KEY,
-});
-
-interface FilamentSpecs {
-  temperature_range: {min: number; max: number; optimal: number};
-  bed_temperature: {min: number; max: number; optimal: number};
-  // ... other specs
-}
-
-async function retrieveFilamentSpecs(
-  brand: string,
-  material: string,
-  printerModel: string
-): Promise<FilamentSpecs> {
-  
-  const tools = [
-    {
-      name: "record_specifications",
-      description: "Record retrieved filament and printer specifications",
-      input_schema: {
-        type: "object",
-        properties: {
-          filament_specs: {
-            type: "object",
-            properties: {
-              temperature_range: {
-                type: "object",
-                properties: {
-                  min: {type: "number"},
-                  max: {type: "number"},
-                  optimal: {type: "number"}
-                }
-              },
-              // ... full schema
-            }
-          },
-          printer_specs: { /* ... */ },
-          sources: {
-            type: "array",
-            items: {type: "string"}
-          }
-        },
-        required: ["filament_specs", "printer_specs", "sources"]
-      }
+async function proposeRanges(payload: Phase1RequestPayload) {
+  const result = await callPhase1LLM({
+    payload,
+    stream: true,
+    handlers: {
+      onWebSearchStatus: (status) => console.log('web search status', status),
+      onTextDelta: (delta) => process.stdout.write(delta),
+      onCompleted: (data) => console.log('final JSON', data)
     }
-  ];
-  
-  const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-5-20250929",
-    max_tokens: 4096,
-    tools: tools,
-    tool_choice: {type: "tool", name: "record_specifications"},
-    messages: [{
-      role: "user",
-      content: buildSpecRetrievalPrompt(brand, material, printerModel)
-    }]
   });
-  
-  // Extract tool call result
-  for (const content of message.content) {
-    if (content.type === 'tool_use' && content.name === 'record_specifications') {
-      return content.input as FilamentSpecs;
-    }
-  }
-  
-  throw new Error('Failed to retrieve specifications');
+
+  return result.factorPlans;
 }
 ```
 
@@ -1023,7 +985,7 @@ You are an expert in Design of Experiments for FDM 3D printing calibration.
 [Total: ~10,000 tokens for 90% caching discount]
 `;
 
-// Use cache_control for Claude
+// Optional: use cache_control for GPT-5 when leveraging prompt caching (coming soon).
 const systemPrompt = [
   {
     type: "text",
@@ -1337,18 +1299,18 @@ Use feedback to refine:
 ### LLM Usage Per Experiment
 
 **Phase 1: Context Gathering & Design**
-- Input: 15,000 tokens (system prompt with test library + user query)
-- Output: 3,000 tokens (specifications, parameter ranges, array selection)
-- Cost (Claude Sonnet 4.5): $0.045 + $0.045 = **$0.09**
+- Input: ~9k tokens (system prompt + curated factor library + user context)
+- Output: ~2k tokens (spec ranges, orthogonal array, citations)
+- Cost (GPT-5 at $10 / $30 per MTok in/out): **≈$0.13**
 
 **Phase 2: Results Analysis**  
-- Input: 18,000 tokens (system prompt + experiment design + results)
-- Output: 4,000 tokens (analysis, optimal settings, recommendations)
-- Cost: $0.054 + $0.060 = **$0.11**
+- Input: ~11k tokens (system prompt + experiment matrix + measurements)
+- Output: ~2.5k tokens (optimal levels, SNR commentary, confirmation guidance)
+- Cost: **≈$0.14**
 
-**Total per experiment: ~$0.20**
+**Total per experiment: ≈$0.27**
 
-With 100 users/month completing experiments: **$20/month** in LLM costs.
+With 100 users/month completing experiments: **≈$27/month** in GPT-5 usage.
 
 ### Time Estimates
 
@@ -1425,20 +1387,26 @@ Stream printer data during test prints
 
 ---
 
-## Implementation Checklist for Claude Code
+## Implementation Checklist (GPT-5 Responses API)
+### Developer Tooling Follow-up
+- Migrate from legacy `.eslintrc` to `eslint.config.ts` (or pin ESLint < 9) so `npm run lint` succeeds.
+- Add a `scripts/check.sh` helper that runs build + lint + future tests for automated verification.
+- Wire the new checker into CI once the lint config migration is complete.
+
+
 
 ### Phase 1: Foundation
 - [ ] Set up TypeScript interfaces for all data structures
-- [ ] Implement Claude API client with retry logic
+- [ ] Implement GPT-5 client wrapper with retry logic
 - [ ] Create prompt template system
 - [ ] Build validation schemas for LLM outputs
 - [ ] Set up caching for static content
 
 ### Phase 2: LLM Integration  
-- [ ] Implement Task 1.1: Specification retrieval with web search
-- [ ] Implement Task 1.2: Parameter range selection
+- [x] Implement Task 1.1: Specification retrieval with web search (UI streaming badge + structured output)
+- [x] Implement Task 1.2: Parameter range selection (Apply-to-experiment workflow)
 - [ ] Implement Task 1.3: Orthogonal array selection
-- [ ] Implement Task 2.1: Taguchi analysis
+- [x] Implement Task 2.1: Taguchi analysis (LLM streaming summary available)
 - [ ] Implement Task 2.2: Interpolation logic
 - [ ] Implement Task 2.3: Settings table generation
 
