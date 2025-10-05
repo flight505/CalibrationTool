@@ -1,0 +1,266 @@
+import { useState } from 'react';
+import { Grid3x3, Table2, Download, Trash2, Upload } from 'lucide-react';
+import { FormSection, InfoCard } from '@/components/calibration/CalibrationToolLayout';
+import { TextField, SelectField, FieldGroup } from '@/components/calibration/FormFields';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { PATestConfig, PATestResult } from '@/lib/pa-optimizer';
+
+interface PAInputPanelProps {
+  config: PATestConfig;
+  testData: PATestResult[];
+  onConfigChange: (config: PATestConfig) => void;
+  onTestDataChange: (data: PATestResult[]) => void;
+  onLoadExample: () => void;
+  onClearData: () => void;
+}
+
+export const PAInputPanel: React.FC<PAInputPanelProps> = ({
+  config,
+  testData,
+  onConfigChange,
+  onTestDataChange,
+  onLoadExample,
+  onClearData,
+}) => {
+  const [inputMode, setInputMode] = useState<'grid' | 'table'>('grid');
+
+  const speeds = config.speeds;
+  const accelerations = config.accelerations;
+
+  const estimateFlow = (speed: number): number => {
+    return (speed * config.layerHeight * config.lineWidth) / 60;
+  };
+
+  const handleTileChange = (tileId: number, field: 'paValue' | 'flow', value: string) => {
+    const numValue = parseFloat(value);
+    if (!isFinite(numValue)) return;
+
+    const existing = testData.find(d => d.tileId === tileId);
+    if (existing) {
+      onTestDataChange(
+        testData.map(d => d.tileId === tileId ? { ...d, [field]: numValue } : d)
+      );
+    } else {
+      // Create new entry
+      const col = (tileId - 1) % speeds.length;
+      const row = Math.floor((tileId - 1) / speeds.length);
+      const speed = speeds[col];
+      const accel = accelerations[row];
+      const flow = field === 'flow' ? numValue : estimateFlow(speed);
+      const paValue = field === 'paValue' ? numValue : 0;
+
+      onTestDataChange([
+        ...testData,
+        { tileId, speed, accel, flow, paValue }
+      ]);
+    }
+  };
+
+  const getTileData = (tileId: number): PATestResult | null => {
+    return testData.find(d => d.tileId === tileId) || null;
+  };
+
+  return (
+    <div className="space-y-6">
+      <FormSection
+        title="Test Configuration"
+        description="Configure your PA pattern test parameters"
+      >
+        <FieldGroup>
+          <TextField
+            id="start-pa"
+            label="Start PA"
+            type="number"
+            value={config.startPA.toString()}
+            onChange={(value) => onConfigChange({ ...config, startPA: parseFloat(value) || 0 })}
+            step={0.001}
+          />
+          <TextField
+            id="end-pa"
+            label="End PA"
+            type="number"
+            value={config.endPA.toString()}
+            onChange={(value) => onConfigChange({ ...config, endPA: parseFloat(value) || 0 })}
+            step={0.001}
+          />
+          <TextField
+            id="pa-step"
+            label="PA Step"
+            type="number"
+            value={config.paStep.toString()}
+            onChange={(value) => onConfigChange({ ...config, paStep: parseFloat(value) || 0 })}
+            step={0.001}
+          />
+        </FieldGroup>
+
+        <FieldGroup>
+          <TextField
+            id="layer-height"
+            label="Layer Height"
+            type="number"
+            value={config.layerHeight.toString()}
+            onChange={(value) => onConfigChange({ ...config, layerHeight: parseFloat(value) || 0 })}
+            step={0.01}
+            unit="mm"
+          />
+          <TextField
+            id="line-width"
+            label="Line Width"
+            type="number"
+            value={config.lineWidth.toString()}
+            onChange={(value) => onConfigChange({ ...config, lineWidth: parseFloat(value) || 0 })}
+            step={0.01}
+            unit="mm"
+          />
+        </FieldGroup>
+
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={onLoadExample} className="gap-2">
+            <Download className="h-4 w-4" />
+            Load Example Data
+          </Button>
+          <Button variant="outline" size="sm" onClick={onClearData} className="gap-2">
+            <Trash2 className="h-4 w-4" />
+            Clear All
+          </Button>
+        </div>
+      </FormSection>
+
+      <FormSection
+        title="Test Results"
+        description="Enter PA values from your printed calibration tiles"
+      >
+        <Tabs value={inputMode} onValueChange={(v) => setInputMode(v as 'grid' | 'table')}>
+          <TabsList className="grid w-full grid-cols-2 max-w-md">
+            <TabsTrigger value="grid" className="gap-2">
+              <Grid3x3 className="h-4 w-4" />
+              Grid View
+            </TabsTrigger>
+            <TabsTrigger value="table" className="gap-2">
+              <Table2 className="h-4 w-4" />
+              Table View
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="grid" className="space-y-4 mt-4">
+            <div className="grid grid-cols-3 gap-4">
+              {Array.from({ length: 9 }, (_, i) => {
+                const tileId = i + 1;
+                const col = i % 3;
+                const row = Math.floor(i / 3);
+                const speed = speeds[col];
+                const accel = accelerations[row];
+                const tileData = getTileData(tileId);
+                const estimatedFlow = estimateFlow(speed);
+
+                return (
+                  <Card key={tileId} className="border-muted">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-semibold">
+                        Tile {tileId}
+                      </CardTitle>
+                      <p className="text-xs text-muted-foreground">
+                        {speed} mm/s · {accel} mm/s²
+                      </p>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <TextField
+                        id={`pa-${tileId}`}
+                        label="PA Value"
+                        type="number"
+                        value={tileData?.paValue.toString() || ''}
+                        onChange={(value) => handleTileChange(tileId, 'paValue', value)}
+                        step={0.001}
+                        placeholder="0.020"
+                      />
+                      <TextField
+                        id={`flow-${tileId}`}
+                        label="Flow (mm³/s)"
+                        type="number"
+                        value={tileData?.flow.toString() || estimatedFlow.toFixed(2)}
+                        onChange={(value) => handleTileChange(tileId, 'flow', value)}
+                        step={0.01}
+                        helperText={`Est: ${estimatedFlow.toFixed(2)}`}
+                      />
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="table" className="space-y-4 mt-4">
+            <div className="overflow-x-auto rounded-lg border border-muted">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50">
+                  <tr className="text-left">
+                    <th className="px-4 py-2 font-medium">Tile</th>
+                    <th className="px-4 py-2 font-medium">Speed (mm/s)</th>
+                    <th className="px-4 py-2 font-medium">Accel (mm/s²)</th>
+                    <th className="px-4 py-2 font-medium">Flow (mm³/s)</th>
+                    <th className="px-4 py-2 font-medium">PA Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.from({ length: 9 }, (_, i) => {
+                    const tileId = i + 1;
+                    const col = i % 3;
+                    const row = Math.floor(i / 3);
+                    const speed = speeds[col];
+                    const accel = accelerations[row];
+                    const tileData = getTileData(tileId);
+
+                    return (
+                      <tr key={tileId} className="border-t border-muted/60">
+                        <td className="px-4 py-2">{tileId}</td>
+                        <td className="px-4 py-2">{speed}</td>
+                        <td className="px-4 py-2">{accel}</td>
+                        <td className="px-4 py-2">
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={tileData?.flow.toFixed(2) || ''}
+                            onChange={(e) => handleTileChange(tileId, 'flow', e.target.value)}
+                            className="w-24 px-2 py-1 text-sm border rounded bg-background"
+                            placeholder={estimateFlow(speed).toFixed(2)}
+                          />
+                        </td>
+                        <td className="px-4 py-2">
+                          <input
+                            type="number"
+                            step="0.001"
+                            value={tileData?.paValue.toFixed(3) || ''}
+                            onChange={(e) => handleTileChange(tileId, 'paValue', e.target.value)}
+                            className="w-24 px-2 py-1 text-sm border rounded bg-background"
+                            placeholder="0.020"
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {testData.length > 0 && (
+          <InfoCard variant="success">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">
+                <strong>{testData.length} of 9</strong> tiles entered
+              </span>
+              {testData.length >= 3 && (
+                <span className="text-xs text-muted-foreground">
+                  ✓ Ready for analysis
+                </span>
+              )}
+            </div>
+          </InfoCard>
+        )}
+      </FormSection>
+    </div>
+  );
+};
