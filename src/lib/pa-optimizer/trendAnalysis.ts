@@ -40,15 +40,27 @@ function analyzeFlowTrend(data: PATestResult[]): DimensionTrend {
   });
 
   const details = Array.from(accelGroups.entries()).map(([accel, group]) => {
-    // Sort by flow
-    const sorted = group.sort((a, b) => a.flow - b.flow);
+    const sorted = [...group].sort((a, b) => a.flow - b.flow);
     const points = sorted.map(r => ({ x: r.flow, y: r.paValue }));
     const slope = calculateSlope(points);
 
+    const first = sorted[0];
+    const last = sorted[sorted.length - 1];
+    const xStart = first?.flow ?? 0;
+    const xEnd = last?.flow ?? xStart;
+    const yStart = first?.paValue ?? 0;
+    const yEnd = last?.paValue ?? yStart;
+
     return {
       fixedValue: accel,
-      isDecreasing: slope < 0, // Negative slope means PA decreases with flow
+      isDecreasing: slope < 0,
       slope,
+      delta: yEnd - yStart,
+      span: xEnd - xStart,
+      xStart,
+      xEnd,
+      yStart,
+      yEnd,
       dataPoints: points,
     };
   });
@@ -89,15 +101,27 @@ function analyzeAccelTrend(data: PATestResult[]): DimensionTrend {
   });
 
   const details = Array.from(flowGroups.entries()).map(([flowKey, group]) => {
-    // Sort by acceleration
-    const sorted = group.sort((a, b) => a.accel - b.accel);
+    const sorted = [...group].sort((a, b) => a.accel - b.accel);
     const points = sorted.map(r => ({ x: r.accel, y: r.paValue }));
     const slope = calculateSlope(points);
 
+    const first = sorted[0];
+    const last = sorted[sorted.length - 1];
+    const xStart = first?.accel ?? 0;
+    const xEnd = last?.accel ?? xStart;
+    const yStart = first?.paValue ?? 0;
+    const yEnd = last?.paValue ?? yStart;
+
     return {
       fixedValue: parseFloat(flowKey),
-      isDecreasing: slope < 0, // Negative slope means PA decreases with accel
+      isDecreasing: slope < 0,
       slope,
+      delta: yEnd - yStart,
+      span: xEnd - xStart,
+      xStart,
+      xEnd,
+      yStart,
+      yEnd,
       dataPoints: points,
     };
   });

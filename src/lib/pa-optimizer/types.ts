@@ -44,6 +44,12 @@ export interface DimensionTrend {
     fixedValue: number;    // The fixed accel (for flow trends) or fixed flow (for accel trends)
     isDecreasing: boolean;
     slope: number;
+    delta: number;         // Ending PA minus starting PA across the range
+    span: number;          // Range of the varying dimension (flow or accel)
+    xStart: number;
+    xEnd: number;
+    yStart: number;
+    yEnd: number;
     dataPoints: Array<{ x: number; y: number }>;
   }>;
 }

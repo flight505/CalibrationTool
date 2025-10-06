@@ -12,6 +12,15 @@ export const PAAnalysisPanel: React.FC<PAAnalysisPanelProps> = ({ analysis }) =>
   const { trends, statistics, outliers, qualityScore } = analysis;
 
   const formatScore = (value: number) => value.toFixed(2);
+  const formatDelta = (delta: number) => {
+    if (Math.abs(delta) < 1e-6) return '0.0000';
+    const sign = delta > 0 ? '+' : '-';
+    return `${sign}${Math.abs(delta).toFixed(4)}`;
+  };
+  const formatSlope = (slope: number) => {
+    if (Math.abs(slope) < 1e-8) return '0';
+    return slope.toExponential(2);
+  };
 
   const getTrendIcon = (direction: string) => {
     if (direction === 'correct') return <CheckCircle2 className="h-5 w-5 text-green-500" />;
@@ -53,7 +62,7 @@ export const PAAnalysisPanel: React.FC<PAAnalysisPanelProps> = ({ analysis }) =>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{qualityScore.trendScore}/40</div>
+              <div className="text-2xl font-bold">{`${formatScore(qualityScore.trendScore)}/40`}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 Physical trends
               </p>
@@ -81,7 +90,7 @@ export const PAAnalysisPanel: React.FC<PAAnalysisPanelProps> = ({ analysis }) =>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{qualityScore.modelFitScore}/30</div>
+              <div className="text-2xl font-bold">{`${formatScore(qualityScore.modelFitScore)}/30`}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 R²: {analysis.selectedModel.r2.toFixed(3)}
               </p>
@@ -140,18 +149,28 @@ export const PAAnalysisPanel: React.FC<PAAnalysisPanelProps> = ({ analysis }) =>
                     key={i}
                     className="flex items-center justify-between text-xs p-2 rounded bg-muted/30"
                   >
-                    <span className="text-muted-foreground">
-                      @ {detail.fixedValue} mm/s²
-                    </span>
+                    <div className="flex flex-col">
+                      <span className="text-muted-foreground">
+                        Accel {detail.fixedValue} mm/s²
+                      </span>
+                      <span className="text-[11px] text-muted-foreground/80">
+                        Flow {detail.xStart.toFixed(2)} → {detail.xEnd.toFixed(2)} mm³/s
+                      </span>
+                    </div>
                     <div className="flex items-center gap-2">
                       {detail.isDecreasing ? (
                         <TrendingDown className="h-4 w-4 text-green-500" />
                       ) : (
                         <TrendingUp className="h-4 w-4 text-red-500" />
                       )}
-                      <span className="font-mono">
-                        {detail.slope > 0 ? '+' : ''}{detail.slope.toFixed(5)}
-                      </span>
+                      <div className="text-right">
+                        <div className="font-mono font-semibold">
+                          ΔPA: {formatDelta(detail.delta)}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground/80 font-mono">
+                          slope {formatSlope(detail.slope)}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -195,9 +214,14 @@ export const PAAnalysisPanel: React.FC<PAAnalysisPanelProps> = ({ analysis }) =>
                       ) : (
                         <TrendingUp className="h-4 w-4 text-red-500" />
                       )}
-                      <span className="font-mono">
-                        {detail.slope > 0 ? '+' : ''}{detail.slope.toFixed(5)}
-                      </span>
+                      <div className="text-right">
+                        <div className="font-mono font-semibold">
+                          ΔPA: {formatDelta(detail.delta)}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground/80 font-mono">
+                          Accel {detail.xStart.toFixed(0)} → {detail.xEnd.toFixed(0)} mm/s²
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
