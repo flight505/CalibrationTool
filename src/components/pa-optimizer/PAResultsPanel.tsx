@@ -1,12 +1,14 @@
-import { useState } from 'react';
-import { Copy, Check, FileDown } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Copy, Check, FileDown, Settings2 } from 'lucide-react';
 import { FormSection, InfoCard } from '@/components/calibration/CalibrationToolLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import type { PAAnalysisResult } from '@/lib/pa-optimizer';
-import { formatForOrcaSlicer, exportAsCSV } from '@/lib/pa-optimizer';
+import { formatForOrcaSlicer, exportAsCSV, generateExtendedTable } from '@/lib/pa-optimizer';
 
 interface PAResultsPanelProps {
   analysis: PAAnalysisResult;
@@ -15,9 +17,48 @@ interface PAResultsPanelProps {
 export const PAResultsPanel: React.FC<PAResultsPanelProps> = ({ analysis }) => {
   const [copiedOptimized, setCopiedOptimized] = useState(false);
   const [copiedExtended, setCopiedExtended] = useState(false);
+  const [showSpeedCustomizer, setShowSpeedCustomizer] = useState(false);
+  const [customSpeeds, setCustomSpeeds] = useState('40, 60, 80, 100, 120, 150, 200, 250, 300');
+  const [customAccels, setCustomAccels] = useState('3000, 4000, 6000, 8000, 10000, 12000');
+
+  // Parse custom speeds/accels and regenerate extended table
+  const extendedTable = useMemo(() => {
+    if (!showSpeedCustomizer) {
+      return analysis.extendedTable;
+    }
+
+    try {
+      const speeds = customSpeeds
+        .split(',')
+        .map(s => parseInt(s.trim()))
+        .filter(n => !isNaN(n) && n > 0)
+        .sort((a, b) => a - b);
+
+      const accels = customAccels
+        .split(',')
+        .map(s => parseInt(s.trim()))
+        .filter(n => !isNaN(n) && n > 0)
+        .sort((a, b) => a - b);
+
+      if (speeds.length === 0 || accels.length === 0) {
+        return analysis.extendedTable;
+      }
+
+      return generateExtendedTable(analysis.testData, analysis.selectedModel, {
+        targetSpeeds: speeds,
+        targetAccels: accels,
+        extrapolationLimit: 50,
+        minPA: 0.001,
+        maxPA: 1.0,
+      });
+    } catch (error) {
+      console.error('Error generating custom extended table:', error);
+      return analysis.extendedTable;
+    }
+  }, [showSpeedCustomizer, customSpeeds, customAccels, analysis]);
 
   const optimizedOutput = formatForOrcaSlicer(analysis.optimizedTable);
-  const extendedOutput = formatForOrcaSlicer(analysis.extendedTable);
+  const extendedOutput = formatForOrcaSlicer(extendedTable);
 
   const handleCopy = async (text: string, type: 'optimized' | 'extended') => {
     try {
@@ -35,7 +76,7 @@ export const PAResultsPanel: React.FC<PAResultsPanelProps> = ({ analysis }) => {
   };
 
   const handleDownloadCSV = (type: 'optimized' | 'extended') => {
-    const table = type === 'optimized' ? analysis.optimizedTable : analysis.extendedTable;
+    const table = type === 'optimized' ? analysis.optimizedTable : extendedTable;
     const csv = exportAsCSV(table);
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -138,13 +179,66 @@ export const PAResultsPanel: React.FC<PAResultsPanelProps> = ({ analysis }) => {
 
           {/* Extended Table */}
           <TabsContent value="extended" className="space-y-4">
+            {/* Speed/Accel Customizer */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">Speed & Acceleration Range</CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowSpeedCustomizer(!showSpeedCustomizer)}
+                    className="gap-2"
+                  >
+                    <Settings2 className="h-4 w-4" />
+                    {showSpeedCustomizer ? 'Hide' : 'Customize'}
+                  </Button>
+                </div>
+              </CardHeader>
+              {showSpeedCustomizer && (
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="customSpeeds">Print Speeds (mm/s)</Label>
+                      <Input
+                        id="customSpeeds"
+                        value={customSpeeds}
+                        onChange={(e) => setCustomSpeeds(e.target.value)}
+                        placeholder="40, 60, 80, 100, 120, 150, 200, 250, 300"
+                        className="font-mono text-sm"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Comma-separated list of speeds
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="customAccels">Accelerations (mm/s²)</Label>
+                      <Input
+                        id="customAccels"
+                        value={customAccels}
+                        onChange={(e) => setCustomAccels(e.target.value)}
+                        placeholder="3000, 4000, 6000, 8000, 10000, 12000"
+                        className="font-mono text-sm"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Comma-separated list of accelerations
+                      </p>
+                    </div>
+                  </div>
+                  <InfoCard variant="warning">
+                    <strong>Extrapolation Warning:</strong> Values outside your calibrated range (Flow: {analysis.extendedTable.calibratedRange.flowRange[0].toFixed(2)}-{analysis.extendedTable.calibratedRange.flowRange[1].toFixed(2)} mm³/s, Accel: {analysis.extendedTable.calibratedRange.accelRange[0]}-{analysis.extendedTable.calibratedRange.accelRange[1]} mm/s²) will be extrapolated with lower confidence.
+                  </InfoCard>
+                </CardContent>
+              )}
+            </Card>
+
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle>Extended PA Table</CardTitle>
                     <CardDescription className="mt-2">
-                      {analysis.extendedTable.entries.length} entries with extrapolation to practical printing speeds
+                      {extendedTable.entries.length} entries with extrapolation to practical printing speeds
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
@@ -183,7 +277,7 @@ export const PAResultsPanel: React.FC<PAResultsPanelProps> = ({ analysis }) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {analysis.extendedTable.entries.map((entry, i) => (
+                      {extendedTable.entries.map((entry, i) => (
                         <tr
                           key={i}
                           className={`border-t border-muted/60 ${
@@ -227,8 +321,8 @@ export const PAResultsPanel: React.FC<PAResultsPanelProps> = ({ analysis }) => {
                 <InfoCard variant="info">
                   <strong>Calibrated range:</strong>
                   <ul className="mt-2 space-y-1 text-sm">
-                    <li>• Flow: {analysis.extendedTable.calibratedRange.flowRange[0].toFixed(2)} - {analysis.extendedTable.calibratedRange.flowRange[1].toFixed(2)} mm³/s</li>
-                    <li>• Acceleration: {analysis.extendedTable.calibratedRange.accelRange[0]} - {analysis.extendedTable.calibratedRange.accelRange[1]} mm/s²</li>
+                    <li>• Flow: {extendedTable.calibratedRange.flowRange[0].toFixed(2)} - {extendedTable.calibratedRange.flowRange[1].toFixed(2)} mm³/s</li>
+                    <li>• Acceleration: {extendedTable.calibratedRange.accelRange[0]} - {extendedTable.calibratedRange.accelRange[1]} mm/s²</li>
                   </ul>
                 </InfoCard>
               </CardContent>

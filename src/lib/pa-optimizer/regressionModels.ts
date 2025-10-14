@@ -271,19 +271,19 @@ export function fitPolynomial(data: PATestResult[]): FittedModel {
 export function fitRobustPolynomial(data: PATestResult[]): FittedModel {
   const iterations = 100;
   const threshold = 0.003; // Inlier threshold
-  let bestModel: FittedModel | null = null;
-  let bestInliers = 0;
+  let bestInlierIndices: Set<number> = new Set();
+  let bestInlierCount = 0;
 
   for (let iter = 0; iter < iterations; iter++) {
     // Sample random subset (5 points minimum)
     const sampleSize = Math.min(5, data.length);
     const sample: PATestResult[] = [];
-    const indices = new Set<number>();
+    const sampleIndices = new Set<number>();
 
     while (sample.length < sampleSize) {
       const idx = Math.floor(Math.random() * data.length);
-      if (!indices.has(idx)) {
-        indices.add(idx);
+      if (!sampleIndices.has(idx)) {
+        sampleIndices.add(idx);
         sample.push(data[idx]);
       }
     }
@@ -291,31 +291,45 @@ export function fitRobustPolynomial(data: PATestResult[]): FittedModel {
     // Fit model on sample
     const model = fitPolynomial(sample);
 
-    // Count inliers
-    let inliers = 0;
-    data.forEach(d => {
+    // Find all inliers
+    const inlierIndices = new Set<number>();
+    data.forEach((d, idx) => {
       const predicted = model.predict(d.flow, d.accel);
       if (Math.abs(predicted - d.paValue) < threshold) {
-        inliers++;
+        inlierIndices.add(idx);
       }
     });
 
-    if (inliers > bestInliers) {
-      bestInliers = inliers;
-      bestModel = model;
+    if (inlierIndices.size > bestInlierCount) {
+      bestInlierCount = inlierIndices.size;
+      bestInlierIndices = inlierIndices;
     }
   }
 
-  // If RANSAC succeeded, return best model; otherwise fallback to standard polynomial
-  if (bestModel) {
+  // Refit model using all inlier points (this is the key fix!)
+  if (bestInlierIndices.size >= 5) {
+    const inlierData = data.filter((_, idx) => bestInlierIndices.has(idx));
+    const finalModel = fitPolynomial(inlierData);
+
+    // Recalculate metrics on the FULL dataset
+    const predicted = data.map(d => finalModel.predict(d.flow, d.accel));
+    const actual = data.map(d => d.paValue);
+    const residuals = actual.map((val, i) => val - predicted[i]);
+
     return {
-      ...bestModel,
       modelType: 'robust_polynomial',
+      coefficients: finalModel.coefficients,
+      r2: calculateR2(actual, predicted),
+      rmse: calculateRMSE(actual, predicted),
+      residuals,
+      predict: finalModel.predict,
     };
   }
 
+  // Fallback to standard polynomial if RANSAC fails
+  const fallbackModel = fitPolynomial(data);
   return {
-    ...fitPolynomial(data),
+    ...fallbackModel,
     modelType: 'robust_polynomial',
   };
 }

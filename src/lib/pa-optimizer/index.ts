@@ -50,19 +50,13 @@ export function analyzePA(
   // 6. Calculate quality score
   const qualityScore = calculateQualityScore(trends, statistics, selectedModel, outliers);
 
-  // 7. Generate optimized table (original test points)
-  const optimizedTable = generateTable(testData, selectedModel, {
-    targetSpeeds: [...new Set(testData.map(d => d.speed))].sort((a, b) => a - b),
-    targetAccels: [...new Set(testData.map(d => d.accel))].sort((a, b) => a - b),
-    extrapolationLimit: 0, // No extrapolation for optimized table
-    minPA: 0.001,
-    maxPA: 1.0,
-  });
+  // 7. Generate optimized table (original test points - use actual data!)
+  const optimizedTable = generateOptimizedTable(testData, selectedModel);
 
   // 8. Generate extended table (with extrapolation)
-  const extendedTable = generateTable(testData, selectedModel, {
-    targetSpeeds: [40, 60, 80, 100, 120, 150, 200],
-    targetAccels: [3000, 4000, 6000, 8000, 10000],
+  const extendedTable = generateExtendedTable(testData, selectedModel, {
+    targetSpeeds: [40, 60, 80, 100, 120, 150, 200, 250, 300],
+    targetAccels: [3000, 4000, 6000, 8000, 10000, 12000],
     extrapolationLimit: 50, // Allow 50% extrapolation
     minPA: 0.001,
     maxPA: 1.0,
@@ -199,4 +193,144 @@ export function exportAsCSV(table: PATable): string {
     `${entry.speed},${entry.flow.toFixed(2)},${entry.accel},${entry.paValue.toFixed(6)},${entry.confidence},${entry.isExtrapolated}`
   );
   return header + rows.join('\n');
+}
+
+/**
+ * Generate optimized table using actual test data points (no extrapolation)
+ */
+export function generateOptimizedTable(
+  calibrationData: PATestResult[],
+  model: ReturnType<typeof getModel>
+): PATable {
+  const calibratedFlowRange: [number, number] = [
+    Math.min(...calibrationData.map(d => d.flow)),
+    Math.max(...calibrationData.map(d => d.flow)),
+  ];
+
+  const calibratedAccelRange: [number, number] = [
+    Math.min(...calibrationData.map(d => d.accel)),
+    Math.max(...calibrationData.map(d => d.accel)),
+  ];
+
+  // Use actual test data combinations
+  const entries: PATableEntry[] = calibrationData.map(test => {
+    // Predict PA value using the model
+    let paValue = model.predict(test.flow, test.accel);
+
+    // Apply safety bounds
+    paValue = Math.max(0.001, Math.min(1.0, paValue));
+
+    return {
+      speed: test.speed,
+      flow: test.flow,
+      accel: test.accel,
+      paValue,
+      confidence: 'high' as ConfidenceLevel, // Original test points are high confidence
+      isExtrapolated: false,
+      extrapolationAmount: undefined,
+    };
+  });
+
+  // Sort by speed, then acceleration
+  entries.sort((a, b) => {
+    if (a.speed !== b.speed) return a.speed - b.speed;
+    return a.accel - b.accel;
+  });
+
+  return {
+    entries,
+    calibratedRange: {
+      flowRange: calibratedFlowRange,
+      accelRange: calibratedAccelRange,
+    },
+    modelUsed: model.modelType,
+    generatedAt: new Date(),
+  };
+}
+
+/**
+ * Generate extended table with extrapolation to additional speeds/accels
+ */
+export function generateExtendedTable(
+  calibrationData: PATestResult[],
+  model: ReturnType<typeof getModel>,
+  options: TableGenerationOptions
+): PATable {
+  const calibratedFlowRange: [number, number] = [
+    Math.min(...calibrationData.map(d => d.flow)),
+    Math.max(...calibrationData.map(d => d.flow)),
+  ];
+
+  const calibratedAccelRange: [number, number] = [
+    Math.min(...calibrationData.map(d => d.accel)),
+    Math.max(...calibrationData.map(d => d.accel)),
+  ];
+
+  // Estimate flow from speed using average layer height and line width
+  const avgLayerHeight = 0.16; // Typical default
+  const avgLineWidth = 0.48; // Typical default
+  const estimateFlow = (speed: number): number => {
+    return (speed * avgLayerHeight * avgLineWidth) / 60;
+  };
+
+  const entries: PATableEntry[] = [];
+
+  // Generate entries for each combination
+  options.targetSpeeds.forEach(speed => {
+    const flow = estimateFlow(speed);
+
+    options.targetAccels.forEach(accel => {
+      // Calculate extrapolation amount
+      const flowExtrapolation = calculateExtrapolation(flow, calibratedFlowRange);
+      const accelExtrapolation = calculateExtrapolation(accel, calibratedAccelRange);
+      const maxExtrapolation = Math.max(flowExtrapolation, accelExtrapolation);
+
+      // Skip if exceeds extrapolation limit
+      if (maxExtrapolation > options.extrapolationLimit) {
+        return;
+      }
+
+      // Predict PA value
+      let paValue = model.predict(flow, accel);
+
+      // Apply safety bounds
+      paValue = Math.max(options.minPA, Math.min(options.maxPA, paValue));
+
+      // Determine confidence
+      let confidence: ConfidenceLevel;
+      if (maxExtrapolation === 0) {
+        confidence = 'high';
+      } else if (maxExtrapolation < 25) {
+        confidence = 'medium';
+      } else {
+        confidence = 'low';
+      }
+
+      entries.push({
+        speed,
+        flow,
+        accel,
+        paValue,
+        confidence,
+        isExtrapolated: maxExtrapolation > 0,
+        extrapolationAmount: maxExtrapolation > 0 ? maxExtrapolation : undefined,
+      });
+    });
+  });
+
+  // Sort by speed, then acceleration
+  entries.sort((a, b) => {
+    if (a.speed !== b.speed) return a.speed - b.speed;
+    return a.accel - b.accel;
+  });
+
+  return {
+    entries,
+    calibratedRange: {
+      flowRange: calibratedFlowRange,
+      accelRange: calibratedAccelRange,
+    },
+    modelUsed: model.modelType,
+    generatedAt: new Date(),
+  };
 }

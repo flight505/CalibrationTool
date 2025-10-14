@@ -45,18 +45,20 @@ const PressureAdvanceOptimizer: React.FC<PressureAdvanceOptimizerProps> = ({ onN
   const [config, setConfig] = useState<PATestConfig>(DEFAULT_CONFIG);
   const [testData, setTestData] = useState<PATestResult[]>(EXAMPLE_DATA);
   const [activeTab, setActiveTab] = useState('input');
+  const [manualModelOverride, setManualModelOverride] = useState<string | null>(null);
 
-  // Run analysis whenever data changes
+  // Run analysis whenever data or model selection changes
   const analysis: PAAnalysisResult | null = useMemo(() => {
     if (testData.length < 3) return null;
 
     try {
-      return analyzePA(config, testData);
+      const preferredModel = manualModelOverride as any;
+      return analyzePA(config, testData, preferredModel);
     } catch (error) {
       console.error('Analysis error:', error);
       return null;
     }
-  }, [config, testData]);
+  }, [config, testData, manualModelOverride]);
 
   const handleLoadExample = () => {
     setTestData(EXAMPLE_DATA);
@@ -192,7 +194,11 @@ const PressureAdvanceOptimizer: React.FC<PressureAdvanceOptimizerProps> = ({ onN
           <TabsContent value="models" className="space-y-4">
             {analysis ? (
               <>
-                <PAModelingPanel analysis={analysis} />
+                <PAModelingPanel
+                  analysis={analysis}
+                  selectedModelType={manualModelOverride || analysis.modelComparison.autoSelectedModel}
+                  onModelSelect={setManualModelOverride}
+                />
                 <div className="flex justify-between">
                   <Button variant="outline" onClick={() => setActiveTab('analysis')}>
                     ← Back to Analysis
