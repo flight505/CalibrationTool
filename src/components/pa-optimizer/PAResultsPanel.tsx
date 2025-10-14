@@ -165,7 +165,7 @@ export const PAResultsPanel: React.FC<PAResultsPanelProps> = ({ analysis }) => {
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-sm font-medium">OrcaSlicer Format (PA, Flow, Accel)</p>
                   </div>
-                  <pre className="whitespace-pre-wrap text-xs font-mono text-primary-foreground/80 bg-background/70 p-3 rounded-md border border-primary/30 max-h-64 overflow-y-auto">
+                  <pre className="whitespace-pre-wrap text-xs font-mono text-foreground bg-background p-3 rounded-md border border-primary/30 max-h-64 overflow-y-auto">
                     {optimizedOutput}
                   </pre>
                 </div>
@@ -308,7 +308,7 @@ export const PAResultsPanel: React.FC<PAResultsPanelProps> = ({ analysis }) => {
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-sm font-medium">OrcaSlicer Format (PA, Flow, Accel)</p>
                   </div>
-                  <pre className="whitespace-pre-wrap text-xs font-mono text-primary-foreground/80 bg-background/70 p-3 rounded-md border border-primary/30 max-h-64 overflow-y-auto">
+                  <pre className="whitespace-pre-wrap text-xs font-mono text-foreground bg-background p-3 rounded-md border border-primary/30 max-h-64 overflow-y-auto">
                     {extendedOutput}
                   </pre>
                 </div>

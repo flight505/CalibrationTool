@@ -309,11 +309,13 @@ export function generateExtendedTable(
     Math.max(...calibrationData.map(d => d.accel)),
   ];
 
-  // Estimate flow from speed using average layer height and line width
-  const avgLayerHeight = 0.16; // Typical default
-  const avgLineWidth = 0.48; // Typical default
+  // Calculate actual flow-to-speed ratio from calibration data
+  // This ensures we use the ACTUAL nozzle/layer height/line width from the test
+  const flowSpeedRatios = calibrationData.map(d => d.flow / d.speed);
+  const avgFlowSpeedRatio = flowSpeedRatios.reduce((sum, r) => sum + r, 0) / flowSpeedRatios.length;
+
   const estimateFlow = (speed: number): number => {
-    return (speed * avgLayerHeight * avgLineWidth) / 60;
+    return speed * avgFlowSpeedRatio;
   };
 
   const entries: PATableEntry[] = [];
