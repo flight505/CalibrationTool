@@ -196,10 +196,13 @@ export const PAModelingPanel: React.FC<PAModelingPanelProps> = ({
       )}
 
       {/* Model Comparison */}
-      <FormSection
-        title="Model Comparison"
-        action={
-          !isAutoSelected && (
+      <FormSection title="Model Comparison">
+        {!isAutoSelected && (
+          <div className="space-y-3">
+            <InfoCard variant="info">
+              You've manually selected a model. The auto-selection recommended{' '}
+              <strong>{modelComparison.models.find(m => m.type === modelComparison.autoSelectedModel)?.name}</strong>.
+            </InfoCard>
             <Button
               variant="outline"
               size="sm"
@@ -207,17 +210,9 @@ export const PAModelingPanel: React.FC<PAModelingPanelProps> = ({
               className="gap-2"
             >
               <RotateCcw className="h-4 w-4" />
-              Reset to Auto
+              Reset to Auto Selection
             </Button>
-          )
-        }
-      >
-        {!isAutoSelected && (
-          <InfoCard variant="info">
-            You've manually selected a model. The auto-selection recommended{' '}
-            <strong>{modelComparison.models.find(m => m.type === modelComparison.autoSelectedModel)?.name}</strong>.
-            Click "Reset to Auto" to revert.
-          </InfoCard>
+          </div>
         )}
 
         <div className="grid gap-4 md:grid-cols-2">

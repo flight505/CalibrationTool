@@ -11,7 +11,7 @@ import { PAResultsPanel } from './pa-optimizer/PAResultsPanel';
 import { PAVisualizationPanel } from './pa-optimizer/PAVisualizationPanel';
 
 import { analyzePA } from '@/lib/pa-optimizer';
-import type { PATestConfig, PATestResult, PAAnalysisResult } from '@/lib/pa-optimizer';
+import type { PATestConfig, PATestResult, PAAnalysisResult, ModelType } from '@/lib/pa-optimizer';
 
 interface PressureAdvanceOptimizerProps {
   onNavigate?: (tool: string, path?: string) => void;
@@ -53,7 +53,7 @@ const PressureAdvanceOptimizer: React.FC<PressureAdvanceOptimizerProps> = ({ onN
     if (testData.length < 3) return null;
 
     try {
-      const preferredModel = manualModelOverride as any;
+      const preferredModel = (manualModelOverride || undefined) as ModelType | undefined;
       return analyzePA(config, testData, preferredModel, outlierCorrectionMode);
     } catch (error) {
       console.error('Analysis error:', error);
@@ -197,7 +197,7 @@ const PressureAdvanceOptimizer: React.FC<PressureAdvanceOptimizerProps> = ({ onN
               <>
                 <PAModelingPanel
                   analysis={analysis}
-                  selectedModelType={manualModelOverride || analysis.modelComparison.autoSelectedModel}
+                  selectedModelType={(manualModelOverride as ModelType) || analysis.modelComparison.autoSelectedModel}
                   onModelSelect={setManualModelOverride}
                   outlierCorrectionMode={outlierCorrectionMode}
                   onOutlierCorrectionChange={setOutlierCorrectionMode}

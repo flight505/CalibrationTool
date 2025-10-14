@@ -18,6 +18,8 @@ import type {
   TableGenerationOptions,
   ConfidenceLevel,
   ModelType,
+  OutlierResult,
+  FittedModel,
 } from './types';
 import { analyzeTrends } from './trendAnalysis';
 import { calculateStatistics, detectOutliers, calculateQualityScore } from './statisticsEngine';

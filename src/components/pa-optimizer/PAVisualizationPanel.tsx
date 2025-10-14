@@ -15,6 +15,7 @@ import {
   Scatter,
   BarChart,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -83,10 +84,6 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
   }));
 
   // Extended range visualization data
-  const calibratedFlowRange = [
-    Math.min(...testData.map(d => d.flow)),
-    Math.max(...testData.map(d => d.flow)),
-  ];
   const calibratedSpeedRange = [
     Math.min(...testData.map(d => d.speed)),
     Math.max(...testData.map(d => d.speed)),
@@ -284,10 +281,14 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
                     dataKey="residual"
                     name="Residual"
                     radius={[4, 4, 0, 0]}
-                    fill={(entry: any) =>
-                      entry.isOutlier ? 'hsl(var(--destructive))' : 'hsl(var(--chart-4))'
-                    }
-                  />
+                  >
+                    {residualsData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.isOutlier ? 'hsl(var(--destructive))' : 'hsl(var(--chart-4))'}
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -460,18 +461,26 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
                     dataKey="measured"
                     name="Measured PA"
                     radius={[4, 4, 0, 0]}
-                    fill={(entry: any) =>
-                      entry.isOutlier ? 'hsl(var(--destructive) / 0.5)' : 'hsl(var(--chart-1))'
-                    }
-                  />
+                  >
+                    {comparisonData.map((entry, index) => (
+                      <Cell
+                        key={`measured-${index}`}
+                        fill={entry.isOutlier ? 'hsl(var(--destructive) / 0.5)' : 'hsl(var(--chart-1))'}
+                      />
+                    ))}
+                  </Bar>
                   <Bar
                     dataKey="optimized"
                     name="Model Prediction"
                     radius={[4, 4, 0, 0]}
-                    fill={(entry: any) =>
-                      entry.isOutlier ? 'hsl(var(--destructive))' : 'hsl(var(--chart-3))'
-                    }
-                  />
+                  >
+                    {comparisonData.map((entry, index) => (
+                      <Cell
+                        key={`predicted-${index}`}
+                        fill={entry.isOutlier ? 'hsl(var(--destructive))' : 'hsl(var(--chart-3))'}
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
