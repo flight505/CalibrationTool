@@ -24,14 +24,50 @@ import { calculateStatistics, detectOutliers, calculateQualityScore } from './st
 import { compareModels, getModel } from './modelComparison';
 
 /**
+ * Apply outlier correction to test data
+ */
+function applyOutlierCorrection(
+  originalData: PATestResult[],
+  outliers: OutlierResult[],
+  model: FittedModel,
+  mode: 'none' | 'ransac' | 'model'
+): PATestResult[] {
+  if (mode === 'none') {
+    return originalData;
+  }
+
+  const outlierSet = new Set(outliers.filter(o => o.isOutlier).map(o => o.tileId));
+
+  return originalData.map(test => {
+    const shouldCorrect = mode === 'model' || (mode === 'ransac' && outlierSet.has(test.tileId));
+
+    if (shouldCorrect) {
+      const correctedValue = model.predict(test.flow, test.accel);
+      return {
+        ...test,
+        originalPAValue: test.paValue,
+        paValue: Math.max(0.001, Math.min(1.0, correctedValue)),
+        isCorrected: true,
+      };
+    }
+
+    return test;
+  });
+}
+
+/**
  * Perform complete PA analysis on test data
  */
 export function analyzePA(
   config: PATestConfig,
   testData: PATestResult[],
-  preferredModel?: ModelType
+  preferredModel?: ModelType,
+  outlierCorrectionMode: 'none' | 'ransac' | 'model' = 'none'
 ): PAAnalysisResult {
-  // 1. Trend analysis
+  // Store original data
+  const originalData = [...testData];
+
+  // 1. Trend analysis (on original data)
   const trends = analyzeTrends(testData);
 
   // 2. Statistical analysis
@@ -47,11 +83,14 @@ export function analyzePA(
   // 5. Fit selected model
   const selectedModel = getModel(testData, selectedModelType);
 
-  // 6. Calculate quality score
+  // 6. Apply outlier correction if requested
+  const correctedData = applyOutlierCorrection(testData, outliers, selectedModel, outlierCorrectionMode);
+
+  // 7. Calculate quality score
   const qualityScore = calculateQualityScore(trends, statistics, selectedModel, outliers);
 
-  // 7. Generate optimized table (original test points - use actual data!)
-  const optimizedTable = generateOptimizedTable(testData, selectedModel);
+  // 8. Generate optimized table (use corrected data!)
+  const optimizedTable = generateOptimizedTable(correctedData, selectedModel);
 
   // 8. Generate extended table (with extrapolation)
   const extendedTable = generateExtendedTable(testData, selectedModel, {
@@ -64,7 +103,8 @@ export function analyzePA(
 
   return {
     config,
-    testData,
+    testData: correctedData,
+    originalTestData: outlierCorrectionMode !== 'none' ? originalData : undefined,
     trends,
     statistics,
     outliers,
@@ -73,6 +113,7 @@ export function analyzePA(
     selectedModel,
     optimizedTable,
     extendedTable,
+    correctionApplied: outlierCorrectionMode,
   };
 }
 

@@ -1,5 +1,6 @@
-import { FormSection } from '@/components/calibration/CalibrationToolLayout';
+import { FormSection, InfoCard } from '@/components/calibration/CalibrationToolLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   ChartContainer,
   ChartTooltip,
@@ -19,6 +20,7 @@ import {
   CartesianGrid,
   ResponsiveContainer,
   ReferenceLine,
+  ReferenceArea,
 } from 'recharts';
 import type { PAAnalysisResult } from '@/lib/pa-optimizer';
 
@@ -27,7 +29,12 @@ interface PAVisualizationPanelProps {
 }
 
 export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ analysis }) => {
-  const { testData, selectedModel, statistics } = analysis;
+  const { testData, selectedModel, statistics, outliers } = analysis;
+
+  // Create outlier lookup for easy checking
+  const outlierSet = new Set(
+    outliers.filter(o => o.isOutlier).map(o => o.tileId)
+  );
 
   // Prepare data for Flow vs PA chart
   const flowVsPAData = testData.map(d => ({
@@ -36,6 +43,7 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
     predicted: selectedModel.predict(d.flow, d.accel),
     accel: d.accel,
     tileId: d.tileId,
+    isOutlier: outlierSet.has(d.tileId),
   }));
 
   // Group by acceleration for flow chart
@@ -62,6 +70,7 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
       predicted: predicted,
       residual: residual,
       absResidual: Math.abs(residual),
+      isOutlier: outlierSet.has(d.tileId),
     };
   });
 
@@ -70,7 +79,34 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
     tileId: d.tileId,
     measured: d.paValue,
     optimized: selectedModel.predict(d.flow, d.accel),
+    isOutlier: outlierSet.has(d.tileId),
   }));
+
+  // Extended range visualization data
+  const calibratedFlowRange = [
+    Math.min(...testData.map(d => d.flow)),
+    Math.max(...testData.map(d => d.flow)),
+  ];
+  const calibratedSpeedRange = [
+    Math.min(...testData.map(d => d.speed)),
+    Math.max(...testData.map(d => d.speed)),
+  ];
+
+  // Generate extended model curve (25 mm/s to 350 mm/s)
+  const extendedCurveData = [];
+  const avgLayerHeight = 0.16;
+  const avgLineWidth = 0.48;
+  for (let speed = 25; speed <= 350; speed += 5) {
+    const flow = (speed * avgLayerHeight * avgLineWidth) / 60;
+    const avgAccel = (Math.min(...testData.map(d => d.accel)) + Math.max(...testData.map(d => d.accel))) / 2;
+    const prediction = selectedModel.predict(flow, avgAccel);
+    extendedCurveData.push({
+      speed,
+      flow,
+      paValue: Math.max(0.001, Math.min(1.0, prediction)),
+      isCalibrated: speed >= calibratedSpeedRange[0] && speed <= calibratedSpeedRange[1],
+    });
+  }
 
   const chartConfig = {
     measured: {
@@ -78,11 +114,11 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
       color: "hsl(var(--chart-1))",
     },
     predicted: {
-      label: "Predicted PA",
+      label: "Model Prediction",
       color: "hsl(var(--chart-2))",
     },
-    optimized: {
-      label: "Optimized PA",
+    modelPrediction: {
+      label: "Model Prediction",
       color: "hsl(var(--chart-3))",
     },
     residual: {
@@ -128,17 +164,17 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
                   />
                   <ChartLegend content={<ChartLegendContent />} />
 
-                  {/* Measured points colored by acceleration */}
+                  {/* Regular measured points colored by acceleration */}
                   <Scatter
                     name="Measured (4000 mm/s²)"
-                    data={flowVsPAData.filter(d => d.accel === uniqueAccels[0])}
+                    data={flowVsPAData.filter(d => d.accel === uniqueAccels[0] && !d.isOutlier)}
                     fill="hsl(var(--chart-1))"
                     shape="circle"
                   />
                   {uniqueAccels.length > 1 && (
                     <Scatter
                       name="Measured (6000 mm/s²)"
-                      data={flowVsPAData.filter(d => d.accel === uniqueAccels[1])}
+                      data={flowVsPAData.filter(d => d.accel === uniqueAccels[1] && !d.isOutlier)}
                       fill="hsl(var(--chart-2))"
                       shape="triangle"
                     />
@@ -146,9 +182,22 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
                   {uniqueAccels.length > 2 && (
                     <Scatter
                       name="Measured (10000 mm/s²)"
-                      data={flowVsPAData.filter(d => d.accel === uniqueAccels[2])}
+                      data={flowVsPAData.filter(d => d.accel === uniqueAccels[2] && !d.isOutlier)}
                       fill="hsl(var(--chart-3))"
                       shape="square"
+                    />
+                  )}
+
+                  {/* Outlier points in red with X markers */}
+                  {flowVsPAData.filter(d => d.isOutlier).length > 0 && (
+                    <Scatter
+                      name="Outliers"
+                      data={flowVsPAData.filter(d => d.isOutlier)}
+                      fill="hsl(var(--destructive))"
+                      stroke="hsl(var(--destructive))"
+                      strokeWidth={2}
+                      shape="cross"
+                      r={6}
                     />
                   )}
                 </ScatterChart>
@@ -233,9 +282,11 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
 
                   <Bar
                     dataKey="residual"
-                    fill="hsl(var(--chart-4))"
                     name="Residual"
                     radius={[4, 4, 0, 0]}
+                    fill={(entry: any) =>
+                      entry.isOutlier ? 'hsl(var(--destructive))' : 'hsl(var(--chart-4))'
+                    }
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -265,13 +316,128 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
         </Card>
       </FormSection>
 
-      {/* Before/After Comparison */}
-      <FormSection title="Optimization Comparison">
+      {/* Extended Range Prediction */}
+      <FormSection title="Extended Speed Range Prediction">
         <Card>
           <CardHeader>
-            <CardTitle>Before vs After Optimization</CardTitle>
+            <CardTitle>PA vs Speed (Full Range with Extrapolation)</CardTitle>
             <CardDescription>
-              Comparison of raw measurements vs model-optimized values
+              Model predictions across 25-350 mm/s showing calibrated region and extrapolations
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ChartContainer config={chartConfig} className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={extendedCurveData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+
+                  {/* Shaded calibrated region */}
+                  <ReferenceArea
+                    x1={calibratedSpeedRange[0]}
+                    x2={calibratedSpeedRange[1]}
+                    fill="hsl(var(--primary))"
+                    fillOpacity={0.1}
+                    label={{ value: 'Calibrated Region', position: 'top', fill: 'hsl(var(--primary))' }}
+                  />
+
+                  <XAxis
+                    dataKey="speed"
+                    type="number"
+                    domain={[0, 350]}
+                    label={{ value: 'Print Speed (mm/s)', position: 'insideBottom', offset: -10 }}
+                  />
+                  <YAxis
+                    label={{ value: 'PA Value', angle: -90, position: 'insideLeft' }}
+                    domain={['auto', 'auto']}
+                  />
+                  <ChartTooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className="rounded-lg border bg-background p-2 shadow-sm">
+                            <div className="grid gap-2">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-xs text-muted-foreground">Speed:</span>
+                                <span className="text-xs font-bold">{data.speed} mm/s</span>
+                              </div>
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-xs text-muted-foreground">Flow:</span>
+                                <span className="text-xs">{data.flow.toFixed(2)} mm³/s</span>
+                              </div>
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-xs text-muted-foreground">PA:</span>
+                                <span className="text-xs font-bold">{data.paValue.toFixed(4)}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge variant={data.isCalibrated ? 'default' : 'outline'} className="text-xs">
+                                  {data.isCalibrated ? 'Calibrated' : 'Extrapolated'}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="paValue"
+                    stroke="hsl(var(--chart-2))"
+                    strokeWidth={3}
+                    dot={false}
+                    name="Model Prediction"
+                  />
+
+                  {/* Overlay measured points */}
+                  <Scatter
+                    data={testData.map(d => ({ speed: d.speed, paValue: d.paValue, isOutlier: outlierSet.has(d.tileId) }))}
+                    fill="hsl(var(--chart-1))"
+                    shape={(props: any) => {
+                      const { cx, cy, payload } = props;
+                      if (payload.isOutlier) {
+                        return (
+                          <g>
+                            <circle cx={cx} cy={cy} r={6} fill="hsl(var(--destructive))" stroke="white" strokeWidth={2} />
+                          </g>
+                        );
+                      }
+                      return <circle cx={cx} cy={cy} r={5} fill="hsl(var(--chart-1))" stroke="white" strokeWidth={2} />;
+                    }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+
+            <InfoCard variant="info">
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded bg-primary/10 border-2 border-primary" />
+                  <span><strong>Calibrated Region:</strong> {calibratedSpeedRange[0]}-{calibratedSpeedRange[1]} mm/s (based on your test data)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded bg-muted border border-muted-foreground" />
+                  <span><strong>Extrapolated Region:</strong> Predictions beyond calibrated range (use with caution)</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  <strong>Note:</strong> This chart shows predictions at average acceleration ({((Math.min(...testData.map(d => d.accel)) + Math.max(...testData.map(d => d.accel))) / 2).toFixed(0)} mm/s²).
+                  Actual PA values will vary with acceleration.
+                </p>
+              </div>
+            </InfoCard>
+          </CardContent>
+        </Card>
+      </FormSection>
+
+      {/* Before/After Comparison */}
+      <FormSection title="Measured vs Model Predictions">
+        <Card>
+          <CardHeader>
+            <CardTitle>Measured vs Model-Predicted Values</CardTitle>
+            <CardDescription>
+              Comparison of actual measurements vs model predictions (not corrections)
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -292,15 +458,19 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
 
                   <Bar
                     dataKey="measured"
-                    fill="hsl(var(--chart-1))"
-                    name="Measured"
+                    name="Measured PA"
                     radius={[4, 4, 0, 0]}
+                    fill={(entry: any) =>
+                      entry.isOutlier ? 'hsl(var(--destructive) / 0.5)' : 'hsl(var(--chart-1))'
+                    }
                   />
                   <Bar
                     dataKey="optimized"
-                    fill="hsl(var(--chart-3))"
-                    name="Optimized"
+                    name="Model Prediction"
                     radius={[4, 4, 0, 0]}
+                    fill={(entry: any) =>
+                      entry.isOutlier ? 'hsl(var(--destructive))' : 'hsl(var(--chart-3))'
+                    }
                   />
                 </BarChart>
               </ResponsiveContainer>

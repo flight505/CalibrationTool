@@ -1,23 +1,29 @@
-import { CheckCircle2, AlertCircle, RotateCcw } from 'lucide-react';
+import { CheckCircle2, AlertCircle, RotateCcw, Sparkles } from 'lucide-react';
 import { FormSection, InfoCard } from '@/components/calibration/CalibrationToolLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import type { PAAnalysisResult, ModelType } from '@/lib/pa-optimizer';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import type { PAAnalysisResult, ModelType, OutlierCorrectionMode } from '@/lib/pa-optimizer';
 
 interface PAModelingPanelProps {
   analysis: PAAnalysisResult;
   selectedModelType: ModelType;
   onModelSelect: (modelType: string | null) => void;
+  outlierCorrectionMode: OutlierCorrectionMode;
+  onOutlierCorrectionChange: (mode: OutlierCorrectionMode) => void;
 }
 
 export const PAModelingPanel: React.FC<PAModelingPanelProps> = ({
   analysis,
   selectedModelType,
-  onModelSelect
+  onModelSelect,
+  outlierCorrectionMode,
+  onOutlierCorrectionChange
 }) => {
-  const { modelComparison, selectedModel } = analysis;
+  const { modelComparison, selectedModel, outliers } = analysis;
   const isAutoSelected = selectedModelType === modelComparison.autoSelectedModel;
+  const outlierCount = outliers.filter(o => o.isOutlier).length;
 
   const getModelBadge = (r2: number) => {
     if (r2 > 0.95) return <Badge className="bg-green-500">Excellent</Badge>;
@@ -112,6 +118,83 @@ export const PAModelingPanel: React.FC<PAModelingPanelProps> = ({
         </Card>
       </FormSection>
 
+      {/* Outlier Correction */}
+      {outlierCount > 0 && (
+        <FormSection title="Outlier Correction">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-yellow-500" />
+                <CardTitle>Mathematical Cleanup Options</CardTitle>
+              </div>
+              <CardDescription>
+                {outlierCount} outlier{outlierCount > 1 ? 's' : ''} detected. Choose how to handle them in the output tables.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ToggleGroup type="single" value={outlierCorrectionMode} onValueChange={(v) => v && onOutlierCorrectionChange(v as OutlierCorrectionMode)} className="grid grid-cols-1 gap-3">
+                {/* No Correction */}
+                <ToggleGroupItem
+                  value="none"
+                  className="flex-col items-start justify-start h-auto p-4 data-[state=on]:bg-primary/10 data-[state=on]:border-primary"
+                >
+                  <div className="font-medium">No Correction (Original Data)</div>
+                  <p className="text-sm text-muted-foreground mt-1 text-left">
+                    Use your measured PA values as-is. Best if you trust your measurements.
+                  </p>
+                </ToggleGroupItem>
+
+                {/* RANSAC Correction */}
+                <ToggleGroupItem
+                  value="ransac"
+                  className="flex-col items-start justify-start h-auto p-4 data-[state=on]:bg-primary/10 data-[state=on]:border-primary"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Replace Outliers Only</span>
+                    <Badge variant="outline">Recommended</Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1 text-left">
+                    Replace only the {outlierCount} outlier{outlierCount > 1 ? 's' : ''} with model predictions.
+                    Normal measurements stay unchanged. Gentle correction for test subjectivity.
+                  </p>
+                </ToggleGroupItem>
+
+                {/* Full Model Correction */}
+                <ToggleGroupItem
+                  value="model"
+                  className="flex-col items-start justify-start h-auto p-4 data-[state=on]:bg-primary/10 data-[state=on]:border-primary"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Replace All With Model</span>
+                    <Badge variant="outline">Aggressive</Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1 text-left">
+                    Replace ALL measurements with model predictions. Maximum smoothing, but loses your actual measurements.
+                  </p>
+                </ToggleGroupItem>
+              </ToggleGroup>
+
+              {outlierCorrectionMode !== 'none' && (
+                <InfoCard variant="warning">
+                  <strong>⚠️ Correction Active!</strong> Your optimized PA table will use {outlierCorrectionMode === 'ransac' ? 'corrected outlier values' : 'fully smoothed model predictions'}.
+                  Original measurements are preserved for reference. This is faster than re-running the test, but verify results with test prints.
+                </InfoCard>
+              )}
+
+              <InfoCard variant="info">
+                <strong>Why correct outliers?</strong>
+                <ul className="mt-2 space-y-1 text-sm">
+                  <li>• PA corner tests are subjective and require magnifying glass inspection</li>
+                  <li>• Visual bias from comparing tiles can affect measurements</li>
+                  <li>• Mathematical model can "smooth out" measurement inconsistencies</li>
+                  <li>• Faster than re-printing and re-measuring all tiles</li>
+                </ul>
+              </InfoCard>
+            </CardContent>
+          </Card>
+        </FormSection>
+      )}
+
       {/* Model Comparison */}
       <FormSection
         title="Model Comparison"
@@ -197,6 +280,15 @@ export const PAModelingPanel: React.FC<PAModelingPanelProps> = ({
             <li>Inverted trends → Exponential Decay (enforce physics)</li>
             <li>High variability (CV &gt; 25%) → Robust Polynomial</li>
             <li>Otherwise → Highest R² score</li>
+          </ul>
+        </InfoCard>
+
+        <InfoCard variant="warning">
+          <strong>How Outliers Are Handled:</strong>
+          <ul className="mt-2 space-y-1 text-sm">
+            <li><strong>Robust Polynomial (RANSAC):</strong> Excludes outliers during model fitting, then predicts for all points. The model is not influenced by outliers.</li>
+            <li><strong>Other Models:</strong> Use all data points including outliers. Outliers may influence the fit.</li>
+            <li><strong>Important:</strong> Model predictions do NOT "correct" or "fix" outlier measurements. They show what PA <em>should</em> be based on the mathematical model. Outliers in your measured data indicate potential measurement errors or inconsistencies in the test.</li>
           </ul>
         </InfoCard>
       </FormSection>

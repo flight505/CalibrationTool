@@ -6,6 +6,7 @@ export type GridSize = '3x3' | '4x4' | 'custom';
 export type TrendDirection = 'correct' | 'inverted' | 'inconsistent';
 export type ConfidenceLevel = 'high' | 'medium' | 'low';
 export type ModelType = 'exponential_decay' | 'power_law' | 'polynomial' | 'robust_polynomial';
+export type OutlierCorrectionMode = 'none' | 'ransac' | 'model';
 
 /**
  * Configuration for the PA test
@@ -31,6 +32,8 @@ export interface PATestResult {
   flow: number;      // Measured or calculated mm³/s
   chevron?: number;  // Optional chevron number
   paValue: number;   // Measured PA value
+  originalPAValue?: number; // Original before correction (if corrected)
+  isCorrected?: boolean;    // Whether this value was corrected
 }
 
 /**
@@ -190,6 +193,7 @@ export interface PATable {
 export interface PAAnalysisResult {
   config: PATestConfig;
   testData: PATestResult[];
+  originalTestData?: PATestResult[]; // Original data before outlier correction
   trends: TrendAnalysis;
   statistics: StatisticalAnalysis;
   outliers: OutlierResult[];
@@ -198,4 +202,5 @@ export interface PAAnalysisResult {
   selectedModel: FittedModel;
   optimizedTable: PATable;
   extendedTable: PATable;
+  correctionApplied?: OutlierCorrectionMode;
 }

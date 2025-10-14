@@ -46,19 +46,20 @@ const PressureAdvanceOptimizer: React.FC<PressureAdvanceOptimizerProps> = ({ onN
   const [testData, setTestData] = useState<PATestResult[]>(EXAMPLE_DATA);
   const [activeTab, setActiveTab] = useState('input');
   const [manualModelOverride, setManualModelOverride] = useState<string | null>(null);
+  const [outlierCorrectionMode, setOutlierCorrectionMode] = useState<'none' | 'ransac' | 'model'>('none');
 
-  // Run analysis whenever data or model selection changes
+  // Run analysis whenever data, model selection, or correction mode changes
   const analysis: PAAnalysisResult | null = useMemo(() => {
     if (testData.length < 3) return null;
 
     try {
       const preferredModel = manualModelOverride as any;
-      return analyzePA(config, testData, preferredModel);
+      return analyzePA(config, testData, preferredModel, outlierCorrectionMode);
     } catch (error) {
       console.error('Analysis error:', error);
       return null;
     }
-  }, [config, testData, manualModelOverride]);
+  }, [config, testData, manualModelOverride, outlierCorrectionMode]);
 
   const handleLoadExample = () => {
     setTestData(EXAMPLE_DATA);
@@ -198,6 +199,8 @@ const PressureAdvanceOptimizer: React.FC<PressureAdvanceOptimizerProps> = ({ onN
                   analysis={analysis}
                   selectedModelType={manualModelOverride || analysis.modelComparison.autoSelectedModel}
                   onModelSelect={setManualModelOverride}
+                  outlierCorrectionMode={outlierCorrectionMode}
+                  onOutlierCorrectionChange={setOutlierCorrectionMode}
                 />
                 <div className="flex justify-between">
                   <Button variant="outline" onClick={() => setActiveTab('analysis')}>
