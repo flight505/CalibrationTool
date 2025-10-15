@@ -17,17 +17,17 @@ interface PressureAdvanceOptimizerProps {
   onNavigate?: (tool: string, path?: string) => void;
 }
 
-// Example data for demonstration (with some outliers to show correction features)
+// Example data for demonstration (with clear outliers to show correction features)
 const EXAMPLE_DATA: PATestResult[] = [
-  { tileId: 1, speed: 120, flow: 9.75, accel: 4000, paValue: 0.028 },  // Outlier: too high
-  { tileId: 2, speed: 150, flow: 12.16, accel: 4000, paValue: 0.024 },
-  { tileId: 3, speed: 200, flow: 16.25, accel: 4000, paValue: 0.020 },
-  { tileId: 4, speed: 120, flow: 9.75, accel: 6000, paValue: 0.008 },  // Outlier: too low
-  { tileId: 5, speed: 150, flow: 12.19, accel: 6000, paValue: 0.018 },
-  { tileId: 6, speed: 200, flow: 16.28, accel: 6000, paValue: 0.016 },
-  { tileId: 7, speed: 120, flow: 9.75, accel: 10000, paValue: 0.014 },
-  { tileId: 8, speed: 150, flow: 12.19, accel: 10000, paValue: 0.012 },
-  { tileId: 9, speed: 200, flow: 16.25, accel: 10000, paValue: 0.032 },  // Outlier: too high
+  { tileId: 1, speed: 120, flow: 9.75, accel: 4000, paValue: 0.045 },  // CLEAR Outlier: way too high
+  { tileId: 2, speed: 150, flow: 12.16, accel: 4000, paValue: 0.022 },
+  { tileId: 3, speed: 200, flow: 16.25, accel: 4000, paValue: 0.018 },
+  { tileId: 4, speed: 120, flow: 9.75, accel: 6000, paValue: 0.003 },  // CLEAR Outlier: way too low
+  { tileId: 5, speed: 150, flow: 12.19, accel: 6000, paValue: 0.016 },
+  { tileId: 6, speed: 200, flow: 16.28, accel: 6000, paValue: 0.014 },
+  { tileId: 7, speed: 120, flow: 9.75, accel: 10000, paValue: 0.012 },
+  { tileId: 8, speed: 150, flow: 12.19, accel: 10000, paValue: 0.010 },
+  { tileId: 9, speed: 200, flow: 16.25, accel: 10000, paValue: 0.008 },
 ];
 
 const DEFAULT_CONFIG: PATestConfig = {

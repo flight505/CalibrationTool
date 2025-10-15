@@ -25,7 +25,10 @@ export const PAResultsPanel: React.FC<PAResultsPanelProps> = ({ analysis }) => {
 
   // Parse custom speeds/accels and regenerate extended table
   const extendedTable = useMemo(() => {
+    console.log('Regenerating extended table:', { showSpeedCustomizer, appliedSpeeds, appliedAccels });
+
     if (!showSpeedCustomizer) {
+      console.log('Using default analysis.extendedTable');
       return analysis.extendedTable;
     }
 
@@ -42,17 +45,23 @@ export const PAResultsPanel: React.FC<PAResultsPanelProps> = ({ analysis }) => {
         .filter(n => !isNaN(n) && n > 0)
         .sort((a, b) => a - b);
 
+      console.log('Parsed speeds and accels:', { speeds, accels });
+
       if (speeds.length === 0 || accels.length === 0) {
+        console.warn('No valid speeds or accels, using default');
         return analysis.extendedTable;
       }
 
-      return generateExtendedTable(analysis.testData, analysis.selectedModel, {
+      const customTable = generateExtendedTable(analysis.testData, analysis.selectedModel, {
         targetSpeeds: speeds,
         targetAccels: accels,
         extrapolationLimit: 50,
         minPA: 0.001,
         maxPA: 1.0,
       });
+
+      console.log('Generated custom table with', customTable.entries.length, 'entries');
+      return customTable;
     } catch (error) {
       console.error('Error generating custom extended table:', error);
       return analysis.extendedTable;
@@ -60,8 +69,10 @@ export const PAResultsPanel: React.FC<PAResultsPanelProps> = ({ analysis }) => {
   }, [showSpeedCustomizer, appliedSpeeds, appliedAccels, analysis]);
 
   const handleApplyCustomRange = () => {
+    console.log('Applying custom range:', { customSpeeds, customAccels });
     setAppliedSpeeds(customSpeeds);
     setAppliedAccels(customAccels);
+    setShowSpeedCustomizer(true); // Ensure customizer stays active
   };
 
   const hasUnappliedChanges = customSpeeds !== appliedSpeeds || customAccels !== appliedAccels;
