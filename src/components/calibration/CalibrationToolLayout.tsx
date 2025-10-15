@@ -96,26 +96,27 @@ interface InfoCardProps {
   className?: string;
 }
 
+// Minimal "Scale" theme - unified neutral styling without color variety
 const variantStyles = {
   default: {
     icon: <Info className="h-4 w-4" />,
-    className: 'bg-muted/50 border-muted-foreground/20',
+    className: 'bg-muted/30 border-border',
   },
   info: {
     icon: <Info className="h-4 w-4" />,
-    className: 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800',
+    className: 'bg-muted/30 border-border',
   },
   success: {
     icon: <CheckCircle2 className="h-4 w-4" />,
-    className: 'bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-800',
+    className: 'bg-muted/30 border-border',
   },
   warning: {
     icon: <AlertCircle className="h-4 w-4" />,
-    className: 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800',
+    className: 'bg-muted/30 border-border',
   },
   tip: {
     icon: <Lightbulb className="h-4 w-4" />,
-    className: 'bg-purple-50/50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800',
+    className: 'bg-muted/30 border-border',
   },
 };
 
