@@ -20,6 +20,8 @@ export const PAResultsPanel: React.FC<PAResultsPanelProps> = ({ analysis }) => {
   const [showSpeedCustomizer, setShowSpeedCustomizer] = useState(false);
   const [customSpeeds, setCustomSpeeds] = useState('40, 60, 80, 100, 120, 150, 200, 250, 300');
   const [customAccels, setCustomAccels] = useState('3000, 4000, 6000, 8000, 10000, 12000');
+  const [appliedSpeeds, setAppliedSpeeds] = useState('40, 60, 80, 100, 120, 150, 200, 250, 300');
+  const [appliedAccels, setAppliedAccels] = useState('3000, 4000, 6000, 8000, 10000, 12000');
 
   // Parse custom speeds/accels and regenerate extended table
   const extendedTable = useMemo(() => {
@@ -28,13 +30,13 @@ export const PAResultsPanel: React.FC<PAResultsPanelProps> = ({ analysis }) => {
     }
 
     try {
-      const speeds = customSpeeds
+      const speeds = appliedSpeeds
         .split(',')
         .map(s => parseInt(s.trim()))
         .filter(n => !isNaN(n) && n > 0)
         .sort((a, b) => a - b);
 
-      const accels = customAccels
+      const accels = appliedAccels
         .split(',')
         .map(s => parseInt(s.trim()))
         .filter(n => !isNaN(n) && n > 0)
@@ -55,7 +57,14 @@ export const PAResultsPanel: React.FC<PAResultsPanelProps> = ({ analysis }) => {
       console.error('Error generating custom extended table:', error);
       return analysis.extendedTable;
     }
-  }, [showSpeedCustomizer, customSpeeds, customAccels, analysis]);
+  }, [showSpeedCustomizer, appliedSpeeds, appliedAccels, analysis]);
+
+  const handleApplyCustomRange = () => {
+    setAppliedSpeeds(customSpeeds);
+    setAppliedAccels(customAccels);
+  };
+
+  const hasUnappliedChanges = customSpeeds !== appliedSpeeds || customAccels !== appliedAccels;
 
   const optimizedOutput = formatForOrcaSlicer(analysis.optimizedTable);
   const extendedOutput = formatForOrcaSlicer(extendedTable);
@@ -110,7 +119,7 @@ export const PAResultsPanel: React.FC<PAResultsPanelProps> = ({ analysis }) => {
                   <div>
                     <CardTitle>Optimized PA Table</CardTitle>
                     <CardDescription className="mt-2">
-                      {analysis.optimizedTable.entries.length} entries using {analysis.optimizedTable.modelUsed.replace('_', ' ')} model
+                      {analysis.optimizedTable.entries.length} entries from your test points with {analysis.correctionApplied !== 'none' ? 'outlier corrections' : 'original measurements'}
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
@@ -136,6 +145,13 @@ export const PAResultsPanel: React.FC<PAResultsPanelProps> = ({ analysis }) => {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                {analysis.correctionApplied !== 'none' && (
+                  <InfoCard variant="info">
+                    <strong>Correction Applied:</strong> This table shows {analysis.correctionApplied === 'ransac' ? `your original measurements with ${analysis.outliers.filter(o => o.isOutlier).length} outlier(s) replaced by model predictions` : 'all values replaced with model predictions for maximum smoothing'}.
+                    {analysis.originalTestData && ' Original measurements are preserved for reference.'}
+                  </InfoCard>
+                )}
+
                 <div className="overflow-x-auto rounded-lg border border-muted">
                   <table className="w-full text-sm">
                     <thead className="bg-muted/50">
@@ -225,9 +241,18 @@ export const PAResultsPanel: React.FC<PAResultsPanelProps> = ({ analysis }) => {
                       </p>
                     </div>
                   </div>
-                  <InfoCard variant="warning">
-                    <strong>Extrapolation Warning:</strong> Values outside your calibrated range (Flow: {analysis.extendedTable.calibratedRange.flowRange[0].toFixed(2)}-{analysis.extendedTable.calibratedRange.flowRange[1].toFixed(2)} mm³/s, Accel: {analysis.extendedTable.calibratedRange.accelRange[0]}-{analysis.extendedTable.calibratedRange.accelRange[1]} mm/s²) will be extrapolated with lower confidence.
-                  </InfoCard>
+                  <div className="flex items-center justify-between gap-4">
+                    <InfoCard variant="warning" className="flex-1">
+                      <strong>Extrapolation Warning:</strong> Values outside your calibrated range (Flow: {analysis.extendedTable.calibratedRange.flowRange[0].toFixed(2)}-{analysis.extendedTable.calibratedRange.flowRange[1].toFixed(2)} mm³/s, Accel: {analysis.extendedTable.calibratedRange.accelRange[0]}-{analysis.extendedTable.calibratedRange.accelRange[1]} mm/s²) will be extrapolated with lower confidence.
+                    </InfoCard>
+                    <Button
+                      onClick={handleApplyCustomRange}
+                      disabled={!hasUnappliedChanges}
+                      className="whitespace-nowrap"
+                    >
+                      Apply Changes
+                    </Button>
+                  </div>
                 </CardContent>
               )}
             </Card>

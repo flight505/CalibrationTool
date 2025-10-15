@@ -42,10 +42,10 @@ export const PAModelingPanel: React.FC<PAModelingPanelProps> = ({
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  {modelComparison.models.find(m => m.selected)?.name}
+                  {modelComparison.models.find(m => m.type === selectedModelType)?.name}
                 </CardTitle>
                 <CardDescription className="mt-2">
-                  {modelComparison.reason}
+                  {isAutoSelected ? modelComparison.reason : `Manually selected by user`}
                 </CardDescription>
               </div>
               {getModelBadge(selectedModel.r2)}
