@@ -3,7 +3,6 @@ import { FormSection, InfoCard } from '@/components/calibration/CalibrationToolL
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import type { PAAnalysisResult, ModelType, OutlierCorrectionMode } from '@/lib/pa-optimizer';
 
 interface PAModelingPanelProps {
@@ -118,82 +117,86 @@ export const PAModelingPanel: React.FC<PAModelingPanelProps> = ({
         </Card>
       </FormSection>
 
-      {/* Outlier Correction */}
-      {outlierCount > 0 && (
-        <FormSection title="Outlier Correction">
-          <Card>
-            <CardHeader>
+      {/* Outlier Correction - Compact Design */}
+      <FormSection title="Outlier Correction">
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-yellow-500" />
-                <CardTitle>Mathematical Cleanup Options</CardTitle>
+                <Sparkles className="h-4 w-4 text-yellow-500" />
+                <CardTitle className="text-base">Table Generation Mode</CardTitle>
               </div>
-              <CardDescription>
-                {outlierCount} outlier{outlierCount > 1 ? 's' : ''} detected. Choose how to handle them in the output tables.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <ToggleGroup type="single" value={outlierCorrectionMode} onValueChange={(v) => v && onOutlierCorrectionChange(v as OutlierCorrectionMode)} className="grid grid-cols-1 gap-3">
-                {/* No Correction */}
-                <ToggleGroupItem
-                  value="none"
-                  className="flex-col items-start justify-start h-auto p-4 data-[state=on]:bg-primary/10 data-[state=on]:border-primary"
-                >
-                  <div className="font-medium">No Correction (Original Data)</div>
-                  <p className="text-sm text-muted-foreground mt-1 text-left">
-                    Use your measured PA values as-is. Best if you trust your measurements.
-                  </p>
-                </ToggleGroupItem>
-
-                {/* RANSAC Correction */}
-                <ToggleGroupItem
-                  value="ransac"
-                  className="flex-col items-start justify-start h-auto p-4 data-[state=on]:bg-primary/10 data-[state=on]:border-primary"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">Replace Outliers Only</span>
-                    <Badge variant="outline">Recommended</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1 text-left">
-                    Replace only the {outlierCount} outlier{outlierCount > 1 ? 's' : ''} with model predictions.
-                    Normal measurements stay unchanged. Gentle correction for test subjectivity.
-                  </p>
-                </ToggleGroupItem>
-
-                {/* Full Model Correction */}
-                <ToggleGroupItem
-                  value="model"
-                  className="flex-col items-start justify-start h-auto p-4 data-[state=on]:bg-primary/10 data-[state=on]:border-primary"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">Replace All With Model</span>
-                    <Badge variant="outline">Aggressive</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1 text-left">
-                    Replace ALL measurements with model predictions. Maximum smoothing, but loses your actual measurements.
-                  </p>
-                </ToggleGroupItem>
-              </ToggleGroup>
-
-              {outlierCorrectionMode !== 'none' && (
-                <InfoCard variant="warning">
-                  <strong>⚠️ Correction Active!</strong> Your optimized PA table will use {outlierCorrectionMode === 'ransac' ? 'corrected outlier values' : 'fully smoothed model predictions'}.
-                  Original measurements are preserved for reference. This is faster than re-running the test, but verify results with test prints.
-                </InfoCard>
+              {outlierCount > 0 && (
+                <Badge variant="destructive" className="text-xs">
+                  {outlierCount} outlier{outlierCount > 1 ? 's' : ''}
+                </Badge>
               )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-2">
+              <label className="flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors hover:bg-muted/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                <input
+                  type="radio"
+                  name="outlier-mode"
+                  value="none"
+                  checked={outlierCorrectionMode === 'none'}
+                  onChange={(e) => e.target.checked && onOutlierCorrectionChange('none')}
+                  className="h-4 w-4 text-primary"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-sm">Original Data</div>
+                  <p className="text-xs text-muted-foreground">Use measured values as-is</p>
+                </div>
+              </label>
 
-              <InfoCard variant="info">
-                <strong>Why correct outliers?</strong>
-                <ul className="mt-2 space-y-1 text-sm">
-                  <li>• PA corner tests are subjective and require magnifying glass inspection</li>
-                  <li>• Visual bias from comparing tiles can affect measurements</li>
-                  <li>• Mathematical model can "smooth out" measurement inconsistencies</li>
-                  <li>• Faster than re-printing and re-measuring all tiles</li>
-                </ul>
+              <label className="flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors hover:bg-muted/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                <input
+                  type="radio"
+                  name="outlier-mode"
+                  value="ransac"
+                  checked={outlierCorrectionMode === 'ransac'}
+                  onChange={(e) => e.target.checked && onOutlierCorrectionChange('ransac')}
+                  className="h-4 w-4 text-primary"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm">Model Smoothing</span>
+                    <Badge variant="outline" className="text-xs">Recommended</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {outlierCount > 0 ? `Replace ${outlierCount} outlier${outlierCount > 1 ? 's' : ''}` : 'Smooth noise'} with predictions
+                  </p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors hover:bg-muted/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                <input
+                  type="radio"
+                  name="outlier-mode"
+                  value="model"
+                  checked={outlierCorrectionMode === 'model'}
+                  onChange={(e) => e.target.checked && onOutlierCorrectionChange('model')}
+                  className="h-4 w-4 text-primary"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm">Full Model</span>
+                    <Badge variant="outline" className="text-xs">Aggressive</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Replace all with model predictions</p>
+                </div>
+              </label>
+            </div>
+
+            {outlierCorrectionMode !== 'none' && (
+              <InfoCard variant="warning" className="text-xs py-2">
+                <strong>Active:</strong> Optimized table uses {outlierCorrectionMode === 'ransac' ? 'corrected' : 'smoothed'} values. Original data preserved.
               </InfoCard>
-            </CardContent>
-          </Card>
-        </FormSection>
-      )}
+            )}
+          </CardContent>
+        </Card>
+      </FormSection>
 
       {/* Model Comparison */}
       <FormSection title="Model Comparison">

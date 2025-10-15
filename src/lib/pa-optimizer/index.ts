@@ -98,7 +98,7 @@ export function analyzePA(
   const extendedTable = generateExtendedTable(testData, selectedModel, {
     targetSpeeds: [40, 60, 80, 100, 120, 150, 200, 250, 300],
     targetAccels: [3000, 4000, 6000, 8000, 10000, 12000],
-    extrapolationLimit: 50, // Allow 50% extrapolation
+    extrapolationLimit: 100, // Allow 100% extrapolation to show all ranges
     minPA: 0.001,
     maxPA: 1.0,
   });

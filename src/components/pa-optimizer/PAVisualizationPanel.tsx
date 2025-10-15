@@ -394,18 +394,38 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
 
                   {/* Overlay measured points */}
                   <Scatter
-                    data={testData.map(d => ({ speed: d.speed, paValue: d.paValue, isOutlier: outlierSet.has(d.tileId) }))}
+                    name="Test Points"
+                    data={testData.map(d => ({
+                      speed: d.speed,
+                      paValue: d.paValue,
+                      isOutlier: outlierSet.has(d.tileId),
+                      tileId: d.tileId
+                    }))}
                     fill="hsl(var(--chart-1))"
+                    line={false}
                     shape={(props: any) => {
                       const { cx, cy, payload } = props;
+                      if (!cx || !cy || payload.isOutlier === undefined) {
+                        return <circle cx={0} cy={0} r={0} />;
+                      }
                       if (payload.isOutlier) {
                         return (
                           <g>
-                            <circle cx={cx} cy={cy} r={6} fill="hsl(var(--destructive))" stroke="white" strokeWidth={2} />
+                            <circle cx={cx} cy={cy} r={7} fill="hsl(var(--destructive))" stroke="white" strokeWidth={2} />
+                            <text x={cx} y={cy - 12} textAnchor="middle" fontSize="10" fill="hsl(var(--destructive))">
+                              {payload.tileId}
+                            </text>
                           </g>
                         );
                       }
-                      return <circle cx={cx} cy={cy} r={5} fill="hsl(var(--chart-1))" stroke="white" strokeWidth={2} />;
+                      return (
+                        <g>
+                          <circle cx={cx} cy={cy} r={6} fill="hsl(var(--chart-1))" stroke="white" strokeWidth={2} />
+                          <text x={cx} y={cy - 10} textAnchor="middle" fontSize="9" fill="hsl(var(--foreground))">
+                            {payload.tileId}
+                          </text>
+                        </g>
+                      );
                     }}
                   />
                 </LineChart>
