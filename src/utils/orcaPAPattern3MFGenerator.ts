@@ -185,7 +185,7 @@ async function generateOrcaNative3MF(
  */
 async function generateFirmwareGcode3MF(
   patternSTL: ParsedSTL,
-  tiles: any[],
+  _tiles: any[], // Reserved for future metadata enhancement
   params: PAPatternParameters
 ) {
   const stlContent = stlToString(patternSTL);
@@ -250,7 +250,14 @@ function generatePAGcodeCommands(params: PAPatternParameters, firmware: Firmware
 /**
  * Generate instructions for the PA pattern test
  */
-function generateInstructions(params: PAPatternParameters, tiles: any[]): string {
+function generateInstructions(params: PAPatternParameters, tiles: Array<{
+  tileId: number;
+  speed: number;
+  accel: number;
+  estimatedFlow: number;
+  paStart: number;
+  paEnd: number;
+}>): string {
   const mode = params.useOrcaNativeModifiers ? 'Orca Native Modifiers' : `Firmware G-code (${params.firmware || 'marlin'})`;
 
   return `## PA Pattern 3×3 Grid - Setup Instructions

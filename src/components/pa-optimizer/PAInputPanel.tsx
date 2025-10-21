@@ -133,7 +133,7 @@ export const PAInputPanel: React.FC<PAInputPanelProps> = ({
           id="use-orca-native"
           checked={useOrcaNativeModifiers}
           onCheckedChange={setUseOrcaNativeModifiers}
-          helperText="Recommended: Modifiers visible in slicer preview. Disable for portable SD card prints."
+          description="Recommended: Modifiers visible in slicer preview. Disable for portable SD card prints."
         />
 
         {!useOrcaNativeModifiers && (
