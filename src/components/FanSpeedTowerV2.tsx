@@ -79,6 +79,7 @@ const FanSpeedTowerV2: React.FC<FanSpeedTowerProps> = ({ onNavigate }) => {
         startValue: parseInt(startFan),
         endValue: parseInt(endFan),
         stepSize: parseInt(fanStep),
+        includeModifierMesh: useNativeModifiers,
       };
 
       const project = await generateFanSpeedTower3MF(
