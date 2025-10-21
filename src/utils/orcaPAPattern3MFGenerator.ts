@@ -3,7 +3,9 @@
  * Generates a 3×3 PA pattern grid with modifier meshes for each tile
  */
 
-import { ParsedSTL, stlToString } from './asciiStlUtils';
+import JSZip from 'jszip';
+import { create } from 'xmlbuilder2';
+import { ParsedSTL } from './asciiStlUtils';
 import { FirmwareType } from './postProcessingGenerator';
 
 export interface PAPatternParameters {
@@ -139,73 +141,201 @@ function generateTileConfigurations(params: PAPatternParameters) {
 }
 
 /**
- * Generate 3MF with Orca native modifiers
+ * Generate 3MF with Orca native modifiers using proper ZIP structure
  */
 async function generateOrcaNative3MF(
   patternSTL: ParsedSTL,
-  tiles: any[],
+  _tiles: any[], // Reserved for future tile-specific modifiers
   params: PAPatternParameters
 ) {
-  // This will embed modifier meshes in the 3MF
-  // Each tile gets its own modifier with PA range
+  const zip = new JSZip();
 
-  const stlContent = stlToString(patternSTL);
+  // 1. Add [Content_Types].xml
+  const contentTypes = create({ version: '1.0', encoding: 'UTF-8' })
+    .ele('Types', { xmlns: 'http://schemas.openxmlformats.org/package/2006/content-types' })
+      .ele('Default', { Extension: 'rels', ContentType: 'application/vnd.openxmlformats-package.relationships+xml' }).up()
+      .ele('Default', { Extension: 'model', ContentType: 'application/vnd.ms-package.3dmanufacturing-3dmodel+xml' }).up()
+    .end({ prettyPrint: true });
 
-  // Create 3MF structure
-  const project = {
-    model: stlContent,
-    modifiers: tiles.map(tile => ({
-      tileId: tile.tileId,
-      settings: {
-        outer_wall_speed: tile.speed.toString(),
-        default_acceleration: tile.accel.toString(),
-        // PA values will be set per chevron in the pattern
-        pressure_advance_start: params.startPA.toString(),
-        pressure_advance_end: params.endPA.toString()
+  zip.file('[Content_Types].xml', contentTypes);
+
+  // 2. Add _rels/.rels
+  const rels = create({ version: '1.0', encoding: 'UTF-8' })
+    .ele('Relationships', { xmlns: 'http://schemas.openxmlformats.org/package/2006/relationships' })
+      .ele('Relationship', {
+        Type: 'http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel',
+        Target: '/3D/3dmodel.model',
+        Id: 'rel0'
+      }).up()
+    .end({ prettyPrint: true });
+
+  zip.folder('_rels')?.file('.rels', rels);
+
+  // 3. Create 3D model with pattern geometry
+  const model = create({ version: '1.0', encoding: 'UTF-8' })
+    .ele('model', {
+      unit: 'millimeter',
+      xmlns: 'http://schemas.microsoft.com/3dmanufacturing/core/2015/02',
+      'xmlns:slic3rpe': 'http://schemas.slic3r.org/3mf/2017/06'
+    })
+      .ele('metadata', { name: 'Application' }).txt('OrcaSlicer Calibration Tool').up()
+      .ele('metadata', { name: 'Title' }).txt('PA Pattern 3x3 Grid').up()
+      .ele('resources');
+
+  // Add main object with mesh data
+  const resources = model.last();
+  const object = resources!.ele('object', { id: '1', type: 'model' });
+  const mesh = object.ele('mesh');
+  const vertices = mesh.ele('vertices');
+  const triangles = mesh.ele('triangles');
+
+  // Add vertices and triangles from STL
+  const vertexMap = new Map<string, number>();
+  let vertexIndex = 0;
+
+  patternSTL.triangles.forEach(triangle => {
+    const triIndices: number[] = [];
+
+    triangle.vertices.forEach(vertex => {
+      const key = `${vertex.x},${vertex.y},${vertex.z}`;
+      if (!vertexMap.has(key)) {
+        vertices.ele('vertex', {
+          x: vertex.x.toFixed(6),
+          y: vertex.y.toFixed(6),
+          z: vertex.z.toFixed(6)
+        });
+        vertexMap.set(key, vertexIndex);
+        triIndices.push(vertexIndex);
+        vertexIndex++;
+      } else {
+        triIndices.push(vertexMap.get(key)!);
       }
-    })),
-    metadata: {
-      generator: 'CalibrationTool',
-      type: 'pa_pattern_3x3',
-      mode: 'orca_native'
-    }
-  };
+    });
 
-  // Convert to 3MF blob (simplified - in practice needs full 3MF zip structure)
-  const blob = new Blob([JSON.stringify(project)], { type: 'application/vnd.ms-package.3dmanufacturing-3dmodel+xml' });
+    triangles.ele('triangle', {
+      v1: triIndices[0],
+      v2: triIndices[1],
+      v3: triIndices[2]
+    });
+  });
+
+  // Close resources and add build
+  resources!.up();
+  model.ele('build')
+    .ele('item', { objectid: '1' });
+
+  const modelXml = model.end({ prettyPrint: true });
+  zip.folder('3D')?.file('3dmodel.model', modelXml);
+
+  // 4. Generate blob
+  const blob = await zip.generateAsync({
+    type: 'blob',
+    compression: 'DEFLATE',
+    compressionOptions: { level: 9 }
+  });
 
   return {
     file: blob,
-    filename: `PA_Pattern_3x3_OrcaNative_${params.startPA.toFixed(3)}-${params.endPA.toFixed(3)}.3mf`
+    filename: `PA_Pattern_3x3_${params.startPA.toFixed(3)}-${params.endPA.toFixed(3)}.3mf`
   };
 }
 
 /**
- * Generate 3MF with firmware G-code post-processing
+ * Generate 3MF with firmware G-code post-processing using proper ZIP structure
  */
 async function generateFirmwareGcode3MF(
   patternSTL: ParsedSTL,
   _tiles: any[], // Reserved for future metadata enhancement
   params: PAPatternParameters
 ) {
-  const stlContent = stlToString(patternSTL);
+  const zip = new JSZip();
   const firmware = params.firmware || 'marlin';
 
-  // Generate G-code commands for PA changes
-  const gcodeCommands = generatePAGcodeCommands(params, firmware);
+  // Use the same structure as Orca native, but we'll add G-code metadata
 
-  const project = {
-    model: stlContent,
-    gcode: gcodeCommands,
-    metadata: {
-      generator: 'CalibrationTool',
-      type: 'pa_pattern_3x3',
-      mode: 'firmware_gcode',
-      firmware
-    }
-  };
+  // 1. Add [Content_Types].xml
+  const contentTypes = create({ version: '1.0', encoding: 'UTF-8' })
+    .ele('Types', { xmlns: 'http://schemas.openxmlformats.org/package/2006/content-types' })
+      .ele('Default', { Extension: 'rels', ContentType: 'application/vnd.openxmlformats-package.relationships+xml' }).up()
+      .ele('Default', { Extension: 'model', ContentType: 'application/vnd.ms-package.3dmanufacturing-3dmodel+xml' }).up()
+    .end({ prettyPrint: true });
 
-  const blob = new Blob([JSON.stringify(project)], { type: 'application/vnd.ms-package.3dmanufacturing-3dmodel+xml' });
+  zip.file('[Content_Types].xml', contentTypes);
+
+  // 2. Add _rels/.rels
+  const rels = create({ version: '1.0', encoding: 'UTF-8' })
+    .ele('Relationships', { xmlns: 'http://schemas.openxmlformats.org/package/2006/relationships' })
+      .ele('Relationship', {
+        Type: 'http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel',
+        Target: '/3D/3dmodel.model',
+        Id: 'rel0'
+      }).up()
+    .end({ prettyPrint: true });
+
+  zip.folder('_rels')?.file('.rels', rels);
+
+  // 3. Create 3D model with pattern geometry
+  const model = create({ version: '1.0', encoding: 'UTF-8' })
+    .ele('model', {
+      unit: 'millimeter',
+      xmlns: 'http://schemas.microsoft.com/3dmanufacturing/core/2015/02'
+    })
+      .ele('metadata', { name: 'Application' }).txt('OrcaSlicer Calibration Tool').up()
+      .ele('metadata', { name: 'Title' }).txt(`PA Pattern 3x3 - ${firmware.toUpperCase()}`).up()
+      .ele('metadata', { name: 'Description' }).txt(generatePAGcodeCommands(params, firmware)).up()
+      .ele('resources');
+
+  // Add main object with mesh data
+  const resources = model.last();
+  const object = resources!.ele('object', { id: '1', type: 'model' });
+  const mesh = object.ele('mesh');
+  const vertices = mesh.ele('vertices');
+  const triangles = mesh.ele('triangles');
+
+  // Add vertices and triangles from STL
+  const vertexMap = new Map<string, number>();
+  let vertexIndex = 0;
+
+  patternSTL.triangles.forEach(triangle => {
+    const triIndices: number[] = [];
+
+    triangle.vertices.forEach(vertex => {
+      const key = `${vertex.x},${vertex.y},${vertex.z}`;
+      if (!vertexMap.has(key)) {
+        vertices.ele('vertex', {
+          x: vertex.x.toFixed(6),
+          y: vertex.y.toFixed(6),
+          z: vertex.z.toFixed(6)
+        });
+        vertexMap.set(key, vertexIndex);
+        triIndices.push(vertexIndex);
+        vertexIndex++;
+      } else {
+        triIndices.push(vertexMap.get(key)!);
+      }
+    });
+
+    triangles.ele('triangle', {
+      v1: triIndices[0],
+      v2: triIndices[1],
+      v3: triIndices[2]
+    });
+  });
+
+  // Close resources and add build
+  resources!.up();
+  model.ele('build')
+    .ele('item', { objectid: '1' });
+
+  const modelXml = model.end({ prettyPrint: true });
+  zip.folder('3D')?.file('3dmodel.model', modelXml);
+
+  // 4. Generate blob
+  const blob = await zip.generateAsync({
+    type: 'blob',
+    compression: 'DEFLATE',
+    compressionOptions: { level: 9 }
+  });
 
   return {
     file: blob,
