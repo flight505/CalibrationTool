@@ -31,6 +31,7 @@ export const PAInputPanel: React.FC<PAInputPanelProps> = ({
   const [firmware, setFirmware] = useState<FirmwareType>('marlin');
   const [generating, setGenerating] = useState(false);
   const [downloadResult, setDownloadResult] = useState<string | null>(null);
+  const [printNumbers, setPrintNumbers] = useState(true);
 
   const speeds = config.speeds;
   const accelerations = config.accelerations;
@@ -208,6 +209,14 @@ export const PAInputPanel: React.FC<PAInputPanelProps> = ({
           />
         </FieldGroup>
 
+        <SwitchField
+          label="Print Numbers"
+          id="print-numbers"
+          checked={printNumbers}
+          onCheckedChange={setPrintNumbers}
+          description="Print PA values and tile numbers on the pattern for easy identification"
+        />
+
         <FieldGroup>
           <TextField
             id="layer-height"
@@ -228,6 +237,100 @@ export const PAInputPanel: React.FC<PAInputPanelProps> = ({
             unit="mm"
           />
         </FieldGroup>
+
+        <div className="space-y-3">
+          <div>
+            <label className="text-sm font-medium mb-2 block">Speeds (mm/s)</label>
+            <p className="text-xs text-muted-foreground mb-2">Enter 3 speeds for the 3×3 grid columns</p>
+            <div className="grid grid-cols-3 gap-3">
+              <TextField
+                id="speed-1"
+                label="Speed 1"
+                type="number"
+                value={config.speeds[0]?.toString() || '120'}
+                onChange={(value) => {
+                  const newSpeeds = [...config.speeds];
+                  newSpeeds[0] = parseFloat(value) || 120;
+                  onConfigChange({ ...config, speeds: newSpeeds });
+                }}
+                step={1}
+                unit="mm/s"
+              />
+              <TextField
+                id="speed-2"
+                label="Speed 2"
+                type="number"
+                value={config.speeds[1]?.toString() || '150'}
+                onChange={(value) => {
+                  const newSpeeds = [...config.speeds];
+                  newSpeeds[1] = parseFloat(value) || 150;
+                  onConfigChange({ ...config, speeds: newSpeeds });
+                }}
+                step={1}
+                unit="mm/s"
+              />
+              <TextField
+                id="speed-3"
+                label="Speed 3"
+                type="number"
+                value={config.speeds[2]?.toString() || '200'}
+                onChange={(value) => {
+                  const newSpeeds = [...config.speeds];
+                  newSpeeds[2] = parseFloat(value) || 200;
+                  onConfigChange({ ...config, speeds: newSpeeds });
+                }}
+                step={1}
+                unit="mm/s"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">Accelerations (mm/s²)</label>
+            <p className="text-xs text-muted-foreground mb-2">Enter 3 accelerations for the 3×3 grid rows</p>
+            <div className="grid grid-cols-3 gap-3">
+              <TextField
+                id="accel-1"
+                label="Accel 1"
+                type="number"
+                value={config.accelerations[0]?.toString() || '4000'}
+                onChange={(value) => {
+                  const newAccels = [...config.accelerations];
+                  newAccels[0] = parseFloat(value) || 4000;
+                  onConfigChange({ ...config, accelerations: newAccels });
+                }}
+                step={100}
+                unit="mm/s²"
+              />
+              <TextField
+                id="accel-2"
+                label="Accel 2"
+                type="number"
+                value={config.accelerations[1]?.toString() || '6000'}
+                onChange={(value) => {
+                  const newAccels = [...config.accelerations];
+                  newAccels[1] = parseFloat(value) || 6000;
+                  onConfigChange({ ...config, accelerations: newAccels });
+                }}
+                step={100}
+                unit="mm/s²"
+              />
+              <TextField
+                id="accel-3"
+                label="Accel 3"
+                type="number"
+                value={config.accelerations[2]?.toString() || '10000'}
+                onChange={(value) => {
+                  const newAccels = [...config.accelerations];
+                  newAccels[2] = parseFloat(value) || 10000;
+                  onConfigChange({ ...config, accelerations: newAccels });
+                }}
+                step={100}
+                unit="mm/s²"
+              />
+            </div>
+          </div>
+        </div>
 
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={onLoadExample} className="gap-2">
