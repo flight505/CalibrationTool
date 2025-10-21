@@ -172,19 +172,20 @@ async function generateOrcaNative3MF(
   zip.folder('_rels')?.file('.rels', rels);
 
   // 3. Create 3D model with pattern geometry
-  const model = create({ version: '1.0', encoding: 'UTF-8' })
-    .ele('model', {
-      unit: 'millimeter',
-      xmlns: 'http://schemas.microsoft.com/3dmanufacturing/core/2015/02',
-      'xmlns:slic3rpe': 'http://schemas.slic3r.org/3mf/2017/06'
-    })
-      .ele('metadata', { name: 'Application' }).txt('OrcaSlicer Calibration Tool').up()
-      .ele('metadata', { name: 'Title' }).txt('PA Pattern 3x3 Grid').up()
-      .ele('resources');
+  const doc = create({ version: '1.0', encoding: 'UTF-8' });
+  const model = doc.ele('model', {
+    unit: 'millimeter',
+    xmlns: 'http://schemas.microsoft.com/3dmanufacturing/core/2015/02',
+    'xmlns:slic3rpe': 'http://schemas.slic3r.org/3mf/2017/06'
+  });
+
+  model.ele('metadata', { name: 'Application' }).txt('OrcaSlicer Calibration Tool');
+  model.ele('metadata', { name: 'Title' }).txt('PA Pattern 3x3 Grid');
+
+  const resources = model.ele('resources');
 
   // Add main object with mesh data
-  const resources = model.last();
-  const object = resources!.ele('object', { id: '1', type: 'model' });
+  const object = resources.ele('object', { id: '1', type: 'model' });
   const mesh = object.ele('mesh');
   const vertices = mesh.ele('vertices');
   const triangles = mesh.ele('triangles');
@@ -219,12 +220,11 @@ async function generateOrcaNative3MF(
     });
   });
 
-  // Close resources and add build
-  resources!.up();
-  model.ele('build')
-    .ele('item', { objectid: '1' });
+  // Add build section
+  const build = model.ele('build');
+  build.ele('item', { objectid: '1' });
 
-  const modelXml = model.end({ prettyPrint: true });
+  const modelXml = doc.end({ prettyPrint: true });
   zip.folder('3D')?.file('3dmodel.model', modelXml);
 
   // 4. Generate blob
@@ -275,19 +275,20 @@ async function generateFirmwareGcode3MF(
   zip.folder('_rels')?.file('.rels', rels);
 
   // 3. Create 3D model with pattern geometry
-  const model = create({ version: '1.0', encoding: 'UTF-8' })
-    .ele('model', {
-      unit: 'millimeter',
-      xmlns: 'http://schemas.microsoft.com/3dmanufacturing/core/2015/02'
-    })
-      .ele('metadata', { name: 'Application' }).txt('OrcaSlicer Calibration Tool').up()
-      .ele('metadata', { name: 'Title' }).txt(`PA Pattern 3x3 - ${firmware.toUpperCase()}`).up()
-      .ele('metadata', { name: 'Description' }).txt(generatePAGcodeCommands(params, firmware)).up()
-      .ele('resources');
+  const doc = create({ version: '1.0', encoding: 'UTF-8' });
+  const model = doc.ele('model', {
+    unit: 'millimeter',
+    xmlns: 'http://schemas.microsoft.com/3dmanufacturing/core/2015/02'
+  });
+
+  model.ele('metadata', { name: 'Application' }).txt('OrcaSlicer Calibration Tool');
+  model.ele('metadata', { name: 'Title' }).txt(`PA Pattern 3x3 - ${firmware.toUpperCase()}`);
+  model.ele('metadata', { name: 'Description' }).txt(generatePAGcodeCommands(params, firmware));
+
+  const resources = model.ele('resources');
 
   // Add main object with mesh data
-  const resources = model.last();
-  const object = resources!.ele('object', { id: '1', type: 'model' });
+  const object = resources.ele('object', { id: '1', type: 'model' });
   const mesh = object.ele('mesh');
   const vertices = mesh.ele('vertices');
   const triangles = mesh.ele('triangles');
@@ -322,12 +323,11 @@ async function generateFirmwareGcode3MF(
     });
   });
 
-  // Close resources and add build
-  resources!.up();
-  model.ele('build')
-    .ele('item', { objectid: '1' });
+  // Add build section
+  const build = model.ele('build');
+  build.ele('item', { objectid: '1' });
 
-  const modelXml = model.end({ prettyPrint: true });
+  const modelXml = doc.end({ prettyPrint: true });
   zip.folder('3D')?.file('3dmodel.model', modelXml);
 
   // 4. Generate blob
