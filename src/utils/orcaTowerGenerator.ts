@@ -303,8 +303,8 @@ Tower Parameters:
     // Check for degenerate triangles and calculate bounds
     let degenerateCount = 0;
     let invalidNormalCount = 0;
-    let boundsMin = { x: Infinity, y: Infinity, z: Infinity };
-    let boundsMax = { x: -Infinity, y: -Infinity, z: -Infinity };
+    const boundsMin = { x: Infinity, y: Infinity, z: Infinity };
+    const boundsMax = { x: -Infinity, y: -Infinity, z: -Infinity };
     
     for (const triangle of geometry.triangles) {
       // Check vertices
@@ -396,9 +396,13 @@ Tower Parameters:
  * In a real implementation, this would use a proper text-to-mesh library
  */
 export function generateTextMesh(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _text: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _position: { x: number, y: number, z: number },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _size: number = 5,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _depth: number = 0.5
 ): Triangle[] {
   // This is a placeholder - in production, use a proper text mesh generator
