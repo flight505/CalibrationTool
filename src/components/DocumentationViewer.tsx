@@ -6,6 +6,18 @@ import rehypeKatex from 'rehype-katex';
 import { cn } from '@/lib/utils';
 import 'katex/dist/katex.min.css';
 
+const normalizeMathDelimiters = (markdown: string) => {
+  const normalizedBlocks = markdown.replace(/\\\[(.+?)\\\]/gs, (_, expression: string) => {
+    const trimmed = expression.trim();
+    return `$$\n${trimmed}\n$$`;
+  });
+
+  return normalizedBlocks.replace(/\\\((.+?)\\\)/g, (_, expression: string) => {
+    const trimmed = expression.trim();
+    return `$${trimmed}$`;
+  });
+};
+
 interface DocumentationViewerProps {
   filePath: string;
   className?: string;
@@ -31,7 +43,8 @@ export const DocumentationViewer: React.FC<DocumentationViewerProps> = ({ filePa
         }
         
         const text = await response.text();
-        setContent(text);
+        const normalized = normalizeMathDelimiters(text);
+        setContent(normalized);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load documentation');
       } finally {
@@ -61,7 +74,7 @@ export const DocumentationViewer: React.FC<DocumentationViewerProps> = ({ filePa
   return (
     <div className={cn("prose", className)}>
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath]}
+        remarkPlugins={[remarkMath, remarkGfm]}
         rehypePlugins={[rehypeKatex]}
         components={{
           // Custom components for better rendering

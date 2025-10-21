@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronRight, Menu, X, BookOpen, FileText, Home, FlaskConical } from 'lucide-react';
+import { ChevronRight, Menu, X, BookOpen, FileText, Home, FlaskConical, Info } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DocumentationViewer } from './DocumentationViewer';
@@ -13,6 +13,11 @@ interface DocSection {
 }
 
 const docStructure: DocSection[] = [
+  {
+    title: 'Welcome',
+    path: '/docs/index.md',
+    icon: <Info className="w-4 h-4" />,
+  },
   {
     title: 'DOE Planner',
     icon: <FlaskConical className="w-4 h-4" />,
