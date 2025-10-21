@@ -172,30 +172,59 @@ See `/docs/TOWER_GENERATION_METHODS.md` for detailed implementation guide.
 - [x] Add 3MF export functionality - COMPLETED with full OrcaSlicer compatibility
 - [x] Create UI components for all tower generators - COMPLETED
 
-### Design of Experiments (DOE) Implementation - Next Phase
-- [ ] **Phase 1: DOE Framework**
-  - [ ] Implement Taguchi orthogonal array generators (L9, L18 arrays)
-  - [ ] Create Response Surface Methodology (RSM) experiment designer
-  - [ ] Build parameter variation system for G-code generation
-  - [ ] Develop experiment tracking and results database
+### Design of Experiments (DOE) - Current Status
 
-- [ ] **Phase 2: Test Models & Metrics**
-  - [ ] Create/import standard test models (benchy, calibration cube, overhang test, etc.)
-  - [ ] Implement quantifiable scoring rubrics for print quality metrics
-  - [ ] Build automated measurement guidance system
-  - [ ] Add photo upload and quality assessment tools
+#### ✅ Completed Infrastructure (85%)
+- **Test Parts Library** (100%)
+  - All 8 ASCII STL test parts in `ascii_stl/` folder
+  - bridge_array_v2, overhang_ramp_v2, stringing_towers_v2, thin_wall_patch_v2
+  - dimensional_cube_v2, clearance_gauge_v2, surface_plate_v2, pa_corner_v2
+  - Documentation in `ascii_stl/README.md` and `docs/DOE_PARTS_LIBRARY_SPEC.md`
 
-- [ ] **Phase 3: Experiment Execution**
-  - [ ] Generate multi-parameter G-code files for batch testing
-  - [ ] Create experiment run sheets with QR codes for tracking
-  - [ ] Implement results capture interface with guided scoring
-  - [ ] Build statistical analysis tools for factor significance
+- **Core DOE Framework** (85%)
+  - Taguchi orthogonal arrays (L9, L18, L27) - implemented in `src/utils/doe/taguchiArrays.ts`
+  - Factor library with presets - implemented in `src/utils/doe/factorLibrary.ts`
+  - Experiment planner - implemented in `src/utils/doe/experimentPlanner.ts`
+  - Statistical analysis (SNR, main effects, ANOVA) - implemented in `src/utils/doe/analysis.ts`
 
-- [ ] **Phase 4: Optimization & Recommendations**
-  - [ ] Implement Response Surface optimization algorithms
-  - [ ] Create interactive 3D response surface visualizations
-  - [ ] Generate optimal parameter recommendations
-  - [ ] Export optimized profiles to OrcaSlicer format
+- **LLM Integration** (70%)
+  - Phase 1: GPT-5 parameter range suggestions - implemented
+  - Phase 2: GPT-5 results analysis - implemented
+  - Streaming UI with progress indicators - implemented
+  - Web search for filament/printer specs - implemented
+
+- **UI Components** (60%)
+  - DOEWorkbench component (`src/components/DOEWorkbench.tsx`) - implemented
+  - Factor configuration wizard - implemented
+  - Results input grid - implemented
+  - Basic analysis display - implemented
+
+#### ⏳ Remaining Work
+
+- **Documentation** (Completed 2025-01-21)
+  - [x] Consolidated and clarified DOE docs (removed conflicting info)
+  - [x] Updated manifest.json paths to match actual file locations
+  - [x] Archived outdated docs (DOE_IMPLEMENTATION_PROGRESS.md, DOE_TEST_MODEL_INVENTORY.md)
+
+- **3MF Generation** (HIGH PRIORITY - Not Started)
+  - [ ] Implement 3MF export with test parts from ascii_stl/
+  - [ ] Add parameter variation support (explore region/height modifiers)
+  - [ ] Test generated files work in OrcaSlicer
+  - [ ] Generate CSV with parameter combinations for reference
+
+- **Persistence & Polish** (MEDIUM PRIORITY)
+  - [ ] Save/load experiment state (localStorage)
+  - [ ] Visualization charts (main effects plots, SNR charts)
+  - [ ] Export analysis reports (PDF/Markdown)
+  - [ ] Photo upload for results
+
+- **Advanced Features** (LOW PRIORITY - Future Work)
+  - [ ] Response Surface Methodology (RSM) - Box-Behnken, CCD
+  - [ ] Interactive 3D response surface plots
+  - [ ] Confirmation run workflow
+  - [ ] OrcaSlicer profile export
+
+**Note:** See `docs/LLM_ASSISTED_DOE_REVISED.md` for complete technical plan. The DOE system uses static test parts from `ascii_stl/` folder - the web tool provides LLM-assisted experiment planning, parameter selection, and statistical analysis.
 
 ### General Features
 - [ ] Add a dashboard with graph of all the calibrations such that the user can see how well their calibrations are doing

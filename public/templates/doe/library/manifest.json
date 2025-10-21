@@ -3,7 +3,7 @@
     "id": "bridge_array_v2",
     "name": "Bridge Test Array V2",
     "category": "bridging",
-    "path": "ascii_stl/bridge_array_v2.stl",
+    "path": "/ascii_stl/bridge_array_v2.stl",
     "metrics": ["successful_bridges", "max_bridge_length", "bridge_quality"],
     "recommended": {"layer_height": 0.2, "nozzle": 0.4}
   },
@@ -11,7 +11,7 @@
     "id": "overhang_ramp_v2",
     "name": "Overhang Ramp V2",
     "category": "overhang",
-    "path": "ascii_stl/overhang_ramp_v2.stl",
+    "path": "/ascii_stl/overhang_ramp_v2.stl",
     "metrics": ["max_overhang_angle", "overhang_quality"],
     "recommended": {"layer_height": 0.2, "nozzle": 0.4}
   },
@@ -19,7 +19,7 @@
     "id": "stringing_towers_v2",
     "name": "Stringing Towers V2",
     "category": "stringing",
-    "path": "ascii_stl/stringing_towers_v2.stl",
+    "path": "/ascii_stl/stringing_towers_v2.stl",
     "metrics": ["string_count"],
     "recommended": {"layer_height": 0.2, "nozzle": 0.4}
   },
@@ -27,7 +27,7 @@
     "id": "thin_wall_patch_v2",
     "name": "Thin-Wall Flow Patch V2",
     "category": "flow",
-    "path": "ascii_stl/thin_wall_patch_v2.stl",
+    "path": "/ascii_stl/thin_wall_patch_v2.stl",
     "metrics": ["measured_line_width", "wall_accuracy", "surface_score"],
     "recommended": {"layer_height": 0.2, "nozzle": 0.4}
   },
@@ -35,7 +35,7 @@
     "id": "dimensional_cube_v2",
     "name": "Dimensional Cube V2",
     "category": "dimensional",
-    "path": "ascii_stl/dimensional_cube_v2.stl",
+    "path": "/ascii_stl/dimensional_cube_v2.stl",
     "metrics": ["x_dim", "y_dim", "z_dim", "corner_quality"],
     "recommended": {"layer_height": 0.2, "nozzle": 0.4}
   },
@@ -43,7 +43,7 @@
     "id": "clearance_gauge_v2",
     "name": "Clearance Gauge V2",
     "category": "tolerance",
-    "path": "ascii_stl/clearance_gauge_v2.stl",
+    "path": "/ascii_stl/clearance_gauge_v2.stl",
     "metrics": ["smallest_free_fit"],
     "recommended": {"layer_height": 0.2, "nozzle": 0.4}
   },
@@ -51,7 +51,7 @@
     "id": "surface_plate_v2",
     "name": "Surface Quality Plate V2",
     "category": "surface",
-    "path": "ascii_stl/surface_plate_v2.stl",
+    "path": "/ascii_stl/surface_plate_v2.stl",
     "metrics": ["surface_band_score", "seam_quality"],
     "recommended": {"layer_height": 0.2, "nozzle": 0.4}
   },
@@ -59,7 +59,7 @@
     "id": "pa_corner_v2",
     "name": "PA Corner V2",
     "category": "pressure_advance",
-    "path": "ascii_stl/pa_corner_v2.stl",
+    "path": "/ascii_stl/pa_corner_v2.stl",
     "metrics": ["corner_sharpness_score", "seam_quality"],
     "recommended": {"layer_height": 0.2, "nozzle": 0.4}
   }

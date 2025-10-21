@@ -1,6 +1,29 @@
 # DOE Planner Overview
 
+⚠️ **Development Status:** The DOE feature is currently in active development. See below for what's working now and what's coming soon.
+
 Design of Experiments (DOE) in CalibrationTool provides a structured approach to tuning FDM printers. Instead of adjusting one variable at a time, DOE evaluates multiple factors simultaneously and uses statistical analysis to identify robust print settings. CalibrationTool focuses on Taguchi orthogonal arrays (L9, L18, L27) because they balance coverage and print count for 3D printing workflows.
+
+## Current Implementation Status
+
+**✅ What Works Now:**
+- LLM-assisted parameter range suggestions (GPT-5 integration)
+- L9/L18/L27 Taguchi array generation
+- Statistical analysis of results (SNR, main effects, ANOVA)
+- Results input and visualization interface
+- 8 pre-validated test parts in `ascii_stl/` folder
+
+**⏳ Coming Soon:**
+- Automated 3MF file generation with test parameters
+- Interactive charts and visualizations
+- Persistent experiment storage
+- OrcaSlicer profile export
+
+**For Technical Details:**
+Developers should consult:
+- `docs/LLM_ASSISTED_DOE_REVISED.md` (authoritative technical plan)
+- `docs/DOE_PARTS_LIBRARY_SPEC.md` (test part specifications)
+- `CLAUDE.md` TODO section (current implementation status)
 
 ## Why DOE for 3D Printing?
 

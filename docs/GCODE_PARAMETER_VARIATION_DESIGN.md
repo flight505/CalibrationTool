@@ -1,7 +1,16 @@
-# G-code Parameter Variation System Design (Reference)
+# G-code Parameter Variation System Design
 
-Status: This document is a reference for parameter mapping and post-processing.
-The active DOE process is defined in docs/LLM_ASSISTED_DOE_REVISED.md.
+⚠️ **STATUS: REFERENCE ONLY**
+
+This document describes potential G-code injection approaches and parameter mapping strategies.
+The current DOE implementation (see `LLM_ASSISTED_DOE_REVISED.md`) may use different strategies.
+This is kept for reference purposes only.
+
+**For the active DOE implementation plan, see:**
+- `docs/LLM_ASSISTED_DOE_REVISED.md` (authoritative technical plan)
+- `docs/DOE_PARTS_LIBRARY_SPEC.md` (test part specifications)
+
+---
 
 ## Overview
 
