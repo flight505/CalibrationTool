@@ -71,6 +71,7 @@ async function loadPAPatternTemplate(): Promise<ParsedSTL> {
   }
 
   const templateContent = await response.text();
+  console.log(`[PA Pattern] Loaded template: ${templateContent.length} bytes`);
 
   // Parse ASCII STL
   const lines = templateContent.split('\n');
@@ -106,6 +107,8 @@ async function loadPAPatternTemplate(): Promise<ParsedSTL> {
       currentTriangle = {};
     }
   }
+
+  console.log(`[PA Pattern] Parsed ${triangles.length} triangles from template`);
 
   return {
     name: 'PAPattern3x3',
