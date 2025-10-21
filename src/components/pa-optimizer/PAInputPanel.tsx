@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Grid3x3, Table2, Download, Trash2 } from 'lucide-react';
+import { Grid3x3, Table2, Download, Trash2, Package, FileText } from 'lucide-react';
 import { FormSection, InfoCard } from '@/components/calibration/CalibrationToolLayout';
-import { TextField, FieldGroup } from '@/components/calibration/FormFields';
+import { TextField, FieldGroup, SelectField, SwitchField } from '@/components/calibration/FormFields';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { PATestConfig, PATestResult } from '@/lib/pa-optimizer';
+import { generatePAPattern3MF } from '@/utils/orcaPAPattern3MFGenerator';
+import type { FirmwareType } from '@/utils/postProcessingGenerator';
 
 interface PAInputPanelProps {
   config: PATestConfig;
@@ -25,9 +27,19 @@ export const PAInputPanel: React.FC<PAInputPanelProps> = ({
   onClearData,
 }) => {
   const [inputMode, setInputMode] = useState<'grid' | 'table'>('grid');
+  const [useOrcaNativeModifiers, setUseOrcaNativeModifiers] = useState(true);
+  const [firmware, setFirmware] = useState<FirmwareType>('marlin');
+  const [generating, setGenerating] = useState(false);
+  const [downloadResult, setDownloadResult] = useState<string | null>(null);
 
   const speeds = config.speeds;
   const accelerations = config.accelerations;
+
+  const firmwareOptions = [
+    { value: 'marlin', label: 'Marlin (M900)' },
+    { value: 'klipper', label: 'Klipper (SET_PRESSURE_ADVANCE)' },
+    { value: 'rrf', label: 'RepRapFirmware (M572)' },
+  ];
 
   const estimateFlow = (speed: number): number => {
     return (speed * config.layerHeight * config.lineWidth) / 60;
@@ -62,8 +74,109 @@ export const PAInputPanel: React.FC<PAInputPanelProps> = ({
     return testData.find(d => d.tileId === tileId) || null;
   };
 
+  const handleDownloadPattern = async () => {
+    try {
+      setGenerating(true);
+      setDownloadResult(null);
+
+      const pattern = await generatePAPattern3MF({
+        startPA: config.startPA,
+        endPA: config.endPA,
+        paStep: config.paStep,
+        layerHeight: config.layerHeight,
+        lineWidth: config.lineWidth,
+        speeds: config.speeds,
+        accelerations: config.accelerations,
+        useOrcaNativeModifiers,
+        firmware: !useOrcaNativeModifiers ? firmware : undefined
+      });
+
+      const url = URL.createObjectURL(pattern.file);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = pattern.filename;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      setDownloadResult(`Pattern generated successfully!\n9 tiles with PA range ${config.startPA.toFixed(3)} to ${config.endPA.toFixed(3)}\nMode: ${useOrcaNativeModifiers ? 'Orca Native Modifiers' : firmware.toUpperCase() + ' G-code'}`);
+    } catch (error) {
+      console.error('Error generating PA pattern:', error);
+      setDownloadResult('Error generating pattern. Please try again.');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleDownloadSTL = async () => {
+    try {
+      const response = await fetch('/templates/pa_pattern_ascii.stl');
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'pa_pattern_3x3.stl';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading STL:', error);
+    }
+  };
+
   return (
     <div className="space-y-6">
+      <FormSection
+        title="Download Test Files"
+        description="Generate PA pattern files for printing the calibration test"
+      >
+        <SwitchField
+          label="Use Orca Native Modifiers"
+          id="use-orca-native"
+          checked={useOrcaNativeModifiers}
+          onCheckedChange={setUseOrcaNativeModifiers}
+          helperText="Recommended: Modifiers visible in slicer preview. Disable for portable SD card prints."
+        />
+
+        {!useOrcaNativeModifiers && (
+          <SelectField
+            label="Firmware Type"
+            id="firmware-type"
+            value={firmware}
+            onChange={(value) => setFirmware(value as FirmwareType)}
+            options={firmwareOptions}
+          />
+        )}
+
+        <div className="flex flex-wrap gap-3">
+          <Button
+            onClick={handleDownloadPattern}
+            disabled={generating}
+            className="gap-2"
+          >
+            {generating ? 'Generating...' : (
+              <>
+                <Package className="h-4 w-4" />
+                Download 3MF Project
+              </>
+            )}
+          </Button>
+
+          <Button
+            onClick={handleDownloadSTL}
+            variant="outline"
+            className="gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Download STL Only
+          </Button>
+        </div>
+
+        {downloadResult && (
+          <InfoCard variant={downloadResult.includes('Error') ? 'warning' : 'success'}>
+            {downloadResult}
+          </InfoCard>
+        )}
+      </FormSection>
+
       <FormSection
         title="Test Configuration"
         description="Configure your PA pattern test parameters"

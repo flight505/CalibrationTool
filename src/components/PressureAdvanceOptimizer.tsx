@@ -122,8 +122,8 @@ const PressureAdvanceOptimizer: React.FC<PressureAdvanceOptimizerProps> = ({ onN
   return (
     <CalibrationToolLayout
       icon={<Move3D className="w-6 h-6" />}
-      title="PA Optimizer"
-      description="Advanced Pressure Advance calibration with intelligent analysis and model fitting"
+      title="Pressure Advance Calibration"
+      description="Advanced PA calibration with 3×3 pattern testing, intelligent analysis, and tower generation"
       docPath="/docs/orca-slicer/calibration/adaptive-pressure-advance-calibration.md"
       onNavigate={onNavigate}
       badge={{ text: 'Advanced', variant: 'secondary' }}

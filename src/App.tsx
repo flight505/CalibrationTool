@@ -6,8 +6,6 @@ import FlowRateCalibrationV2 from '@/components/FlowRateCalibrationV2'
 import FlowRateTowerV2 from '@/components/FlowRateTowerV2'
 import FanSpeedTowerV2 from '@/components/FanSpeedTowerV2'
 import TemperatureTower from '@/components/TemperatureTower'
-import PressureAdvanceV2 from '@/components/PressureAdvanceV2'
-import PressureAdvancePattern from '@/components/PressureAdvancePattern'
 import PressureAdvanceOptimizer from '@/components/PressureAdvanceOptimizer'
 import RetractionTestV2 from '@/components/RetractionTestV2'
 import MaxVolumetricSpeedV2 from '@/components/MaxVolumetricSpeedV2'
@@ -41,10 +39,6 @@ function App() {
       case 'temperature':
         return <TemperatureTower onNavigate={handleToolChange} />
       case 'pressure':
-        return <PressureAdvanceV2 onNavigate={handleToolChange} />
-      case 'pressure-pattern':
-        return <PressureAdvancePattern onNavigate={handleToolChange} />
-      case 'pressure-optimizer':
         return <PressureAdvanceOptimizer onNavigate={handleToolChange} />
       case 'retraction':
         return <RetractionTestV2 onNavigate={handleToolChange} />
