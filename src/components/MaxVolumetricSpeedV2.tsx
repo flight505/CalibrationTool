@@ -71,7 +71,6 @@ const MaxVolumetricSpeedV2: React.FC<MaxVolumetricSpeedProps> = ({ onNavigate })
         startValue: parseInt(towerStart),
         endValue: parseInt(towerEnd),
         stepSize: parseInt(towerStep),
-        includeModifierMesh: useNativeModifiers,
       };
 
       const project = await generateMaxVolumetricTower3MF(

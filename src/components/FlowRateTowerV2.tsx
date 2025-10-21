@@ -76,7 +76,6 @@ const FlowRateTowerV2: React.FC<FlowRateTowerProps> = ({ onNavigate }) => {
         startValue: parseFloat(startFlow),
         endValue: parseFloat(endFlow),
         stepSize: parseFloat(flowStep),
-        includeModifierMesh: useNativeModifiers,
       };
 
       const project = await generateFlowRateTower3MF(

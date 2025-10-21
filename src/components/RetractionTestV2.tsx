@@ -120,8 +120,7 @@ const RetractionTestV2: React.FC<RetractionTestProps> = ({ onNavigate }) => {
           endValue: parseFloat(stlEndRetraction),
           stepSize: parseFloat(stlRetractionStep),
           extruderType: extruderTypeMap[extruderType] || 'direct_drive',
-          retractionSpeed: 30,
-          includeModifierMesh: useNativeModifiers,
+          retractionSpeed: 30
         },
         firmware,
         !useNativeModifiers
