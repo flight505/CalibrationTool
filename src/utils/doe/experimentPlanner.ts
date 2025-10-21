@@ -16,6 +16,7 @@ import { TEST_MODELS } from './testModels';
 import { Orca3MFExporter } from '../orca3mfExporter';
 import { parseAsciiStl, ParsedSTL, stlToString } from '../asciiStlUtils';
 import { GeneratedTower } from '../orcaTowerGenerator';
+import JSZip from 'jszip';
 
 // Map factors to OrcaSlicer settings
 const FACTOR_TO_ORCA_SETTINGS: Record<string, string> = {
@@ -339,16 +340,45 @@ export class ExperimentPlanner {
   }
 
   /**
-   * Create a batch download for all generated files
+   * Create a batch download ZIP file containing all 3MF files and experiment data
    */
   async createBatchDownload(): Promise<{ blob: Blob; filename: string }> {
-    // This would ideally create a ZIP file with all 3MF files
-    // For now, we'll return a CSV with the experiment design
-    const csv = this.exportToCSV();
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const filename = `${this.experiment.name}_design.csv`;
+    const zip = new JSZip();
 
-    return { blob, filename };
+    // Add experiment summary as README
+    const readme = this.getSummary();
+    zip.file('README.txt', readme);
+
+    // Add CSV with experiment design
+    const csv = this.exportToCSV();
+    zip.file(`${this.experiment.arrayType}_experiment_design.csv`, csv);
+
+    // Add all 3MF files
+    for (const run of this.experiment.runs) {
+      if (run.testFile?.downloadUrl) {
+        try {
+          // Fetch the blob from the URL
+          const response = await fetch(run.testFile.downloadUrl);
+          const blob = await response.blob();
+
+          // Add to ZIP
+          zip.file(run.testFile.filename, blob);
+        } catch (error) {
+          console.error(`Failed to add ${run.testFile.filename} to ZIP:`, error);
+        }
+      }
+    }
+
+    // Generate the ZIP file
+    const zipBlob = await zip.generateAsync({
+      type: 'blob',
+      compression: 'DEFLATE',
+      compressionOptions: { level: 6 }
+    });
+
+    const filename = `${this.experiment.name.replace(/\s+/g, '_')}_${this.experiment.arrayType}_Complete.zip`;
+
+    return { blob: zipBlob, filename };
   }
 }
 

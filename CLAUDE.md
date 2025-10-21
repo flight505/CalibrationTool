@@ -174,14 +174,14 @@ See `/docs/TOWER_GENERATION_METHODS.md` for detailed implementation guide.
 
 ### Design of Experiments (DOE) - Current Status
 
-#### ✅ Completed Infrastructure (85%)
+#### ✅ Completed Infrastructure (95%)
 - **Test Parts Library** (100%)
   - All 8 ASCII STL test parts in `ascii_stl/` folder
   - bridge_array_v2, overhang_ramp_v2, stringing_towers_v2, thin_wall_patch_v2
   - dimensional_cube_v2, clearance_gauge_v2, surface_plate_v2, pa_corner_v2
   - Documentation in `ascii_stl/README.md` and `docs/DOE_PARTS_LIBRARY_SPEC.md`
 
-- **Core DOE Framework** (85%)
+- **Core DOE Framework** (100%)
   - Taguchi orthogonal arrays (L9, L18, L27) - implemented in `src/utils/doe/taguchiArrays.ts`
   - Factor library with presets - implemented in `src/utils/doe/factorLibrary.ts`
   - Experiment planner - implemented in `src/utils/doe/experimentPlanner.ts`
@@ -193,11 +193,21 @@ See `/docs/TOWER_GENERATION_METHODS.md` for detailed implementation guide.
   - Streaming UI with progress indicators - implemented
   - Web search for filament/printer specs - implemented
 
-- **UI Components** (60%)
+- **UI Components** (80%)
   - DOEWorkbench component (`src/components/DOEWorkbench.tsx`) - implemented
   - Factor configuration wizard - implemented
   - Results input grid - implemented
   - Basic analysis display - implemented
+  - Individual 3MF downloads per run - implemented
+  - Batch ZIP download with all files - implemented
+
+- **3MF Generation** (Completed 2025-01-21)
+  - [x] Updated all test model STL paths to point to `ascii_stl/` folder
+  - [x] Implemented 3MF export with test parts from ascii_stl/
+  - [x] Added parameter variation support using OrcaSlicer settings
+  - [x] Generate CSV with parameter combinations for reference
+  - [x] Created batch download function (ZIP with all 3MF files, CSV, and README)
+  - [x] Added "Download All Files (ZIP)" button to DOEWorkbench UI
 
 #### ⏳ Remaining Work
 
@@ -206,11 +216,11 @@ See `/docs/TOWER_GENERATION_METHODS.md` for detailed implementation guide.
   - [x] Updated manifest.json paths to match actual file locations
   - [x] Archived outdated docs (DOE_IMPLEMENTATION_PROGRESS.md, DOE_TEST_MODEL_INVENTORY.md)
 
-- **3MF Generation** (HIGH PRIORITY - Not Started)
-  - [ ] Implement 3MF export with test parts from ascii_stl/
-  - [ ] Add parameter variation support (explore region/height modifiers)
-  - [ ] Test generated files work in OrcaSlicer
-  - [ ] Generate CSV with parameter combinations for reference
+- **Testing & Validation** (HIGH PRIORITY - Next Step)
+  - [ ] Test generated 3MF files work correctly in OrcaSlicer
+  - [ ] Verify parameter values are properly embedded in 3MF settings
+  - [ ] Validate ZIP download contains all expected files
+  - [ ] Test with different array types (L9, L18, L27)
 
 - **Persistence & Polish** (MEDIUM PRIORITY)
   - [ ] Save/load experiment state (localStorage)

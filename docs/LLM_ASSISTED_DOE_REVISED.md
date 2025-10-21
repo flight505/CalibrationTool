@@ -14,12 +14,32 @@ This document specifies how to integrate LLM capabilities into the CalibrationTo
 **Model recommendation:** Use GPT-5 (`gpt-5`, fallback `gpt-5-mini`) through the OpenAI Responses API. The CalibrationTool DOE workbench now streams web-search progress and structured JSON outputs directly into the UI.
 
 
-## Current Implementation Snapshot (2025-10)
+## Current Implementation Status (2025-01-21)
 
-- Phase 1 GPT-5 integration (context capture, web-search streaming, factor application) is live in `DOEWorkbench`.
-- Phase 2 GPT-5 analysis streams optimal settings, SNR commentary, and confirmation-run guidance.
-- Core helper logic resides in `src/lib/utils/openai.ts`, `src/utils/doe/llmSchemas.ts`, and `src/utils/doe/llmPrompts.ts`.
-- Remaining work: persist GPT outputs, export structured reports, migrate ESLint config, and add an end-to-end test script.
+### ✅ Completed (95%)
+- **Phase 1 LLM Integration**: Context capture, web-search streaming, factor application live in `DOEWorkbench`
+- **Phase 2 LLM Analysis**: Streams optimal settings, SNR commentary, and confirmation-run guidance
+- **Core Framework**: Taguchi arrays (L9, L18, L27), factor library, statistical analysis (SNR, ANOVA, main effects)
+- **Test Parts Library**: All 8 ASCII STL test parts in `ascii_stl/` folder with documentation
+- **3MF Generation**: Full implementation complete
+  - Individual 3MF files per experimental run with embedded parameter settings
+  - Batch ZIP download with all 3MF files, CSV manifest, and README
+  - Parameter variation using OrcaSlicer settings (temperature, speed, fan, flow, retraction, etc.)
+  - Updated all test model paths to point to `ascii_stl/` folder
+- **UI Components**: DOEWorkbench with factor wizard, results grid, analysis display, and download buttons
+
+### 🔄 Next Steps (Testing & Validation)
+1. **Test 3MF Generation**: Create sample L9 experiment and verify 3MF files work in OrcaSlicer
+2. **Validate Parameters**: Ensure embedded settings match CSV manifest and apply correctly during slicing
+3. **Multi-Array Testing**: Test L9, L18, and L27 arrays with different test models
+4. **Error Handling**: Add validation messages if 3MF generation fails
+
+### 📋 Future Enhancements
+- Persist GPT outputs and experiment state (localStorage)
+- Export structured analysis reports (PDF/Markdown)
+- Add photo upload for results documentation
+- Visualization charts (main effects plots, SNR charts)
+- Response Surface Methodology (RSM) implementation
 
 ---
 

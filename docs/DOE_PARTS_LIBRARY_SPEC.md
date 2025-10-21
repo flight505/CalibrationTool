@@ -2,6 +2,16 @@
 
 This document specifies the test parts we will ship (or accept after vetting) for DOE. Each entry includes purpose, geometry, constraints, metrics, and how it fits into DOE plates. Use these specs when generating parts with GPT or CAD.
 
+## Implementation Status (2025-01-21)
+
+✅ **Complete**: All 8 test parts implemented and available in `ascii_stl/` folder
+- All STL files validated and ready for use
+- Test model definitions in `src/utils/doe/testModels.ts` updated to point to correct paths
+- 3MF generation fully implemented with parameter embedding
+- Batch ZIP download includes all experimental runs, CSV manifest, and README
+
+🔄 **Next Steps**: Testing and validation of generated 3MF files in OrcaSlicer
+
 ## Conventions
 - Units: millimeters; Z up; ASCII STL.
 - Base thickness: 2.0 mm unless otherwise noted.

@@ -533,6 +533,31 @@ const DOEWorkbench: React.FC = () => {
     link.click();
   };
 
+  const handleBatchDownload = async () => {
+    if (!plannerRef.current) return;
+
+    try {
+      setIsGenerating(true);
+      setGenerationError(null);
+
+      const { blob, filename } = await plannerRef.current.createBatchDownload();
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+
+      // Clean up URL after download
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+    } catch (error) {
+      console.error('Failed to create batch download:', error);
+      setGenerationError(error instanceof Error ? error.message : 'Failed to create batch download');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const handleCopyCsv = async () => {
     if (!csvPreview || typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
       return;
@@ -1148,6 +1173,21 @@ const DOEWorkbench: React.FC = () => {
                 </tbody>
               </table>
             </ScrollArea>
+
+            {generatedFiles.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-2">
+                <Button
+                  onClick={handleBatchDownload}
+                  disabled={isGenerating}
+                  variant="default"
+                >
+                  {isGenerating ? 'Creating ZIP...' : 'Download All Files (ZIP)'}
+                </Button>
+                <p className="text-sm text-muted-foreground self-center">
+                  Download all {generatedFiles.length} 3MF files, CSV design, and README in one ZIP archive
+                </p>
+              </div>
+            )}
 
             {testModel.metrics.length > 0 && (
               <div className="flex flex-wrap items-center gap-4">

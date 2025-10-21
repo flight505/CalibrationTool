@@ -11,7 +11,7 @@ export const CALIBRATION_CUBE: TestModel = {
   id: 'calibration_cube',
   name: '20mm Calibration Cube',
   description: 'Tests dimensional accuracy in X, Y, and Z axes',
-  stlFile: '/templates/doe/calibration_cube.stl',
+  stlFile: '/ascii_stl/dimensional_cube_v2.stl',
   printTime: 15, // minutes
   metrics: [
     {
@@ -71,7 +71,7 @@ export const BRIDGE_ARRAY: TestModel = {
   id: 'bridge_array',
   name: 'Bridge Test Array',
   description: 'Tests bridging capability at different spans',
-  stlFile: '/templates/doe/bridge_array.stl',
+  stlFile: '/ascii_stl/bridge_array_v2.stl',
   printTime: 20,
   metrics: [
     {
@@ -117,7 +117,7 @@ export const OVERHANG_TEST: TestModel = {
   id: 'overhang_test',
   name: 'Progressive Overhang Test',
   description: 'Tests overhang capability at increasing angles',
-  stlFile: '/templates/doe/overhang_test.stl',
+  stlFile: '/ascii_stl/overhang_ramp_v2.stl',
   printTime: 25,
   metrics: [
     {
@@ -154,7 +154,7 @@ export const CLEARANCE_TEST: TestModel = {
   id: 'clearance_test',
   name: 'Clearance Tolerance Test',
   description: 'Tests minimum functional clearance for holes and pins',
-  stlFile: '/templates/doe/clearance_test.stl',
+  stlFile: '/ascii_stl/clearance_gauge_v2.stl',
   printTime: 15,
   metrics: [
     {
@@ -185,7 +185,7 @@ export const SURFACE_PATCH: TestModel = {
   id: 'surface_patch',
   name: 'Surface Quality Test Patch',
   description: 'Tests top surface finish quality',
-  stlFile: '/templates/doe/surface_patch.stl',
+  stlFile: '/ascii_stl/surface_plate_v2.stl',
   printTime: 10,
   metrics: [
     {
