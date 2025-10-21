@@ -15,6 +15,8 @@ export interface ModelPart {
   name: string;
   /** Transformation matrix (4x4 flattened to 16 values, space-separated) */
   matrix: string;
+  /** Object ID in 3dmodel.model that this part references */
+  objectId?: number;
   /** Settings to apply (only for modifier_part) */
   settings?: Record<string, string | number>;
 }
@@ -95,6 +97,11 @@ function generatePart(part: ModelPart): string {
 
   // Add transformation matrix
   xml += generateMetadata('matrix', part.matrix);
+
+  // Add object_id reference to link part to mesh object (CRITICAL for OrcaSlicer)
+  if (part.objectId !== undefined) {
+    xml += generateMetadata('object_id', part.objectId);
+  }
 
   // Add settings (only for modifiers)
   if (part.settings) {
@@ -229,36 +236,40 @@ export function generateModelSettingsXML(config: ModelSettingsConfig): string {
  *
  * @param towerName - Name of the calibration tower
  * @param modifierSettings - Array of settings for each modifier (one per section)
+ * @param compositeObjectId - ID of the composite object in 3dmodel.model (optional, defaults to 1)
  * @returns Complete ModelSettingsConfig ready for XML generation
  */
 export function createTowerModelSettings(
   towerName: string,
-  modifierSettings: Array<{ name: string; settings: Record<string, string | number> }>
+  modifierSettings: Array<{ name: string; settings: Record<string, string | number> }>,
+  compositeObjectId: number = 1
 ): ModelSettingsConfig {
   const parts: ModelPart[] = [];
 
-  // Add main tower as normal part (always ID 1)
+  // Add main tower as normal part (part ID 1, references object ID 1)
   parts.push({
     id: 1,
     subtype: 'normal_part',
     name: towerName,
     matrix: '1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1', // Identity matrix
+    objectId: 1, // Main tower mesh is always object ID 1
   });
 
-  // Add modifier parts (IDs starting from 2)
+  // Add modifier parts (part IDs starting from 2, object IDs starting from 2)
   modifierSettings.forEach((modifier, index) => {
     parts.push({
       id: index + 2,
       subtype: 'modifier_part',
       name: modifier.name,
       matrix: '1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1', // Identity matrix
+      objectId: index + 2, // Modifier mesh objects start at ID 2
       settings: modifier.settings,
     });
   });
 
   return {
     objects: [{
-      id: 1,
+      id: compositeObjectId,
       name: towerName,
       parts,
     }],

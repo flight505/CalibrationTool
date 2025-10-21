@@ -9,7 +9,7 @@ import { ParsedSTL, Triangle, Vertex } from './asciiStlUtils';
 import { GeneratedTower, OrcaSlicerSettings } from './orcaTowerGenerator';
 import { PostProcessingGenerator, PostProcessingOptions } from './postProcessingGenerator';
 import type { FirmwareType } from './firmwareTypes';
-import { mapModifierSettingsRecord, mapOrcaSettingsForFirmware } from './orcaSettingMapper';
+import { mapOrcaSettingsForFirmware } from './orcaSettingMapper';
 import { generateModelSettingsXML, createTowerModelSettings } from './orcaModelSettings';
 
 export interface ThreeMFExportOptions {
@@ -67,7 +67,7 @@ export class Orca3MFExporter {
       ? mapOrcaSettingsForFirmware(options.orcaSettings, firmware)
       : undefined;
 
-    await this.add3DModel(mainSTL, tower, mappedOrcaSettings, firmware);
+    await this.add3DModel(mainSTL, tower, mappedOrcaSettings);
 
     // Add OrcaSlicer-specific config
     if (mappedOrcaSettings) {
@@ -158,8 +158,7 @@ export class Orca3MFExporter {
   private async add3DModel(
     mainSTL: ParsedSTL,
     tower: GeneratedTower,
-    settings: OrcaSlicerSettings | undefined,
-    firmware: FirmwareType
+    settings: OrcaSlicerSettings | undefined
   ) {
     const model = create({ encoding: 'UTF-8' })
       .ele('model', {
@@ -208,42 +207,26 @@ export class Orca3MFExporter {
     });
 
     // Add modifier meshes if present
+    let compositeObjectId = 1; // Main tower ID if no modifiers
+
     if (tower.modifierMeshes && settings) {
+      const modifierObjectIds: number[] = [];
+
       for (let i = 0; i < tower.modifierMeshes.length; i++) {
         const modifierBlob = tower.modifierMeshes[i];
         const modifierContent = await modifierBlob.text();
         const modifierSTL = this.parseSTLBlob(modifierContent);
-        
+
+        const modifierId = this.objectId++;
+        modifierObjectIds.push(modifierId);
+
         const modObject = resources.ele('object', {
-          id: this.objectId++,
+          id: modifierId,
           type: 'model',
           name: `Modifier_Section_${i}`
         });
 
-        // Add modifier settings as metadata
-        if (settings.modifierSettings[i]) {
-          const component = modObject.ele('components');
-          component.ele('component', {
-            objectid: this.objectId - 1,
-            'slic3rpe:modifier': '1'
-          });
-          
-          // Add settings for this modifier
-          const modSettings = mapModifierSettingsRecord(
-            settings.modifierSettings[i].settings,
-            firmware
-          );
-          Object.entries(modSettings).forEach(([key, value]) => {
-            if (value !== undefined) {
-              component.ele('slic3rpe:setting', {
-                key: key,
-                value: value.toString()
-              });
-            }
-          });
-        }
-
-        // Add modifier mesh data
+        // Add modifier mesh data (just the geometry, settings go in model_settings.config)
         const modMesh = modObject.ele('mesh');
         const modVertices = modMesh.ele('vertices');
         const modTriangles = modMesh.ele('triangles');
@@ -269,11 +252,38 @@ export class Orca3MFExporter {
           modTriangles.ele('triangle', { v1: indices[0], v2: indices[1], v3: indices[2] });
         });
       }
+
+      // Create composite object that includes main tower + all modifiers
+      compositeObjectId = this.objectId++;
+      const compositeObject = resources.ele('object', {
+        id: compositeObjectId,
+        type: 'model',
+        name: mainSTL.name || 'CalibrationTower'
+      });
+
+      const components = compositeObject.ele('components');
+
+      // Add main tower as first component
+      components.ele('component', {
+        objectid: '1', // Main tower ID
+        transform: '1 0 0 0 1 0 0 0 1 0 0 0' // Identity transform
+      });
+
+      // Add all modifiers as components
+      modifierObjectIds.forEach(modId => {
+        components.ele('component', {
+          objectid: modId.toString(),
+          transform: '1 0 0 0 1 0 0 0 1 0 0 0' // Identity transform
+        });
+      });
+
+      // Store composite ID for model_settings.config
+      (tower as any).compositeObjectId = compositeObjectId;
     }
 
-    // Add item to build
-    build.ele('item', { 
-      objectid: '1',
+    // Add item to build (composite object if modifiers present, otherwise main tower)
+    build.ele('item', {
+      objectid: compositeObjectId.toString(),
       transform: '1 0 0 0 1 0 0 0 1 0 0 0'
     });
 
@@ -358,8 +368,11 @@ export class Orca3MFExporter {
       settings: modSettings.settings,
     }));
 
-    // Create the model settings config
-    const config = createTowerModelSettings(towerName, modifierSettings);
+    // Get composite object ID from tower (set in add3DModel)
+    const compositeObjectId = (tower as any).compositeObjectId || 1;
+
+    // Create the model settings config with composite object ID
+    const config = createTowerModelSettings(towerName, modifierSettings, compositeObjectId);
 
     // Generate XML
     const xml = generateModelSettingsXML(config);
