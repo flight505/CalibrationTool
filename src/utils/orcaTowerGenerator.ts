@@ -225,6 +225,15 @@ export abstract class TowerGeneratorBase {
   protected abstract generateOrcaSettings(): OrcaSlicerSettings;
 
   /**
+   * Get modifier settings for a specific tower section
+   * Each tower type implements this to return appropriate OrcaSlicer settings
+   *
+   * @param section - The tower section to generate settings for
+   * @returns Record of OrcaSlicer setting keys and values
+   */
+  protected abstract getModifierSettings(section: TowerSection): Record<string, string | number>;
+
+  /**
    * Generate usage instructions
    */
   protected generateInstructions(): string {

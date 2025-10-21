@@ -167,6 +167,20 @@ export class MaxVolumetricTowerGenerator extends TowerGeneratorBase {
     return settings;
   }
 
+  protected getModifierSettings(section: typeof this.sections[0]): Record<string, string | number> {
+    // Convert volumetric speed (mm³/s) to linear speed (mm/s)
+    const { layerHeight, lineWidth } = this.volumetricParams;
+    const volumetricSpeed = section.value;
+    const linearSpeed = volumetricSpeed / (layerHeight! * lineWidth!);
+
+    // OrcaSlicer setting keys for print speeds
+    return {
+      'outer_wall_speed': Math.round(linearSpeed),
+      'inner_wall_speed': Math.round(linearSpeed),
+      'sparse_infill_speed': Math.round(linearSpeed),
+    };
+  }
+
   protected generateInstructions(): string {
     const { startValue, endValue, stepSize, layerHeight, lineWidth, nozzleSize } = this.volumetricParams;
     

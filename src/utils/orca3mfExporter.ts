@@ -10,6 +10,7 @@ import { GeneratedTower, OrcaSlicerSettings } from './orcaTowerGenerator';
 import { PostProcessingGenerator, PostProcessingOptions } from './postProcessingGenerator';
 import type { FirmwareType } from './firmwareTypes';
 import { mapModifierSettingsRecord, mapOrcaSettingsForFirmware } from './orcaSettingMapper';
+import { generateModelSettingsXML, createTowerModelSettings } from './orcaModelSettings';
 
 export interface ThreeMFExportOptions {
   projectName: string;
@@ -72,9 +73,13 @@ export class Orca3MFExporter {
     if (mappedOrcaSettings) {
       this.addOrcaSlicerConfig(mappedOrcaSettings, towerType);
     }
-    
-    // Add post-processing G-code if enabled
-    if (includePostProcessing && tower.orcaSettings) {
+
+    // Choose between Orca native modifiers OR G-code post-processing
+    if (tower.modifierMeshes && tower.modifierMeshes.length > 0 && !includePostProcessing) {
+      // Use Orca native modifiers (requires model_settings.config)
+      this.addModelSettings(tower, projectName);
+    } else if (includePostProcessing && tower.orcaSettings) {
+      // Use G-code post-processing (firmware-specific)
       this.addPostProcessing(tower, firmware, options.postProcessingOptions);
     }
     
@@ -335,6 +340,32 @@ export class Orca3MFExporter {
         JSON.stringify(modifierSettings, null, 2)
       );
     }
+  }
+
+  /**
+   * Add model_settings.config for Orca native modifiers
+   * This is the critical file that tells OrcaSlicer which objects are modifiers
+   */
+  private addModelSettings(tower: GeneratedTower, towerName: string) {
+    if (!tower.orcaSettings || !tower.orcaSettings.modifierSettings) {
+      console.warn('No modifier settings found in tower, skipping model_settings.config');
+      return;
+    }
+
+    // Build modifier settings array from tower sections
+    const modifierSettings = tower.orcaSettings.modifierSettings.map((modSettings, index) => ({
+      name: `Section_${index + 1}`,
+      settings: modSettings.settings,
+    }));
+
+    // Create the model settings config
+    const config = createTowerModelSettings(towerName, modifierSettings);
+
+    // Generate XML
+    const xml = generateModelSettingsXML(config);
+
+    // Add to 3MF archive
+    this.zip.file('Metadata/model_settings.config', xml);
   }
 
   /**

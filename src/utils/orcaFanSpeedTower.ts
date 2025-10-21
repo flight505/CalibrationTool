@@ -145,6 +145,14 @@ export class FanSpeedTowerGenerator extends TowerGeneratorBase {
     return settings;
   }
 
+  protected getModifierSettings(section: typeof this.sections[0]): Record<string, string | number> {
+    // OrcaSlicer setting keys for fan speed (percentage)
+    return {
+      'fan_max_speed': section.value.toString() + '%',
+      'fan_min_speed': section.value.toString() + '%',
+    };
+  }
+
   protected generateInstructions(): string {
     const { startValue, endValue, stepSize } = this.params;
     

@@ -188,6 +188,14 @@ export class RetractionTowerGenerator extends TowerGeneratorBase {
     };
   }
 
+  protected getModifierSettings(section: typeof this.sections[0]): Record<string, string | number> {
+    // OrcaSlicer setting keys for retraction
+    return {
+      'retraction_length': section.value,
+      'retraction_speed': this.retractionParams.retractionSpeed || 30,
+    };
+  }
+
   protected generateInstructions(): string {
     const { extruderType, startValue, endValue, stepSize, retractionSpeed, testSpeed } = this.retractionParams;
     

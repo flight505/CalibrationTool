@@ -153,6 +153,13 @@ export class PressureAdvanceTowerGenerator extends TowerGeneratorBase {
     return settings;
   }
 
+  protected getModifierSettings(section: typeof this.sections[0]): Record<string, string | number> {
+    // OrcaSlicer setting key for pressure advance
+    return {
+      'pressure_advance': section.value,
+    };
+  }
+
   protected generateInstructions(): string {
     const baseInstructions = super.generateInstructions();
     

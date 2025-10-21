@@ -156,6 +156,16 @@ export class FlowRateTowerGenerator extends TowerGeneratorBase {
     return settings;
   }
 
+  protected getModifierSettings(section: typeof this.sections[0]): Record<string, string | number> {
+    // OrcaSlicer setting keys for flow ratio
+    return {
+      'flow_ratio': section.value,
+      'bridge_flow_ratio': section.value,
+      'top_surface_flow_ratio': section.value,
+      'internal_solid_infill_flow_ratio': section.value,
+    };
+  }
+
   protected generateInstructions(): string {
     const { startValue, endValue, stepSize, wallThickness, nozzleSize, useSpiral } = this.flowParams;
     

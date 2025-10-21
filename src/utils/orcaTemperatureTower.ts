@@ -137,6 +137,13 @@ export class TemperatureTowerGenerator extends TowerGeneratorBase {
     };
   }
 
+  protected getModifierSettings(section: typeof this.sections[0]): Record<string, string | number> {
+    // OrcaSlicer setting key for nozzle temperature
+    return {
+      'nozzle_temperature': section.value.toString(),
+    };
+  }
+
   protected generateInstructions(): string {
     const { material, startValue, endValue, stepSize } = this.params;
     
