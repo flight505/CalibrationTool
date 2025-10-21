@@ -250,11 +250,13 @@ export const PAInputPanel: React.FC<PAInputPanelProps> = ({
                 value={config.speeds[0]?.toString() || '120'}
                 onChange={(value) => {
                   const newSpeeds = [...config.speeds];
-                  newSpeeds[0] = parseFloat(value) || 120;
+                  const numValue = value === '' ? 0 : parseFloat(value);
+                  newSpeeds[0] = isNaN(numValue) ? config.speeds[0] : numValue;
                   onConfigChange({ ...config, speeds: newSpeeds });
                 }}
                 step={1}
                 unit="mm/s"
+                min={0}
               />
               <TextField
                 id="speed-2"
@@ -263,11 +265,13 @@ export const PAInputPanel: React.FC<PAInputPanelProps> = ({
                 value={config.speeds[1]?.toString() || '150'}
                 onChange={(value) => {
                   const newSpeeds = [...config.speeds];
-                  newSpeeds[1] = parseFloat(value) || 150;
+                  const numValue = value === '' ? 0 : parseFloat(value);
+                  newSpeeds[1] = isNaN(numValue) ? config.speeds[1] : numValue;
                   onConfigChange({ ...config, speeds: newSpeeds });
                 }}
                 step={1}
                 unit="mm/s"
+                min={0}
               />
               <TextField
                 id="speed-3"
@@ -276,11 +280,13 @@ export const PAInputPanel: React.FC<PAInputPanelProps> = ({
                 value={config.speeds[2]?.toString() || '200'}
                 onChange={(value) => {
                   const newSpeeds = [...config.speeds];
-                  newSpeeds[2] = parseFloat(value) || 200;
+                  const numValue = value === '' ? 0 : parseFloat(value);
+                  newSpeeds[2] = isNaN(numValue) ? config.speeds[2] : numValue;
                   onConfigChange({ ...config, speeds: newSpeeds });
                 }}
                 step={1}
                 unit="mm/s"
+                min={0}
               />
             </div>
           </div>
@@ -296,11 +302,13 @@ export const PAInputPanel: React.FC<PAInputPanelProps> = ({
                 value={config.accelerations[0]?.toString() || '4000'}
                 onChange={(value) => {
                   const newAccels = [...config.accelerations];
-                  newAccels[0] = parseFloat(value) || 4000;
+                  const numValue = value === '' ? 0 : parseFloat(value);
+                  newAccels[0] = isNaN(numValue) ? config.accelerations[0] : numValue;
                   onConfigChange({ ...config, accelerations: newAccels });
                 }}
                 step={100}
                 unit="mm/s²"
+                min={0}
               />
               <TextField
                 id="accel-2"
@@ -309,11 +317,13 @@ export const PAInputPanel: React.FC<PAInputPanelProps> = ({
                 value={config.accelerations[1]?.toString() || '6000'}
                 onChange={(value) => {
                   const newAccels = [...config.accelerations];
-                  newAccels[1] = parseFloat(value) || 6000;
+                  const numValue = value === '' ? 0 : parseFloat(value);
+                  newAccels[1] = isNaN(numValue) ? config.accelerations[1] : numValue;
                   onConfigChange({ ...config, accelerations: newAccels });
                 }}
                 step={100}
                 unit="mm/s²"
+                min={0}
               />
               <TextField
                 id="accel-3"
@@ -322,11 +332,13 @@ export const PAInputPanel: React.FC<PAInputPanelProps> = ({
                 value={config.accelerations[2]?.toString() || '10000'}
                 onChange={(value) => {
                   const newAccels = [...config.accelerations];
-                  newAccels[2] = parseFloat(value) || 10000;
+                  const numValue = value === '' ? 0 : parseFloat(value);
+                  newAccels[2] = isNaN(numValue) ? config.accelerations[2] : numValue;
                   onConfigChange({ ...config, accelerations: newAccels });
                 }}
                 step={100}
                 unit="mm/s²"
+                min={0}
               />
             </div>
           </div>
