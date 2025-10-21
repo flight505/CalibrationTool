@@ -1,1 +1,19 @@
-npm test
+#!/usr/bin/env sh
+
+set -e
+
+# Clear legacy npm config noise so the hook output stays clean.
+unset npm_config_python
+unset NPM_CONFIG_PYTHON
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM -- '*.[jt]s' '*.[jt]sx' '*.mjs' '*.cjs')
+
+if [ -n "$STAGED_FILES" ]; then
+  echo "→ Running ESLint on staged files..."
+  printf '%s' "$STAGED_FILES" | tr '\n' '\0' | xargs -0 npx eslint
+else
+  echo "→ No JS/TS changes staged; skipping ESLint."
+fi
+
+echo "→ Running TypeScript typecheck..."
+npx tsc --noEmit

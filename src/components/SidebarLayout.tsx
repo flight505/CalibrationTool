@@ -3,7 +3,7 @@ import { Sidebar, SidebarBody, SidebarLink, SidebarGroup } from "@/components/ui
 import {
   Printer, Calculator, Thermometer, Move3D, RotateCcw, Github, Gauge, BookOpen,
   Settings, MessageCircle, Layers, Wind, Droplets, FlaskConical, Beaker,
-  BarChart3, FileText, ChevronLeft, ChevronRight, Grid3x3
+  BarChart3, FileText, ChevronLeft, ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";

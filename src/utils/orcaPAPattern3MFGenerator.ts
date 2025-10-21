@@ -47,7 +47,7 @@ export async function generatePAPattern3MF(
   // Generate 3MF content based on mode
   const { file, filename } = params.useOrcaNativeModifiers
     ? await generateOrcaNative3MF(patternSTL, tiles, params)
-    : await generateFirmwareG code3MF(patternSTL, tiles, params);
+    : await generateFirmwareGcode3MF(patternSTL, tiles, params);
 
   const instructions = generateInstructions(params, tiles);
 
