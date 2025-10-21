@@ -198,6 +198,36 @@ Remember to paste the values in the adaptive pressure advance measurements text 
 
 ![apa-profile](../images/pa/apa-profile.png)
 
+### Advanced Analysis with the PA Optimizer Web Tool
+
+For more advanced analysis and automated PA table generation, you can use the **Pressure Advance Optimizer** web tool. This tool provides:
+
+- **Automated trend validation**: Verifies that PA decreases with higher flow/acceleration (as expected)
+- **Quality scoring**: Rates your calibration data consistency (0-100 score)
+- **Multiple regression models**: Tests linear, inverse, and ratio-based models to find the best fit
+- **Automatic PA table generation**: Creates the adaptive PA table format ready for OrcaSlicer
+- **Interactive visualizations**: 3D surface plots and charts to understand PA relationships
+
+#### Using the PA Optimizer
+
+1. **Configure**: Enter your test parameters (speeds, accelerations, PA range, layer height, line width)
+2. **Generate in OrcaSlicer**: Use Calibration → Pressure Advance to create the test pattern
+3. **Print & Measure**: Identify which tiles produced the best corner quality
+4. **Input Results**: Enter your PA values for each speed/acceleration combination
+5. **Analyze**: Review quality score, trend validation, and model comparison
+6. **Export**: Download the optimized PA table for OrcaSlicer
+
+The PA Optimizer is especially useful for:
+
+- **3×3 grid testing**: Quickly test 9 speed/acceleration combinations in a single print
+- **Model comparison**: Automatically selects the best regression model for your data
+- **Quality validation**: Ensures your PA values follow expected physical trends
+- **Custom speed ranges**: Supports any speed and acceleration combinations you want to test
+
+For detailed instructions, see [Using the PA Optimizer with OrcaSlicer](./using-pa-optimizer-with-orcaslicer.md).
+
+> **Note**: The PA Optimizer focuses on analysis and table generation. You'll still use OrcaSlicer's built-in PA calibration to generate the actual test patterns.
+
 ### Tips
 
 #### Model Input

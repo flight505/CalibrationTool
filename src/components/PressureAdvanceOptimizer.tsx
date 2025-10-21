@@ -74,11 +74,12 @@ const PressureAdvanceOptimizer: React.FC<PressureAdvanceOptimizerProps> = ({ onN
     <div className="space-y-4">
       <InfoCard variant="info" title="Quick Guide">
         <ol className="text-xs space-y-2 list-decimal list-inside">
-          <li><strong>Input:</strong> Enter your test results from the 3×3 PA pattern</li>
-          <li><strong>Analysis:</strong> Review trend validation and quality score</li>
-          <li><strong>Models:</strong> Select the best regression model</li>
-          <li><strong>Results:</strong> Get optimized PA table for OrcaSlicer</li>
-          <li><strong>Visualize:</strong> Explore interactive charts</li>
+          <li><strong>Configure:</strong> Enter PA test parameters</li>
+          <li><strong>Generate in OrcaSlicer:</strong> Use Calibration → Pressure Advance</li>
+          <li><strong>Print & Measure:</strong> Identify tiles with best corner quality</li>
+          <li><strong>Input Results:</strong> Enter your test data in the grid</li>
+          <li><strong>Analyze:</strong> Review trend validation and quality score</li>
+          <li><strong>Get PA Table:</strong> Export optimized adaptive PA table</li>
         </ol>
       </InfoCard>
 

@@ -1,13 +1,11 @@
 import { useState } from 'react';
-import { Grid3x3, Table2, Download, Trash2, Package, FileText } from 'lucide-react';
+import { Grid3x3, Table2, Download, Trash2, ExternalLink } from 'lucide-react';
 import { FormSection, InfoCard } from '@/components/calibration/CalibrationToolLayout';
-import { TextField, FieldGroup, SelectField, SwitchField } from '@/components/calibration/FormFields';
+import { TextField, FieldGroup } from '@/components/calibration/FormFields';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { PATestConfig, PATestResult } from '@/lib/pa-optimizer';
-import { generatePAPattern3MF } from '@/utils/orcaPAPattern3MFGenerator';
-import type { FirmwareType } from '@/utils/postProcessingGenerator';
 
 interface PAInputPanelProps {
   config: PATestConfig;
@@ -27,20 +25,9 @@ export const PAInputPanel: React.FC<PAInputPanelProps> = ({
   onClearData,
 }) => {
   const [inputMode, setInputMode] = useState<'grid' | 'table'>('grid');
-  const [useOrcaNativeModifiers, setUseOrcaNativeModifiers] = useState(true);
-  const [firmware, setFirmware] = useState<FirmwareType>('marlin');
-  const [generating, setGenerating] = useState(false);
-  const [downloadResult, setDownloadResult] = useState<string | null>(null);
-  const [printNumbers, setPrintNumbers] = useState(true);
 
   const speeds = config.speeds;
   const accelerations = config.accelerations;
-
-  const firmwareOptions = [
-    { value: 'marlin', label: 'Marlin (M900)' },
-    { value: 'klipper', label: 'Klipper (SET_PRESSURE_ADVANCE)' },
-    { value: 'rrf', label: 'RepRapFirmware (M572)' },
-  ];
 
   const estimateFlow = (speed: number): number => {
     return (speed * config.layerHeight * config.lineWidth) / 60;
@@ -75,112 +62,44 @@ export const PAInputPanel: React.FC<PAInputPanelProps> = ({
     return testData.find(d => d.tileId === tileId) || null;
   };
 
-  const handleDownloadPattern = async () => {
-    try {
-      setGenerating(true);
-      setDownloadResult(null);
-
-      const pattern = await generatePAPattern3MF({
-        startPA: config.startPA,
-        endPA: config.endPA,
-        paStep: config.paStep,
-        layerHeight: config.layerHeight,
-        lineWidth: config.lineWidth,
-        speeds: config.speeds,
-        accelerations: config.accelerations,
-        useOrcaNativeModifiers,
-        firmware: !useOrcaNativeModifiers ? firmware : undefined
-      });
-
-      const url = URL.createObjectURL(pattern.file);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = pattern.filename;
-      a.click();
-      URL.revokeObjectURL(url);
-
-      setDownloadResult(`Pattern generated successfully!\n9 tiles with PA range ${config.startPA.toFixed(3)} to ${config.endPA.toFixed(3)}\nMode: ${useOrcaNativeModifiers ? 'Orca Native Modifiers' : firmware.toUpperCase() + ' G-code'}`);
-    } catch (error) {
-      console.error('Error generating PA pattern:', error);
-      setDownloadResult('Error generating pattern. Please try again.');
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const handleDownloadSTL = async () => {
-    try {
-      const response = await fetch('/templates/pa_pattern_ascii.stl');
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'pa_pattern_3x3.stl';
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error downloading STL:', error);
-    }
-  };
-
   return (
     <div className="space-y-6">
       <FormSection
-        title="Download Test Files"
-        description="Generate PA pattern files for printing the calibration test"
+        title="Generate PA Pattern in OrcaSlicer"
+        description="Use OrcaSlicer's built-in calibration tool to generate your PA test pattern"
       >
-        <SwitchField
-          label="Use Orca Native Modifiers"
-          id="use-orca-native"
-          checked={useOrcaNativeModifiers}
-          onCheckedChange={setUseOrcaNativeModifiers}
-          description="Recommended: Modifiers visible in slicer preview. Disable for portable SD card prints."
-        />
+        <InfoCard variant="info" title="How to Generate PA Pattern">
+          <ol className="text-sm space-y-2 list-decimal list-inside">
+            <li>Open <strong>OrcaSlicer</strong></li>
+            <li>Go to <strong>Calibration → Pressure Advance</strong></li>
+            <li>Enter the configuration values below (Start PA, End PA, Step, Speeds, Accelerations)</li>
+            <li>Click <strong>Generate</strong> to create the 3MF project file</li>
+            <li>Slice and <strong>print</strong> the pattern</li>
+            <li>Identify which tiles produced the <strong>best corner quality</strong></li>
+            <li>Return here to input your results for advanced analysis</li>
+          </ol>
+        </InfoCard>
 
-        {!useOrcaNativeModifiers && (
-          <SelectField
-            label="Firmware Type"
-            id="firmware-type"
-            value={firmware}
-            onChange={(value) => setFirmware(value as FirmwareType)}
-            options={firmwareOptions}
-          />
-        )}
+        <InfoCard variant="tip" title="Important: Match Your Configuration">
+          <p className="text-sm">
+            Use the <strong>exact same values</strong> in OrcaSlicer&apos;s PA calibration dialog
+            and in the configuration section below. This ensures accurate analysis and adaptive PA table generation.
+          </p>
+        </InfoCard>
 
-        <div className="flex flex-wrap gap-3">
-          <Button
-            onClick={handleDownloadPattern}
-            disabled={generating}
-            className="gap-2"
-          >
-            {generating ? 'Generating...' : (
-              <>
-                <Package className="h-4 w-4" />
-                Download 3MF Project
-              </>
-            )}
-          </Button>
-
-          <Button
-            onClick={handleDownloadSTL}
-            variant="outline"
-            className="gap-2"
-          >
-            <FileText className="h-4 w-4" />
-            Download STL Only
+        <div className="flex gap-3">
+          <Button variant="outline" className="gap-2" asChild>
+            <a href="/docs/calibration/using-pa-optimizer-with-orcaslicer" target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-4 w-4" />
+              View Detailed Guide
+            </a>
           </Button>
         </div>
-
-        {downloadResult && (
-          <InfoCard variant={downloadResult.includes('Error') ? 'warning' : 'success'}>
-            {downloadResult}
-          </InfoCard>
-        )}
       </FormSection>
 
       <FormSection
-        title="Test Configuration"
-        description="Configure your PA pattern test parameters"
+        title="PA Test Parameters"
+        description="Enter your PA test configuration (use same values in OrcaSlicer)"
       >
         <FieldGroup>
           <TextField
@@ -208,14 +127,6 @@ export const PAInputPanel: React.FC<PAInputPanelProps> = ({
             step={0.001}
           />
         </FieldGroup>
-
-        <SwitchField
-          label="Print Numbers"
-          id="print-numbers"
-          checked={printNumbers}
-          onCheckedChange={setPrintNumbers}
-          description="Print PA values and tile numbers on the pattern for easy identification"
-        />
 
         <FieldGroup>
           <TextField
