@@ -94,7 +94,7 @@ export default async function handler(
     if (dbAvailable) {
       try {
         // Try vector search first
-        const { hybridSearch } = await import('../src/lib/utils/vectorSearch.ts');
+        const { hybridSearch } = await import('../src/lib/utils/vectorSearch');
         const searchResults = await hybridSearch(lastMessage.content, 5);
         
         if (searchResults.length > 0) {

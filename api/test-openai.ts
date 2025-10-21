@@ -29,7 +29,7 @@ export default async function handler(req: Request) {
       prompt: [
         {
           role: 'user',
-          content: 'Say "API test successful" and nothing else.',
+          content: [{ type: 'text', text: 'Say "API test successful" and nothing else.' }],
         },
       ],
       temperature: 0,

@@ -15,15 +15,15 @@ import {
   phase2JsonSchema,
   validatePhase1Result,
   validatePhase2Result
-} from '@/utils/doe/llmSchemas';
+} from '../../utils/doe/llmSchemas';
 import {
   Phase1LLMResult,
   Phase1RequestPayload,
   Phase2LLMResult,
   Phase2RequestPayload
-} from '@/utils/doe/doeTypes';
-import { PHASE1_SYSTEM_PROMPT, PHASE2_SYSTEM_PROMPT } from '@/utils/doe/llmPrompts';
-import type { DOEStreamHandlers, DOECallError } from '@/lib/utils/doeLLMCommon';
+} from '../../utils/doe/doeTypes';
+import { PHASE1_SYSTEM_PROMPT, PHASE2_SYSTEM_PROMPT } from '../../utils/doe/llmPrompts';
+import type { DOEStreamHandlers, DOECallError } from './doeLLMCommon';
 
 const apiKey = process.env.OPENAI_API_KEY;
 
