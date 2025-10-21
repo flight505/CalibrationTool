@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronRight, Menu, X, BookOpen, FileText, Home, FlaskConical } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -82,15 +82,39 @@ const docStructure: DocSection[] = [
   },
 ];
 
+const findFirstDocPath = (sections: DocSection[]): string => {
+  for (const section of sections) {
+    if (section.path) {
+      return section.path;
+    }
+    if (section.children) {
+      const childPath = findFirstDocPath(section.children);
+      if (childPath) {
+        return childPath;
+      }
+    }
+  }
+
+  return '';
+};
+
+const defaultDocPath = findFirstDocPath(docStructure);
+
 interface DocumentationLayoutProps {
   onBack?: () => void;
   initialPath?: string;
 }
 
 export const DocumentationLayout: React.FC<DocumentationLayoutProps> = ({ onBack, initialPath }) => {
-  const [selectedPath, setSelectedPath] = useState<string>(initialPath || docStructure[0].path || '');
+  const [selectedPath, setSelectedPath] = useState<string>(() => initialPath ?? defaultDocPath);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>(['Calibration Guides']);
+
+  useEffect(() => {
+    if (initialPath && initialPath !== selectedPath) {
+      setSelectedPath(initialPath);
+    }
+  }, [initialPath, selectedPath]);
 
   const toggleSection = (title: string) => {
     setExpandedSections(prev =>
