@@ -1,7 +1,7 @@
 # OrcaSlicer Modifier Mesh Implementation Plan
 
 **Date**: 2025-01-21
-**Status**: Planning
+**Status**: Phase 1 & 2 Complete - Ready for Testing
 **Goal**: Implement proper OrcaSlicer modifier mesh support in 3MF files
 
 ---
@@ -30,8 +30,8 @@ Based on OrcaSlicer source code analysis (`OrcaSlicer-main/src/libslic3r/Format/
 ### Phase 1: Core Infrastructure
 
 #### 1.1 Create Model Settings Generator
-- [ ] Create new file: `src/utils/orcaModelSettings.ts`
-- [ ] Define TypeScript interfaces:
+- [x] Create new file: `src/utils/orcaModelSettings.ts`
+- [x] Define TypeScript interfaces:
   ```typescript
   interface ModelPart {
     id: number;
@@ -54,18 +54,18 @@ Based on OrcaSlicer source code analysis (`OrcaSlicer-main/src/libslic3r/Format/
   }
   ```
 
-- [ ] Implement `generateModelSettingsXML(config: ModelSettingsConfig): string`
-  - [ ] Generate `<config>` root element
-  - [ ] Generate `<object>` elements with proper IDs
-  - [ ] Generate `<part>` elements with correct subtype
-  - [ ] Generate `<metadata>` elements for settings
-  - [ ] Add `<mesh_stat>` elements (required but can be zeros)
-  - [ ] Generate `<plate>` element with model instances
-  - [ ] Generate `<assemble>` element with transformations
+- [x] Implement `generateModelSettingsXML(config: ModelSettingsConfig): string`
+  - [x] Generate `<config>` root element
+  - [x] Generate `<object>` elements with proper IDs
+  - [x] Generate `<part>` elements with correct subtype
+  - [x] Generate `<metadata>` elements for settings
+  - [x] Add `<mesh_stat>` elements (required but can be zeros)
+  - [x] Generate `<plate>` element with model instances
+  - [x] Generate `<assemble>` element with transformations
 
 #### 1.2 Update Base Tower Generator
-- [ ] Open `src/utils/orcaTowerGenerator.ts`
-- [ ] Add new method: `generateModifierSettings(): ModelPart[]`
+- [x] Open `src/utils/orcaTowerGenerator.ts`
+- [x] Add abstract method: `protected abstract getModifierSettings(section: TowerSection): Record<string, string | number>`
   ```typescript
   protected generateModifierSettings(): ModelPart[] {
     const parts: ModelPart[] = [];
@@ -93,41 +93,36 @@ Based on OrcaSlicer source code analysis (`OrcaSlicer-main/src/libslic3r/Format/
   }
   ```
 
-- [ ] Add abstract method: `protected abstract getModifierSettings(section: TowerSection): Record<string, string | number>`
   - Each tower type will implement this to return appropriate settings
 
 #### 1.3 Update 3MF Exporter
-- [ ] Open `src/utils/orca3mfExporter.ts`
-- [ ] Import the new model settings generator:
+- [x] Open `src/utils/orca3mfExporter.ts`
+- [x] Import the new model settings generator:
   ```typescript
   import { generateModelSettingsXML, ModelSettingsConfig } from './orcaModelSettings';
   ```
 
-- [ ] Add new method: `private addModelSettings(config: ModelSettingsConfig)`
+- [x] Add new method: `private addModelSettings(tower, towerName)`
   ```typescript
-  private addModelSettings(config: ModelSettingsConfig) {
+  private addModelSettings(tower: GeneratedTower, towerName: string) {
+    const config = createTowerModelSettings(towerName, modifierSettings);
     const xml = generateModelSettingsXML(config);
     this.zip.file('Metadata/model_settings.config', xml);
   }
   ```
 
-- [ ] Update `add3DModel()` method to track object/part IDs:
-  - [ ] Ensure main tower object has id="1"
-  - [ ] Ensure modifier objects have sequential IDs (2, 3, 4...)
-  - [ ] Store ID mapping for later use
-
-- [ ] Update `exportTower()` method:
-  - [ ] After adding 3D model, check if `includeModifierMesh === true`
-  - [ ] If yes, call `addModelSettings()` with proper config
-  - [ ] Config should include main part + all modifier parts with settings
+- [x] Update `exportTower()` method:
+  - [x] After adding 3D model, check if using Orca modifiers
+  - [x] If yes, call `addModelSettings()` with proper config
+  - [x] Config includes main part + all modifier parts with settings from tower.orcaSettings
 
 ---
 
 ### Phase 2: Tower-Specific Implementations
 
 #### 2.1 Flow Rate Tower
-- [ ] Open `src/utils/orcaFlowRateTower.ts`
-- [ ] Implement `getModifierSettings()`:
+- [x] Open `src/utils/orcaFlowRateTower.ts`
+- [x] Implement `getModifierSettings()`:
   ```typescript
   protected getModifierSettings(section: TowerSection): Record<string, string | number> {
     return {
@@ -147,8 +142,8 @@ Based on OrcaSlicer source code analysis (`OrcaSlicer-main/src/libslic3r/Format/
   - [ ] Slice and verify G-code has flow changes
 
 #### 2.2 Temperature Tower
-- [ ] Open `src/utils/orcaTemperatureTower.ts`
-- [ ] Implement `getModifierSettings()`:
+- [x] Open `src/utils/orcaTemperatureTower.ts`
+- [x] Implement `getModifierSettings()`:
   ```typescript
   protected getModifierSettings(section: TowerSection): Record<string, string | number> {
     return {
@@ -160,8 +155,8 @@ Based on OrcaSlicer source code analysis (`OrcaSlicer-main/src/libslic3r/Format/
 - [ ] Test with OrcaSlicer (same validation steps as Flow Rate)
 
 #### 2.3 Fan Speed Tower
-- [ ] Open `src/utils/orcaFanSpeedTower.ts`
-- [ ] Implement `getModifierSettings()`:
+- [x] Open `src/utils/orcaFanSpeedTower.ts`
+- [x] Implement `getModifierSettings()`:
   ```typescript
   protected getModifierSettings(section: TowerSection): Record<string, string | number> {
     return {
@@ -174,8 +169,8 @@ Based on OrcaSlicer source code analysis (`OrcaSlicer-main/src/libslic3r/Format/
 - [ ] Test with OrcaSlicer
 
 #### 2.4 Retraction Tower
-- [ ] Open `src/utils/orcaRetractionTower.ts`
-- [ ] Implement `getModifierSettings()`:
+- [x] Open `src/utils/orcaRetractionTower.ts`
+- [x] Implement `getModifierSettings()`:
   ```typescript
   protected getModifierSettings(section: TowerSection): Record<string, string | number> {
     return {
@@ -188,8 +183,8 @@ Based on OrcaSlicer source code analysis (`OrcaSlicer-main/src/libslic3r/Format/
 - [ ] Test with OrcaSlicer
 
 #### 2.5 Max Volumetric Speed Tower
-- [ ] Open `src/utils/orcaMaxVolumetricTower.ts`
-- [ ] Implement `getModifierSettings()`:
+- [x] Open `src/utils/orcaMaxVolumetricTower.ts`
+- [x] Implement `getModifierSettings()`:
   ```typescript
   protected getModifierSettings(section: TowerSection): Record<string, string | number> {
     // Convert volumetric speed to linear speed
@@ -204,8 +199,8 @@ Based on OrcaSlicer source code analysis (`OrcaSlicer-main/src/libslic3r/Format/
 - [ ] Test with OrcaSlicer
 
 #### 2.6 Pressure Advance Tower
-- [ ] Open `src/utils/orcaPressureAdvanceTower.ts`
-- [ ] Implement `getModifierSettings()`:
+- [x] Open `src/utils/orcaPressureAdvanceTower.ts`
+- [x] Implement `getModifierSettings()`:
   ```typescript
   protected getModifierSettings(section: TowerSection): Record<string, string | number> {
     return {
