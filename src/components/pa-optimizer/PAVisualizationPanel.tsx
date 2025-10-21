@@ -23,13 +23,14 @@ import {
   ReferenceLine,
   ReferenceArea,
 } from 'recharts';
-import type { PAAnalysisResult } from '@/lib/pa-optimizer';
+import type { PAAnalysisResult, PATestConfig } from '@/lib/pa-optimizer';
 
 interface PAVisualizationPanelProps {
   analysis: PAAnalysisResult;
+  config: PATestConfig;
 }
 
-export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ analysis }) => {
+export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ analysis, config }) => {
   const { testData, selectedModel, statistics, outliers } = analysis;
 
   // Create outlier lookup for easy checking
@@ -91,10 +92,10 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
 
   // Generate extended model curve (25 mm/s to 350 mm/s)
   const extendedCurveData = [];
-  const avgLayerHeight = 0.16;
-  const avgLineWidth = 0.48;
+  // Use actual layer height and line width from config
+  const { layerHeight, lineWidth } = config;
   for (let speed = 25; speed <= 350; speed += 5) {
-    const flow = (speed * avgLayerHeight * avgLineWidth) / 60;
+    const flow = (speed * layerHeight * lineWidth) / 60;
     const avgAccel = (Math.min(...testData.map(d => d.accel)) + Math.max(...testData.map(d => d.accel))) / 2;
     const prediction = selectedModel.predict(flow, avgAccel);
     extendedCurveData.push({
@@ -443,7 +444,8 @@ export const PAVisualizationPanel: React.FC<PAVisualizationPanelProps> = ({ anal
                   <span><strong>Extrapolated Region:</strong> Predictions beyond calibrated range (use with caution)</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  <strong>Note:</strong> This chart shows predictions at average acceleration ({((Math.min(...testData.map(d => d.accel)) + Math.max(...testData.map(d => d.accel))) / 2).toFixed(0)} mm/s²).
+                  <strong>Note:</strong> This chart shows predictions at average acceleration ({((Math.min(...testData.map(d => d.accel)) + Math.max(...testData.map(d => d.accel))) / 2).toFixed(0)} mm/s²)
+                  using layer height {layerHeight} mm and line width {lineWidth} mm.
                   Actual PA values will vary with acceleration.
                 </p>
               </div>

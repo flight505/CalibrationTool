@@ -242,7 +242,7 @@ const PressureAdvanceOptimizer: React.FC<PressureAdvanceOptimizerProps> = ({ onN
           <TabsContent value="visualize" className="space-y-4">
             {analysis ? (
               <>
-                <PAVisualizationPanel analysis={analysis} />
+                <PAVisualizationPanel analysis={analysis} config={config} />
                 <div className="flex justify-start">
                   <Button variant="outline" onClick={() => setActiveTab('results')}>
                     ← Back to Results
