@@ -144,14 +144,59 @@ function generateTileConfigurations(params: PAPatternParameters) {
 }
 
 /**
+ * Create 3×3 grid of PA pattern by duplicating and offsetting the template geometry
+ */
+function create3x3PatternGrid(templateSTL: ParsedSTL): ParsedSTL {
+  const allTriangles: any[] = [];
+
+  // Chevron pattern spacing (based on OrcaSlicer's pa_pattern.3mf G-code analysis)
+  // The single chevron is ~20mm wide, and we need ~25mm spacing between tiles
+  const tileSpacingX = 25; // mm between tile centers in X
+  const tileSpacingY = 25; // mm between tile centers in Y
+
+  // Create 3×3 grid (9 tiles total)
+  for (let row = 0; row < 3; row++) {
+    for (let col = 0; col < 3; col++) {
+      // Calculate offset for this tile
+      // Center the grid around origin
+      const offsetX = (col - 1) * tileSpacingX;
+      const offsetY = (row - 1) * tileSpacingY;
+
+      // Duplicate all triangles from template with offset
+      templateSTL.triangles.forEach(triangle => {
+        const offsetTriangle = {
+          vertices: triangle.vertices.map((v: any) => ({
+            x: v.x + offsetX,
+            y: v.y + offsetY,
+            z: v.z
+          })),
+          normal: triangle.normal
+        };
+        allTriangles.push(offsetTriangle);
+      });
+    }
+  }
+
+  console.log(`[PA Pattern] Created 3×3 grid: ${allTriangles.length} total triangles (${templateSTL.triangles.length} × 9 tiles)`);
+
+  return {
+    name: 'PAPattern3x3Grid',
+    triangles: allTriangles
+  };
+}
+
+/**
  * Generate 3MF with Orca native modifiers using proper ZIP structure
  */
 async function generateOrcaNative3MF(
-  patternSTL: ParsedSTL,
+  templateSTL: ParsedSTL,
   _tiles: any[], // Reserved for future tile-specific modifiers
   params: PAPatternParameters
 ) {
   const zip = new JSZip();
+
+  // Create 3×3 grid from single chevron template
+  const patternSTL = create3x3PatternGrid(templateSTL);
 
   // 1. Add [Content_Types].xml
   const contentTypes = create({ version: '1.0', encoding: 'UTF-8' })
@@ -247,12 +292,15 @@ async function generateOrcaNative3MF(
  * Generate 3MF with firmware G-code post-processing using proper ZIP structure
  */
 async function generateFirmwareGcode3MF(
-  patternSTL: ParsedSTL,
+  templateSTL: ParsedSTL,
   _tiles: any[], // Reserved for future metadata enhancement
   params: PAPatternParameters
 ) {
   const zip = new JSZip();
   const firmware = params.firmware || 'marlin';
+
+  // Create 3×3 grid from single chevron template
+  const patternSTL = create3x3PatternGrid(templateSTL);
 
   // Use the same structure as Orca native, but we'll add G-code metadata
 
