@@ -1,0 +1,2415 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+The content has been processed where content has been compressed (code blocks are separated by ⋮---- delimiter).
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Content has been compressed - code blocks are separated by ⋮---- delimiter
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.github/
+  workflows/
+    deploy.yml
+    tests.yml
+public/
+  apple-touch-icon.png
+  edge_tower.stl
+  edge_tower.webm
+  favicon-16x16.png
+  favicon-32x32.png
+  favicon.ico
+  index.html
+  overhang_tower.stl
+  overhang_tower.webm
+  retraction_tower.png
+  retraction_tower.stl
+  retraction_tower.webm
+  robots.txt
+  safari-pinned-tab.svg
+  screenshot.png
+  temperature_tower.stl
+  temperature_tower.webm
+src/
+  __tests__/
+    utils.ts
+  blocks/
+    GCodeInputBlock.scss
+    GCodeInputBlock.tsx
+    GCodeOutputBlock.tsx
+    GCodeSettingsBlock.tsx
+    SummaryBlock.scss
+    SummaryBlock.tsx
+    TowerSettings.tsx
+  forms/
+    FormContainer.scss
+    FormContainer.tsx
+    NumberInput.tsx
+    RangeGroup.tsx
+  gcode/
+    __tests__/
+      processor.ts
+    transformers/
+      __tests__/
+        acceleration.ts
+        flow.ts
+        jerk.ts
+        linearAdvance.ts
+        retract.ts
+        temperature.ts
+      acceleration.ts
+      actions.ts
+      flow.ts
+      index.ts
+      jerk.ts
+      linearAdvance.ts
+      retract.ts
+      temperature.ts
+      transformer.ts
+    index.ts
+    processor.ts
+    utils.ts
+  scss/
+    mixins.scss
+    variables.scss
+  state/
+    gcode.ts
+    index.ts
+  App.scss
+  App.tsx
+  Block.scss
+  Block.tsx
+  CopyCode.scss
+  CopyCode.tsx
+  Header.scss
+  Header.tsx
+  index.scss
+  index.tsx
+  Intro.scss
+  Intro.tsx
+  react-app-env.d.ts
+  serviceWorker.ts
+  setupTests.ts
+  Skyline.scss
+  skyline.svg
+  TestShapes.scss
+  TestShapes.tsx
+  utils.ts
+.gitignore
+export_env.sh
+LICENSE.md
+package.json
+README.md
+tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".github/workflows/deploy.yml">
+name: deploy to github pages
+
+on:
+  push:
+    tags: [v*]
+
+jobs:
+  deploy:
+    name: Deploy to GitHub pages
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - run: |
+          source ./export_env.sh
+          npm ci
+          npm test
+          npm run build
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
+</file>
+
+<file path=".github/workflows/tests.yml">
+name: Run tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Use Node.js 12.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
+
+    - run: |
+        source ./export_env.sh
+        npm ci
+        npm test
+        npm run build
+</file>
+
+<file path="public/index.html">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+
+    <meta property="og:title" content="Tower Tool" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="%PUBLIC_URL%" />
+    <meta property="og:description" content="Generate sweet calibration towers for your 3D printer!" />
+    <meta
+      property="og:image"
+      content="%PUBLIC_URL%/screenshot.png"
+    />
+
+    <meta
+      name="description"
+      content="Generate sweet calibration towers for your 3D printer!"
+    />
+
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="%PUBLIC_URL%/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="%PUBLIC_URL%/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="%PUBLIC_URL%/favicon-16x16.png"
+    />
+    <link
+      rel="mask-icon"
+      href="%PUBLIC_URL%/safari-pinned-tab.svg"
+      color="#5bbad5"
+    />
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>Tower Tool</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+  </body>
+</html>
+</file>
+
+<file path="public/robots.txt">
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Disallow:
+</file>
+
+<file path="public/safari-pinned-tab.svg">
+<svg version="1" xmlns="http://www.w3.org/2000/svg" width="1365.333" height="1365.333" viewBox="0 0 1024.000000 1024.000000"><path d="M97.5 132c-5.5 1.2-10.5 4.2-14.1 8.4-6.6 7.7-6.6 8.2-6.6 72.7 0 52.3.2 58.4 1.7 63.4 2.9 9 10.7 15.5 20.7 17.3 2.4.4 165 .7 361.3.7l357-.2 4.9-2.2c6.6-2.9 12-8.7 14.2-15.2 1.7-5 1.8-9.8 1.8-64.9-.1-57.8-.1-59.6-2.1-64.1-2.9-6.4-8-11.8-13.3-14.3l-4.5-2.1-359-.1c-197.5 0-360.3.2-362 .6zM207.9 431.2c-2.4.3-5.7 1.1-7.2 1.7-4.2 1.6-12.3 10.4-13.2 14.3-.4 1.8-1 4-1.2 4.8-.8 2.6-.9 114.3-.1 119 1.7 9.8 8.5 18.2 17.3 21.1 3.3 1.1 66.2 1.3 363.5 1.3h359.5l5.3-2.3c7.1-3.2 13.2-11.1 14.8-19.2.7-3.9.8-114.8 0-119.4-1.3-8.4-6.4-15.3-14.4-19.2l-5.7-2.8H569.4c-196.4 0-359 .3-361.5.7zM99.4 730.2c-11.4 2-20 10.2-21.9 20.9-.4 1.9-.7 29.1-.7 60.6 0 52.7.1 57.6 1.8 63 2.1 6.6 7.8 13.1 14.1 16 3.6 1.7 22 1.7 364.3 1.8 342.3 0 360.7-.1 365.1-1.8 5.9-2.3 10.2-6.5 13.6-13.5l2.8-5.7V811l-.1-60.5-2.8-5.8c-3.2-6.4-6.9-10-13.6-13-4.5-2-5.2-2-361.6-2.1-196.5-.1-358.9.2-361 .6z"/></svg>
+</file>
+
+<file path="src/__tests__/utils.ts">
+import { snapRange, rangeValues } from "../utils";
+</file>
+
+<file path="src/blocks/GCodeInputBlock.scss">
+@import "../scss/mixins";
+@import "../scss/variables.scss";
+
+.GCodeInputBlock {
+  padding: $spacing;
+
+  input {
+    display: none;
+  }
+}
+
+.GCodeInputBlock__fileName {
+  font-size: 16pt;
+  text-align: center;
+  margin-bottom: 1rem;
+
+  @include on-mobile {
+    font-size: 12pt;
+  }
+}
+</file>
+
+<file path="src/blocks/GCodeInputBlock.tsx">
+import React, { useRef } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUpload, faFileUpload } from "@fortawesome/free-solid-svg-icons";
+⋮----
+import { Block } from "../Block";
+⋮----
+function onFileChange(e: React.ChangeEvent<HTMLInputElement>)
+</file>
+
+<file path="src/blocks/GCodeOutputBlock.tsx">
+import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFileDownload, faStream } from "@fortawesome/free-solid-svg-icons";
+⋮----
+import { Block } from "../Block";
+⋮----
+export const GCodeOutputBlock = (props: {
+onProcessClick: ()
+</file>
+
+<file path="src/blocks/GCodeSettingsBlock.tsx">
+import React, { FunctionComponent } from "react";
+import { useDispatch } from "react-redux";
+import {
+  faCog,
+  faLayerGroup,
+  faLevelDownAlt,
+  faLevelUpAlt,
+} from "@fortawesome/free-solid-svg-icons";
+⋮----
+import { Block } from "../Block";
+import { FormContainer } from "../forms/FormContainer";
+import { NumberInput } from "../forms/NumberInput";
+⋮----
+import { gcodeActions } from "../state/gcode";
+import { useSelector } from "../state";
+⋮----
+dispatch(
+              gcodeActions.gcodeSettings.set({
+                ...gcodeSettings,
+                layerHeight: value,
+              })
+            );
+⋮----
+dispatch(
+              gcodeActions.gcodeSettings.set({
+                ...gcodeSettings,
+                baseHeight: value,
+              })
+            );
+⋮----
+dispatch(
+              gcodeActions.gcodeSettings.set({
+                ...gcodeSettings,
+                stepHeight: value,
+              })
+            );
+</file>
+
+<file path="src/blocks/SummaryBlock.scss">
+@import "../scss/variables";
+@import "../scss/mixins";
+
+.SummaryBlock__table {
+  width: $block-width;
+
+  margin: $spacing / 2 0;
+
+  border-radius: $border-radius;
+  box-shadow: $shadow-small;
+  overflow: hidden;
+  border-spacing: 0;
+  border-collapse: collapse;
+
+  @include on-mobile {
+    width: 100%;
+  }
+
+  thead {
+    font-weight: bold;
+
+    tr {
+      background-color: $block-bg-title;
+    }
+
+    td.SummaryBlock__stepHeader {
+      text-align: center;
+    }
+
+    td.SummaryBlock__valueHeader {
+      text-align: center;
+    }
+  }
+
+  tbody tr {
+    font-size: 12pt;
+    background-color: $block-bg-content-alt;
+
+    &:nth-child(2n + 1) {
+      background-color: $block-bg-content;
+    }
+  }
+
+  td {
+    padding: $spacing ($spacing / 2);
+    text-align: center;
+
+    &:first-child {
+      padding-left: 5em;
+    }
+    &:last-child {
+      padding-right: 5em;
+    }
+
+    @include on-mobile {
+      &:first-child {
+        padding-left: 0.5em;
+      }
+      &:last-child {
+        padding-right: 0.5em;
+      }
+    }
+  }
+}
+
+td.SummaryBlockStep__step {
+  width: 35%;
+
+  @include on-mobile {
+    width: auto;
+  }
+}
+
+td.SummaryBlockStep__value {
+}
+</file>
+
+<file path="src/blocks/SummaryBlock.tsx">
+import React, { FunctionComponent } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLayerGroup, faAtom } from "@fortawesome/free-solid-svg-icons";
+import { round } from "lodash";
+⋮----
+import { useSelector } from "../state";
+import { rangeValues, variableToCopy } from "../utils";
+</file>
+
+<file path="src/blocks/TowerSettings.tsx">
+import React from "react";
+import { useDispatch } from "react-redux";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faStream, faAtom } from "@fortawesome/free-solid-svg-icons";
+⋮----
+import { Block } from "../Block";
+import { FormContainer } from "../forms/FormContainer";
+import { RangeGroup } from "../forms/RangeGroup";
+import { TransformVariable } from "../gcode/transformers";
+⋮----
+import { snapRange, variableToCopy } from "../utils";
+import { useSelector } from "../state";
+import { gcodeActions } from "../state/gcode";
+⋮----
+const VariableSelector = (props: {
+  type: TransformVariable;
+onChange: (type: TransformVariable)
+⋮----
+export const TowerSettings = () =>
+⋮----
+//onst variable = TransformVariable.RetractSpeed;
+⋮----
+dispatch(gcodeActions.variable.setType(type));
+⋮----
+onBlur=
+</file>
+
+<file path="src/forms/FormContainer.scss">
+@import "../scss/variables";
+@import "../scss/mixins";
+
+.FormContainer {
+  label {
+    display: flex;
+    padding: $spacing 0;
+
+    &:nth-child(2n + 1) {
+      background-color: $block-bg-content-alt;
+    }
+
+    @include on-mobile {
+      padding: $spacing;
+      flex-direction: column;
+    }
+
+    .FormContainer__labelText {
+      padding: 0.25em;
+      flex-basis: 35%;
+      line-height: 1.5;
+      text-align: right;
+      padding-right: 0.5em;
+
+      color: rgba(white, 1);
+
+      @include on-mobile {
+        flex-basis: auto;
+        text-align: center;
+        padding: 0;
+        margin-bottom: $spacing;
+      }
+    }
+
+    .FormContainer__inputContainer {
+      display: flex;
+      flex-direction: row;
+
+      box-shadow: inset $shadow-small;
+      border-radius: $border-radius;
+      overflow: hidden;
+
+      background-image: $input-gradient;
+      background-attachment: fixed;
+      background-size: cover;
+
+      .FormContainer__inputIcon {
+        padding: 0.25em 0.5em;
+        line-height: 1.5;
+        background: $glass-black-color;
+      }
+
+      .FormContainer__inputUnits {
+        padding: 0.25em 1em;
+        line-height: 1.5;
+        font-size: 12pt;
+        color: rgba(white, 0.75);
+        background: $glass-black-color;
+      }
+
+      input,
+      select {
+        width: fit-content;
+        display: block;
+        padding: 0.25em;
+        flex-grow: 1;
+
+        line-height: 1.5;
+        font-size: 12pt;
+        text-align: right;
+
+        color: white;
+        background: none;
+        border: none;
+        outline: none !important;
+
+        @include on-mobile {
+          width: 0; // WTF: otherwise the input won't respond to flex.
+          padding-right: 1em;
+        }
+      }
+
+      option {
+        background-color: rgba(black, 0.75);
+      }
+    }
+  }
+}
+</file>
+
+<file path="src/forms/FormContainer.tsx">
+import React, { FunctionComponent } from "react";
+⋮----
+export const FormContainer: FunctionComponent = (props) =>
+</file>
+
+<file path="src/forms/NumberInput.tsx">
+import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+⋮----
+export const NumberInput = (props: {
+onChange?: (value: number)
+</file>
+
+<file path="src/forms/RangeGroup.tsx">
+import React from "react";
+import { NumberInput } from "./NumberInput";
+import {
+  faPlay,
+  faStepForward,
+  faStop,
+} from "@fortawesome/free-solid-svg-icons";
+⋮----
+import { Range } from "../utils";
+⋮----
+export const RangeGroup = (props: {
+onChange: (range: Range)
+⋮----
+function onInputChange(key: "start" | "step" | "stop", value: number)
+⋮----
+onChange=
+</file>
+
+<file path="src/gcode/__tests__/processor.ts">
+import { readFileText } from "../utils";
+import {
+  TransformVariable,
+  RetractTransformer,
+  TemperatureTransformer,
+  AccelerationTransformer,
+  JerkTransformer,
+  FlowTransformer,
+} from "../transformers";
+import { GCodeFile, GCodeLocation } from "../processor";
+import { GCodeProcessor } from "..";
+</file>
+
+<file path="src/gcode/transformers/__tests__/acceleration.ts">
+import { AccelerationTransformer } from "../acceleration";
+import {
+  TransformerActionNoOp,
+  TransformerActionAppend,
+  TransformerActionSkipToEnd,
+} from "../actions";
+⋮----
+const mockRange = (override: any =
+⋮----
+const mockLocation = (chunk: number | null = null) =>
+</file>
+
+<file path="src/gcode/transformers/__tests__/flow.ts">
+import { FlowTransformer } from "../flow";
+import {
+  TransformerActionNoOp,
+  TransformerActionAppend,
+  TransformerActionSkipToEnd,
+} from "../actions";
+⋮----
+const mockRange = (override: any =
+⋮----
+const mockLocation = (chunk: number | null = null) =>
+</file>
+
+<file path="src/gcode/transformers/__tests__/jerk.ts">
+import { JerkTransformer } from "../jerk";
+import {
+  TransformerActionNoOp,
+  TransformerActionAppend,
+  TransformerActionSkipToEnd,
+} from "../actions";
+⋮----
+const mockRange = (override: any =
+⋮----
+const mockLocation = (chunk: number | null = null) =>
+</file>
+
+<file path="src/gcode/transformers/__tests__/linearAdvance.ts">
+import { LinearAdvanceTransformer } from "../linearAdvance";
+import {
+  TransformerActionNoOp,
+  TransformerActionAppend,
+  TransformerActionSkipToEnd,
+} from "../actions";
+⋮----
+const mockRange = (override: any =
+⋮----
+const mockLocation = (chunk: number | null = null) =>
+</file>
+
+<file path="src/gcode/transformers/__tests__/retract.ts">
+import { GCodeLocation } from "../../processor";
+import { RetractTransformer } from "../retract";
+import {
+  TransformerActionNoOp,
+  TransformerActionReplace,
+  TransformerActionSkipToEnd,
+} from "../actions";
+⋮----
+const mockLocation = (chunk: number | null = null) =>
+</file>
+
+<file path="src/gcode/transformers/__tests__/temperature.ts">
+import { TemperatureTransformer } from "../temperature";
+import {
+  TransformerActionNoOp,
+  TransformerActionAppend,
+  TransformerActionSkipToEnd,
+} from "../actions";
+⋮----
+const mockRange = (override: any =
+⋮----
+const mockLocation = (chunk: number | null = null) =>
+</file>
+
+<file path="src/gcode/transformers/acceleration.ts">
+import { Range } from "../../utils";
+import { GCodeLocation } from "../processor";
+import { GCodeTransformer } from "./transformer";
+import {
+  TransformerActionNoOp,
+  TransformerActionSkipToEnd,
+  TransformerActionAppend,
+} from "./actions";
+⋮----
+export class AccelerationTransformer extends GCodeTransformer
+⋮----
+constructor(accelRange: Range)
+⋮----
+onLayer(location: GCodeLocation)
+</file>
+
+<file path="src/gcode/transformers/actions.ts">
+export abstract class TransformerAction
+export abstract class TransformerActionWithLines extends TransformerAction
+⋮----
+constructor(lines: string[])
+⋮----
+export class TransformerActionNoOp extends TransformerAction
+export class TransformerActionSkipToEnd extends TransformerAction
+export class TransformerActionReplace extends TransformerActionWithLines
+export class TransformerActionAppend extends TransformerActionWithLines
+</file>
+
+<file path="src/gcode/transformers/flow.ts">
+import { Range } from "../../utils";
+import { GCodeLocation } from "../processor";
+import { GCodeTransformer } from "./transformer";
+import {
+  TransformerActionNoOp,
+  TransformerActionSkipToEnd,
+  TransformerActionAppend,
+} from "./actions";
+⋮----
+export class FlowTransformer extends GCodeTransformer
+⋮----
+constructor(flowRange: Range)
+⋮----
+onLayer(location: GCodeLocation)
+</file>
+
+<file path="src/gcode/transformers/index.ts">
+import {
+  TransformerAction,
+  TransformerActionAppend,
+  TransformerActionNoOp,
+  TransformerActionReplace,
+  TransformerActionSkipToEnd,
+} from "./actions";
+⋮----
+import { GCodeTransformer } from "./transformer";
+import { RetractTransformer } from "./retract";
+import { TemperatureTransformer } from "./temperature";
+import { AccelerationTransformer } from "./acceleration";
+import { JerkTransformer } from "./jerk";
+import { FlowTransformer } from "./flow";
+import { LinearAdvanceTransformer } from "./linearAdvance";
+⋮----
+export enum TransformVariable {
+  RetractDistance,
+  RetractSpeed,
+  Temperature,
+  Acceleration,
+  Jerk,
+  Flow,
+  LinearAdvance,
+}
+</file>
+
+<file path="src/gcode/transformers/jerk.ts">
+import { Range } from "../../utils";
+import { GCodeLocation } from "../processor";
+import { GCodeTransformer } from "./transformer";
+import {
+  TransformerActionNoOp,
+  TransformerActionSkipToEnd,
+  TransformerActionAppend,
+} from "./actions";
+⋮----
+export class JerkTransformer extends GCodeTransformer
+⋮----
+constructor(accelRange: Range)
+⋮----
+onLayer(location: GCodeLocation)
+</file>
+
+<file path="src/gcode/transformers/linearAdvance.ts">
+import { Range } from "../../utils";
+import { GCodeLocation } from "../processor";
+import { GCodeTransformer } from "./transformer";
+import {
+  TransformerActionNoOp,
+  TransformerActionSkipToEnd,
+  TransformerActionAppend,
+} from "./actions";
+⋮----
+export class LinearAdvanceTransformer extends GCodeTransformer
+⋮----
+constructor(accelRange: Range)
+⋮----
+onLayer(location: GCodeLocation)
+</file>
+
+<file path="src/gcode/transformers/retract.ts">
+import { Range } from "../../utils";
+import { GCodeLocation } from "../processor";
+import {
+  TransformerActionNoOp,
+  TransformerActionSkipToEnd,
+  TransformerAction,
+  TransformerActionReplace,
+} from "./actions";
+import { GCodeTransformer } from "./transformer";
+⋮----
+enum RetractMode {
+  Absolute,
+  Relative,
+}
+⋮----
+export class RetractTransformer extends GCodeTransformer
+⋮----
+constructor(opts: {
+    distanceRange?: Range;
+    speedRange?: Range;
+    retractRegex?: RegExp;
+})
+⋮----
+onLine(line: string, location: GCodeLocation): TransformerAction
+⋮----
+onLayer(location: GCodeLocation): TransformerAction
+</file>
+
+<file path="src/gcode/transformers/temperature.ts">
+import { Range } from "../../utils";
+import { GCodeLocation } from "../processor";
+import { GCodeTransformer } from "./transformer";
+import {
+  TransformerActionSkipToEnd,
+  TransformerActionAppend,
+  TransformerActionNoOp,
+} from "./actions";
+⋮----
+export class TemperatureTransformer extends GCodeTransformer
+⋮----
+constructor(tempRange: Range)
+⋮----
+onLayer(location: GCodeLocation)
+</file>
+
+<file path="src/gcode/transformers/transformer.ts">
+import { GCodeLocation } from "../processor";
+import { TransformerAction, TransformerActionNoOp } from "./actions";
+⋮----
+export abstract class GCodeTransformer
+⋮----
+onLine(line: string, location: GCodeLocation): TransformerAction
+⋮----
+onLayer(location: GCodeLocation): TransformerAction
+</file>
+
+<file path="src/gcode/index.ts">
+import { GCodeFile, GCodeProcessor } from "./processor";
+import { saveLines } from "./utils";
+</file>
+
+<file path="src/gcode/processor.ts">
+import { Range } from "../utils";
+import { readFileText } from "./utils";
+import {
+  TransformVariable,
+  GCodeTransformer,
+  RetractTransformer,
+  TemperatureTransformer,
+  AccelerationTransformer,
+  JerkTransformer,
+  FlowTransformer,
+  LinearAdvanceTransformer,
+  TransformerActionNoOp,
+  TransformerActionReplace,
+  TransformerActionSkipToEnd,
+  TransformerActionAppend,
+} from "./transformers";
+⋮----
+export class GCodeFile
+⋮----
+constructor(file: File, lines: string[])
+⋮----
+static async fromFile(file: File): Promise<GCodeFile>
+⋮----
+export class GCodeLocation
+⋮----
+constructor(layer: number = 0, z: number = 0, chunk: number | null = null)
+⋮----
+static fromLayer(
+    layer: number,
+    layerHeight: number,
+    chunkHeight: number,
+    chunkOffset: number
+): GCodeLocation
+⋮----
+export interface GCodeSettings {
+  layerHeight: number;
+  baseHeight: number;
+  stepHeight: number;
+}
+⋮----
+export class GCodeProcessor
+⋮----
+constructor(opts: {
+    settings: GCodeSettings;
+    transformer: GCodeTransformer;
+})
+⋮----
+process(gcode: GCodeFile)
+⋮----
+private updateLocation(line: string): boolean
+⋮----
+static fromVariable(
+    type: TransformVariable,
+    settings: GCodeSettings,
+    range: Range
+)
+</file>
+
+<file path="src/gcode/utils.ts">
+export async function readFileText(file: File): Promise<string>
+⋮----
+export function saveLines(lines: string[])
+</file>
+
+<file path="src/scss/mixins.scss">
+@import "./variables";
+
+@mixin on-mobile {
+  @media screen and (max-width: $mobile-max-width) {
+    @content;
+  }
+}
+</file>
+
+<file path="src/scss/variables.scss">
+@import "~sass-material-colors";
+
+$primary-color: material-color("pink", "700");
+$alt-color: material-color("deep-purple", "700");
+$dark-color: material-color("grey", "900");
+
+$primary-gradient: linear-gradient($primary-color, $alt-color);
+
+$input-gradient: linear-gradient(
+  adjust-color($primary-color, $lightness: -10, $saturation: -20),
+  adjust-color($alt-color, $lightness: -10, $saturation: -20)
+);
+
+$input-gradient-hover: linear-gradient(
+  adjust-color($primary-color, $lightness: -5, $saturation: -20),
+  adjust-color($alt-color, $lightness: -5, $saturation: -20)
+);
+
+$glass-white-color: rgba(white, 0.1);
+$glass-black-color: rgba(black, 0.2);
+
+$spacing: 16px;
+$border-radius: $spacing / 2;
+
+$shadow-small: ($spacing / 8) ($spacing / 8) rgba(black, 0.25);
+$shadow-big: ($spacing / 4) ($spacing / 4) rgba(0, 0, 0, 0.15);
+
+$block-width: 600px;
+$mobile-max-width: 650px;
+
+$block-bg-title: rgba(black, 0.5);
+$block-bg-content: $dark-color;
+$block-bg-content-alt: adjust-color($block-bg-content, $lightness: 2);
+
+$input-bg: change-color($primary-color, $lightness: 15);
+$input-bg-hover: adjust-color($input-bg, $lightness: 5);
+
+$dark-input-bg: #333;
+$dark-input-bg-hover: adjust-color($dark-input-bg, $lightness: 5);
+</file>
+
+<file path="src/state/gcode.ts">
+import { createReducer, createAction } from "@reduxjs/toolkit";
+⋮----
+import { Range } from "../utils";
+import { TransformVariable } from "../gcode/transformers";
+import { GCodeSettings } from "../gcode/processor";
+⋮----
+export interface GcodeReducerState {
+  variable: {
+    type: TransformVariable;
+    range: Range;
+  };
+  gcodeSettings: GCodeSettings;
+}
+⋮----
+const getInitialState = (): GcodeReducerState =>
+</file>
+
+<file path="src/state/index.ts">
+import { configureStore, combineReducers } from "@reduxjs/toolkit";
+import {
+  useSelector as useUntypedSelector,
+  TypedUseSelectorHook,
+} from "react-redux";
+⋮----
+import { gcodeReducer } from "./gcode";
+⋮----
+export type RootState = ReturnType<typeof rootReducer>;
+</file>
+
+<file path="src/App.scss">
+@import "./scss/variables";
+@import "./scss/mixins";
+
+$split-breakpoint: $block-width * 2 + ($spacing * 8);
+
+.App {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  height: 100%;
+
+  .DarkSide {
+    display: flex;
+    justify-content: center;
+    flex-grow: 1;
+    background-color: $dark-color;
+    box-shadow: $shadow-big;
+    z-index: 1;
+
+    @media screen and (min-width: $split-breakpoint) {
+      justify-content: flex-end;
+      padding: $spacing;
+    }
+  }
+
+  .LightSide {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: $spacing * 2;
+
+    background-image: $primary-gradient;
+    background-attachment: fixed;
+    background-size: cover;
+
+    @media screen and (max-width: $split-breakpoint) {
+      align-items: center;
+      justify-content: flex-start;
+      padding: $spacing;
+    }
+  }
+}
+</file>
+
+<file path="src/App.tsx">
+import React, { useState } from "react";
+⋮----
+import { GCodeInputBlock } from "./blocks/GCodeInputBlock";
+import { GCodeOutputBlock } from "./blocks/GCodeOutputBlock";
+import { GCodeSettingsBlock } from "./blocks/GCodeSettingsBlock";
+import { TowerSettings } from "./blocks/TowerSettings";
+import { SummaryBlock } from "./blocks/SummaryBlock";
+import { Intro } from "./Intro";
+⋮----
+import { useSelector } from "./state";
+import { GCodeFile, GCodeProcessor, saveLines } from "./gcode";
+⋮----
+const onDragPrevent = (e: React.DragEvent) =>
+⋮----
+const onFileDrop = (e: React.DragEvent) =>
+</file>
+
+<file path="src/Block.scss">
+@import "~sass-material-colors";
+@import "./scss/variables";
+@import "./scss/mixins";
+
+.Block {
+  border-radius: $border-radius;
+  box-shadow: $shadow-big;
+
+  overflow: hidden;
+  margin: ($spacing / 2) 0;
+  width: $block-width;
+
+  &:first-child {
+    margin-top: 0;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  @include on-mobile {
+    width: 100%;
+  }
+}
+
+.BlockHeader {
+  .BlockHeader__title {
+    flex-grow: 1;
+    background-color: $block-bg-title;
+    padding: $spacing;
+    font-weight: bold;
+  }
+}
+
+.BlockContent {
+  position: relative;
+  background-color: $block-bg-content;
+
+  .BlockContent__text {
+    p:first-child {
+      margin-top: 0;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    padding: $spacing;
+  }
+
+  button {
+    padding: $spacing;
+    width: 100%;
+    color: white;
+    box-shadow: $shadow-small;
+
+    background-image: $input-gradient;
+    background-attachment: fixed;
+    background-size: cover;
+
+    border: none;
+    outline: none;
+
+    border-radius: $border-radius;
+
+    &:hover {
+      background-image: $input-gradient-hover;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+    }
+  }
+
+  span.InlineCode {
+    background-color: rgba(white, 0.2);
+    padding: 0 0.25em;
+    border-radius: ($border-radius / 2);
+  }
+}
+</file>
+
+<file path="src/Block.tsx">
+import React, { FunctionComponent } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+⋮----
+export const Block: FunctionComponent<{
+  title: string;
+  titleIcon: IconProp;
+}> = (props) =>
+</file>
+
+<file path="src/CopyCode.scss">
+@import "./scss/variables";
+
+.CopyCode {
+  display: block;
+  margin: $spacing 0;
+  padding: $spacing;
+  background-color: $dark-input-bg;
+  border-radius: 0.5em;
+  box-shadow: $shadow-small;
+  line-height: 1;
+
+  &:hover {
+    background-color: $dark-input-bg-hover;
+    cursor: pointer;
+  }
+}
+
+.CopyCodeStatus {
+  float: right;
+}
+
+.CopyCodeStatusText {
+  display: inline-block;
+  visibility: hidden;
+  padding-right: 0.5em;
+
+  &--visible {
+    visibility: visible;
+  }
+}
+</file>
+
+<file path="src/CopyCode.tsx">
+import React, { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCopy } from "@fortawesome/free-solid-svg-icons";
+import classNames from "classnames";
+</file>
+
+<file path="src/Header.scss">
+@import "./scss/mixins";
+
+header {
+  margin-top: 2em;
+
+  text-align: center;
+  text-shadow: 0.1em 0.1em rgba(0, 0, 0, 0.25);
+
+  h1 {
+    font-size: 48pt;
+    margin: 0;
+
+    @include on-mobile {
+      font-size: 30pt;
+    }
+  }
+
+  h2 {
+    font-size: 12pt;
+    margin-top: 1rem;
+    font-weight: normal;
+
+    @include on-mobile {
+      margin-top: 1.5rem;
+    }
+  }
+}
+</file>
+
+<file path="src/Header.tsx">
+import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faStream } from "@fortawesome/free-solid-svg-icons";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
+⋮----
+<a href={`https://github.com/Knifa/tower-tool/tree/${tag}`}>{tag}</a> by{" "}
+</file>
+
+<file path="src/index.scss">
+@import-normalize;
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+
+@import "./scss/variables";
+
+* {
+  font-family: "Roboto Mono", monospace;
+}
+
+html,
+body,
+#root {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+}
+
+html {
+  box-sizing: border-box;
+}
+
+body {
+  color: white;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+strong {
+  font-weight: 700;
+}
+
+p {
+  line-height: 1.5;
+}
+
+a {
+  &:link,
+  &:visited,
+  &:active {
+    color: white !important;
+  }
+
+  &:hover {
+    font-weight: bold;
+  }
+}
+</file>
+
+<file path="src/index.tsx">
+import React from "react";
+import ReactDOM from "react-dom";
+⋮----
+import { App } from "./App";
+⋮----
+import { Provider } from "react-redux";
+import { store } from "./state";
+⋮----
+// If you want your app to work offline and load faster, you can change
+// unregister() to register() below. Note this comes with some pitfalls.
+// Learn more about service workers: https://bit.ly/CRA-PWA
+</file>
+
+<file path="src/Intro.scss">
+@import "./scss/variables";
+@import "./scss/mixins";
+
+.Intro {
+  width: 600px;
+  margin: 0 $spacing;
+
+  @include on-mobile {
+    width: 100%;
+  }
+
+  h2,
+  h3 {
+    margin-top: 2em;
+    margin-bottom: 0;
+  }
+}
+</file>
+
+<file path="src/Intro.tsx">
+import React, { FunctionComponent } from "react";
+import CopyCode from "./CopyCode";
+import { TestShapes } from "./TestShapes";
+import { Header } from "./Header";
+</file>
+
+<file path="src/react-app-env.d.ts">
+/// <reference types="react-scripts" />
+</file>
+
+<file path="src/serviceWorker.ts">
+// This optional code is used to register a service worker.
+// register() is not called by default.
+⋮----
+// This lets the app load faster on subsequent visits in production, and gives
+// it offline capabilities. However, it also means that developers (and users)
+// will only see deployed updates on subsequent visits to a page, after all the
+// existing tabs open on the page have been closed, since previously cached
+// resources are updated in the background.
+⋮----
+// To learn more about the benefits of this model and instructions on how to
+// opt-in, read https://bit.ly/CRA-PWA
+⋮----
+// [::1] is the IPv6 localhost address.
+⋮----
+// 127.0.0.0/8 are considered localhost for IPv4.
+⋮----
+type Config = {
+  onSuccess?: (registration: ServiceWorkerRegistration) => void;
+  onUpdate?: (registration: ServiceWorkerRegistration) => void;
+};
+⋮----
+export function register(config?: Config)
+⋮----
+// The URL constructor is available in all browsers that support SW.
+⋮----
+// Our service worker won't work if PUBLIC_URL is on a different origin
+// from what our page is served on. This might happen if a CDN is used to
+// serve assets; see https://github.com/facebook/create-react-app/issues/2374
+⋮----
+// This is running on localhost. Let's check if a service worker still exists or not.
+⋮----
+// Add some additional logging to localhost, pointing developers to the
+// service worker/PWA documentation.
+⋮----
+// Is not localhost. Just register service worker
+⋮----
+function registerValidSW(swUrl: string, config?: Config)
+⋮----
+// At this point, the updated precached content has been fetched,
+// but the previous service worker will still serve the older
+// content until all client tabs are closed.
+⋮----
+// Execute callback
+⋮----
+// At this point, everything has been precached.
+// It's the perfect time to display a
+// "Content is cached for offline use." message.
+⋮----
+// Execute callback
+⋮----
+function checkValidServiceWorker(swUrl: string, config?: Config)
+⋮----
+// Check if the service worker can be found. If it can't reload the page.
+⋮----
+// Ensure service worker exists, and that we really are getting a JS file.
+⋮----
+// No service worker found. Probably a different app. Reload the page.
+⋮----
+// Service worker found. Proceed as normal.
+⋮----
+export function unregister()
+</file>
+
+<file path="src/setupTests.ts">
+// jest-dom adds custom jest matchers for asserting on DOM nodes.
+// allows you to do things like:
+// expect(element).toHaveTextContent(/react/i)
+// learn more: https://github.com/testing-library/jest-dom
+</file>
+
+<file path="src/Skyline.scss">
+.Skyline {
+  opacity: 0.25;
+
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -100;
+
+  .Skyline__cloud {
+    opacity: 0.15;
+
+    position: absolute;
+    top: 0;
+    width: 40vw;
+    height: 40vw;
+
+    background-image: url(cloud.svg);
+    background-repeat: no-repeat;
+    background-attachment: local;
+    background-size: 100%;
+  }
+
+  .Skyline__cloud--a {
+    left: -30vw;
+    top: -25vh;
+  }
+
+  .Skyline__cloud--b {
+    left: 60vw;
+    top: -15vh;
+  }
+
+  .Skyline__front,
+  .Skyline__back {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+
+    background-repeat: repeat-x;
+    background-attachment: fixed;
+    background-position-y: bottom;
+    background-size: auto 50vh;
+  }
+
+  .Skyline__front {
+    background-image: url(sky_front.svg);
+  }
+
+  .Skyline__back {
+    background-image: url(sky_back.svg);
+    opacity: 0.5;
+  }
+}
+</file>
+
+<file path="src/skyline.svg">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="700" viewBox="0 0 1000 600"><defs><clipPath id="a"><rect width="1000" height="700" style="fill:none"/></clipPath></defs><title>Artboard 64</title><g style="clip-path:url(#a)"><polygon points="1029.56 343.48 1029.56 544.7 1003.59 544.7 1003.59 464.62 966.8 433.42 966.8 312.27 920.27 312.27 893.22 289.33 858.59 289.33 858.59 411.39 775.27 411.39 775.27 549.97 753.62 549.97 753.62 356.33 693.03 382.94 693.03 498.58 676.8 498.58 676.8 320.54 656.24 320.54 656.24 268.22 635.68 268.22 635.68 256.29 627.02 256.29 627.02 266.39 576.16 266.39 576.16 306.77 528.55 306.77 516.64 320.54 516.64 485.73 476.07 485.73 476.07 452.23 450.64 430.67 450.64 351.74 361.91 351.74 361.91 416.9 329.44 416.9 329.44 471.96 290.49 508.68 265.6 508.68 265.6 334.3 196.34 293.92 196.34 455.44 180.11 455.44 180.11 344.4 97.87 344.4 97.87 382.94 60 382.94 60 567.41 43.77 567.41 43.77 487.57 -11.42 487.57 -11.42 462.79 -21.16 450.86 -80.67 450.86 -85 772.99 942.08 772.99 1003.59 772.99 1029.56 772.99 1100 772.99 1100 343.48 1029.56 343.48" style="opacity: 0.25"/><path d="M676.8,412.09h4.86V364.64h53L693,382.94V498.58H676.8ZM753.62,550h21.64V411.39h66V364.64H753.62ZM966.8,433.42l36.79,31.2V544.7h26V343.48h.44V322.71H966.8ZM893.21,289.33l27.05,22.94h14.36V251H862.85v38.34ZM180.11,344.4v111h16.23V293.92L247.91,324V265.71H174v24.73l-14.46,15.9V344.4ZM-21.16,450.86l9.74,11.93v24.78H43.77v79.84H60V382.94H97.87V344.4h35.4v-8H48.1l-14.46,15.9v22.38H-46.71l-1.14,76.22Zm497.22,1.38v33.5h40.58v-52.8H501.82V357.56H457.9v79.26ZM265.6,508.67h24.89l39-36.71V416.9h32.46V351.74h4.92V299.86H280l-7.5,8.24V412.91h-7Z" style="opacity:0.11"/></g></svg>
+</file>
+
+<file path="src/TestShapes.scss">
+@import "./scss/variables";
+@import "./scss/mixins";
+
+.TestShapeContainer {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-wrap: wrap;
+
+  margin: 0 20%;
+
+  @include on-mobile {
+    margin: 0;
+  }
+
+  .TestShape {
+    display: block;
+    margin: ($spacing / 4);
+    text-align: center;
+
+    padding: ($spacing / 2) $spacing;
+    background-color: $dark-input-bg;
+    border-radius: $border-radius;
+    box-shadow: $shadow-small;
+
+    text-decoration: none;
+
+    &:link,
+    &:visited,
+    &:active {
+      color: white;
+    }
+
+    &:hover {
+      background-color: $dark-input-bg-hover;
+    }
+
+    video,
+    img {
+      max-height: 8em;
+    }
+
+    p {
+      margin: 0;
+      padding: 0;
+    }
+  }
+}
+</file>
+
+<file path="src/TestShapes.tsx">
+import React, { useRef } from "react";
+⋮----
+export const TestShapes: React.FunctionComponent = (props) =>
+</file>
+
+<file path="src/utils.ts">
+import { TransformVariable } from "./gcode/transformers";
+⋮----
+export interface Range {
+  start: number;
+  stop: number;
+  step: number;
+}
+⋮----
+export function snapRange(range: Range): Range
+⋮----
+export function rangeValues(range: Range): number[]
+⋮----
+type VariableCopy = {
+  readonly name: string;
+  readonly units: string | null;
+  readonly step: number;
+};
+</file>
+
+<file path=".gitignore">
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+</file>
+
+<file path="export_env.sh">
+#!/bin/sh
+
+export REACT_APP_GIT_TAG=$(git describe --tags)
+</file>
+
+<file path="LICENSE.md">
+GNU GENERAL PUBLIC LICENSE
+                       Version 3, 29 June 2007
+
+ Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+
+                            Preamble
+
+  The GNU General Public License is a free, copyleft license for
+software and other kinds of works.
+
+  The licenses for most software and other practical works are designed
+to take away your freedom to share and change the works.  By contrast,
+the GNU General Public License is intended to guarantee your freedom to
+share and change all versions of a program--to make sure it remains free
+software for all its users.  We, the Free Software Foundation, use the
+GNU General Public License for most of our software; it applies also to
+any other work released this way by its authors.  You can apply it to
+your programs, too.
+
+  When we speak of free software, we are referring to freedom, not
+price.  Our General Public Licenses are designed to make sure that you
+have the freedom to distribute copies of free software (and charge for
+them if you wish), that you receive source code or can get it if you
+want it, that you can change the software or use pieces of it in new
+free programs, and that you know you can do these things.
+
+  To protect your rights, we need to prevent others from denying you
+these rights or asking you to surrender the rights.  Therefore, you have
+certain responsibilities if you distribute copies of the software, or if
+you modify it: responsibilities to respect the freedom of others.
+
+  For example, if you distribute copies of such a program, whether
+gratis or for a fee, you must pass on to the recipients the same
+freedoms that you received.  You must make sure that they, too, receive
+or can get the source code.  And you must show them these terms so they
+know their rights.
+
+  Developers that use the GNU GPL protect your rights with two steps:
+(1) assert copyright on the software, and (2) offer you this License
+giving you legal permission to copy, distribute and/or modify it.
+
+  For the developers' and authors' protection, the GPL clearly explains
+that there is no warranty for this free software.  For both users' and
+authors' sake, the GPL requires that modified versions be marked as
+changed, so that their problems will not be attributed erroneously to
+authors of previous versions.
+
+  Some devices are designed to deny users access to install or run
+modified versions of the software inside them, although the manufacturer
+can do so.  This is fundamentally incompatible with the aim of
+protecting users' freedom to change the software.  The systematic
+pattern of such abuse occurs in the area of products for individuals to
+use, which is precisely where it is most unacceptable.  Therefore, we
+have designed this version of the GPL to prohibit the practice for those
+products.  If such problems arise substantially in other domains, we
+stand ready to extend this provision to those domains in future versions
+of the GPL, as needed to protect the freedom of users.
+
+  Finally, every program is threatened constantly by software patents.
+States should not allow patents to restrict development and use of
+software on general-purpose computers, but in those that do, we wish to
+avoid the special danger that patents applied to a free program could
+make it effectively proprietary.  To prevent this, the GPL assures that
+patents cannot be used to render the program non-free.
+
+  The precise terms and conditions for copying, distribution and
+modification follow.
+
+                       TERMS AND CONDITIONS
+
+  0. Definitions.
+
+  "This License" refers to version 3 of the GNU General Public License.
+
+  "Copyright" also means copyright-like laws that apply to other kinds of
+works, such as semiconductor masks.
+
+  "The Program" refers to any copyrightable work licensed under this
+License.  Each licensee is addressed as "you".  "Licensees" and
+"recipients" may be individuals or organizations.
+
+  To "modify" a work means to copy from or adapt all or part of the work
+in a fashion requiring copyright permission, other than the making of an
+exact copy.  The resulting work is called a "modified version" of the
+earlier work or a work "based on" the earlier work.
+
+  A "covered work" means either the unmodified Program or a work based
+on the Program.
+
+  To "propagate" a work means to do anything with it that, without
+permission, would make you directly or secondarily liable for
+infringement under applicable copyright law, except executing it on a
+computer or modifying a private copy.  Propagation includes copying,
+distribution (with or without modification), making available to the
+public, and in some countries other activities as well.
+
+  To "convey" a work means any kind of propagation that enables other
+parties to make or receive copies.  Mere interaction with a user through
+a computer network, with no transfer of a copy, is not conveying.
+
+  An interactive user interface displays "Appropriate Legal Notices"
+to the extent that it includes a convenient and prominently visible
+feature that (1) displays an appropriate copyright notice, and (2)
+tells the user that there is no warranty for the work (except to the
+extent that warranties are provided), that licensees may convey the
+work under this License, and how to view a copy of this License.  If
+the interface presents a list of user commands or options, such as a
+menu, a prominent item in the list meets this criterion.
+
+  1. Source Code.
+
+  The "source code" for a work means the preferred form of the work
+for making modifications to it.  "Object code" means any non-source
+form of a work.
+
+  A "Standard Interface" means an interface that either is an official
+standard defined by a recognized standards body, or, in the case of
+interfaces specified for a particular programming language, one that
+is widely used among developers working in that language.
+
+  The "System Libraries" of an executable work include anything, other
+than the work as a whole, that (a) is included in the normal form of
+packaging a Major Component, but which is not part of that Major
+Component, and (b) serves only to enable use of the work with that
+Major Component, or to implement a Standard Interface for which an
+implementation is available to the public in source code form.  A
+"Major Component", in this context, means a major essential component
+(kernel, window system, and so on) of the specific operating system
+(if any) on which the executable work runs, or a compiler used to
+produce the work, or an object code interpreter used to run it.
+
+  The "Corresponding Source" for a work in object code form means all
+the source code needed to generate, install, and (for an executable
+work) run the object code and to modify the work, including scripts to
+control those activities.  However, it does not include the work's
+System Libraries, or general-purpose tools or generally available free
+programs which are used unmodified in performing those activities but
+which are not part of the work.  For example, Corresponding Source
+includes interface definition files associated with source files for
+the work, and the source code for shared libraries and dynamically
+linked subprograms that the work is specifically designed to require,
+such as by intimate data communication or control flow between those
+subprograms and other parts of the work.
+
+  The Corresponding Source need not include anything that users
+can regenerate automatically from other parts of the Corresponding
+Source.
+
+  The Corresponding Source for a work in source code form is that
+same work.
+
+  2. Basic Permissions.
+
+  All rights granted under this License are granted for the term of
+copyright on the Program, and are irrevocable provided the stated
+conditions are met.  This License explicitly affirms your unlimited
+permission to run the unmodified Program.  The output from running a
+covered work is covered by this License only if the output, given its
+content, constitutes a covered work.  This License acknowledges your
+rights of fair use or other equivalent, as provided by copyright law.
+
+  You may make, run and propagate covered works that you do not
+convey, without conditions so long as your license otherwise remains
+in force.  You may convey covered works to others for the sole purpose
+of having them make modifications exclusively for you, or provide you
+with facilities for running those works, provided that you comply with
+the terms of this License in conveying all material for which you do
+not control copyright.  Those thus making or running the covered works
+for you must do so exclusively on your behalf, under your direction
+and control, on terms that prohibit them from making any copies of
+your copyrighted material outside their relationship with you.
+
+  Conveying under any other circumstances is permitted solely under
+the conditions stated below.  Sublicensing is not allowed; section 10
+makes it unnecessary.
+
+  3. Protecting Users' Legal Rights From Anti-Circumvention Law.
+
+  No covered work shall be deemed part of an effective technological
+measure under any applicable law fulfilling obligations under article
+11 of the WIPO copyright treaty adopted on 20 December 1996, or
+similar laws prohibiting or restricting circumvention of such
+measures.
+
+  When you convey a covered work, you waive any legal power to forbid
+circumvention of technological measures to the extent such circumvention
+is effected by exercising rights under this License with respect to
+the covered work, and you disclaim any intention to limit operation or
+modification of the work as a means of enforcing, against the work's
+users, your or third parties' legal rights to forbid circumvention of
+technological measures.
+
+  4. Conveying Verbatim Copies.
+
+  You may convey verbatim copies of the Program's source code as you
+receive it, in any medium, provided that you conspicuously and
+appropriately publish on each copy an appropriate copyright notice;
+keep intact all notices stating that this License and any
+non-permissive terms added in accord with section 7 apply to the code;
+keep intact all notices of the absence of any warranty; and give all
+recipients a copy of this License along with the Program.
+
+  You may charge any price or no price for each copy that you convey,
+and you may offer support or warranty protection for a fee.
+
+  5. Conveying Modified Source Versions.
+
+  You may convey a work based on the Program, or the modifications to
+produce it from the Program, in the form of source code under the
+terms of section 4, provided that you also meet all of these conditions:
+
+    a) The work must carry prominent notices stating that you modified
+    it, and giving a relevant date.
+
+    b) The work must carry prominent notices stating that it is
+    released under this License and any conditions added under section
+    7.  This requirement modifies the requirement in section 4 to
+    "keep intact all notices".
+
+    c) You must license the entire work, as a whole, under this
+    License to anyone who comes into possession of a copy.  This
+    License will therefore apply, along with any applicable section 7
+    additional terms, to the whole of the work, and all its parts,
+    regardless of how they are packaged.  This License gives no
+    permission to license the work in any other way, but it does not
+    invalidate such permission if you have separately received it.
+
+    d) If the work has interactive user interfaces, each must display
+    Appropriate Legal Notices; however, if the Program has interactive
+    interfaces that do not display Appropriate Legal Notices, your
+    work need not make them do so.
+
+  A compilation of a covered work with other separate and independent
+works, which are not by their nature extensions of the covered work,
+and which are not combined with it such as to form a larger program,
+in or on a volume of a storage or distribution medium, is called an
+"aggregate" if the compilation and its resulting copyright are not
+used to limit the access or legal rights of the compilation's users
+beyond what the individual works permit.  Inclusion of a covered work
+in an aggregate does not cause this License to apply to the other
+parts of the aggregate.
+
+  6. Conveying Non-Source Forms.
+
+  You may convey a covered work in object code form under the terms
+of sections 4 and 5, provided that you also convey the
+machine-readable Corresponding Source under the terms of this License,
+in one of these ways:
+
+    a) Convey the object code in, or embodied in, a physical product
+    (including a physical distribution medium), accompanied by the
+    Corresponding Source fixed on a durable physical medium
+    customarily used for software interchange.
+
+    b) Convey the object code in, or embodied in, a physical product
+    (including a physical distribution medium), accompanied by a
+    written offer, valid for at least three years and valid for as
+    long as you offer spare parts or customer support for that product
+    model, to give anyone who possesses the object code either (1) a
+    copy of the Corresponding Source for all the software in the
+    product that is covered by this License, on a durable physical
+    medium customarily used for software interchange, for a price no
+    more than your reasonable cost of physically performing this
+    conveying of source, or (2) access to copy the
+    Corresponding Source from a network server at no charge.
+
+    c) Convey individual copies of the object code with a copy of the
+    written offer to provide the Corresponding Source.  This
+    alternative is allowed only occasionally and noncommercially, and
+    only if you received the object code with such an offer, in accord
+    with subsection 6b.
+
+    d) Convey the object code by offering access from a designated
+    place (gratis or for a charge), and offer equivalent access to the
+    Corresponding Source in the same way through the same place at no
+    further charge.  You need not require recipients to copy the
+    Corresponding Source along with the object code.  If the place to
+    copy the object code is a network server, the Corresponding Source
+    may be on a different server (operated by you or a third party)
+    that supports equivalent copying facilities, provided you maintain
+    clear directions next to the object code saying where to find the
+    Corresponding Source.  Regardless of what server hosts the
+    Corresponding Source, you remain obligated to ensure that it is
+    available for as long as needed to satisfy these requirements.
+
+    e) Convey the object code using peer-to-peer transmission, provided
+    you inform other peers where the object code and Corresponding
+    Source of the work are being offered to the general public at no
+    charge under subsection 6d.
+
+  A separable portion of the object code, whose source code is excluded
+from the Corresponding Source as a System Library, need not be
+included in conveying the object code work.
+
+  A "User Product" is either (1) a "consumer product", which means any
+tangible personal property which is normally used for personal, family,
+or household purposes, or (2) anything designed or sold for incorporation
+into a dwelling.  In determining whether a product is a consumer product,
+doubtful cases shall be resolved in favor of coverage.  For a particular
+product received by a particular user, "normally used" refers to a
+typical or common use of that class of product, regardless of the status
+of the particular user or of the way in which the particular user
+actually uses, or expects or is expected to use, the product.  A product
+is a consumer product regardless of whether the product has substantial
+commercial, industrial or non-consumer uses, unless such uses represent
+the only significant mode of use of the product.
+
+  "Installation Information" for a User Product means any methods,
+procedures, authorization keys, or other information required to install
+and execute modified versions of a covered work in that User Product from
+a modified version of its Corresponding Source.  The information must
+suffice to ensure that the continued functioning of the modified object
+code is in no case prevented or interfered with solely because
+modification has been made.
+
+  If you convey an object code work under this section in, or with, or
+specifically for use in, a User Product, and the conveying occurs as
+part of a transaction in which the right of possession and use of the
+User Product is transferred to the recipient in perpetuity or for a
+fixed term (regardless of how the transaction is characterized), the
+Corresponding Source conveyed under this section must be accompanied
+by the Installation Information.  But this requirement does not apply
+if neither you nor any third party retains the ability to install
+modified object code on the User Product (for example, the work has
+been installed in ROM).
+
+  The requirement to provide Installation Information does not include a
+requirement to continue to provide support service, warranty, or updates
+for a work that has been modified or installed by the recipient, or for
+the User Product in which it has been modified or installed.  Access to a
+network may be denied when the modification itself materially and
+adversely affects the operation of the network or violates the rules and
+protocols for communication across the network.
+
+  Corresponding Source conveyed, and Installation Information provided,
+in accord with this section must be in a format that is publicly
+documented (and with an implementation available to the public in
+source code form), and must require no special password or key for
+unpacking, reading or copying.
+
+  7. Additional Terms.
+
+  "Additional permissions" are terms that supplement the terms of this
+License by making exceptions from one or more of its conditions.
+Additional permissions that are applicable to the entire Program shall
+be treated as though they were included in this License, to the extent
+that they are valid under applicable law.  If additional permissions
+apply only to part of the Program, that part may be used separately
+under those permissions, but the entire Program remains governed by
+this License without regard to the additional permissions.
+
+  When you convey a copy of a covered work, you may at your option
+remove any additional permissions from that copy, or from any part of
+it.  (Additional permissions may be written to require their own
+removal in certain cases when you modify the work.)  You may place
+additional permissions on material, added by you to a covered work,
+for which you have or can give appropriate copyright permission.
+
+  Notwithstanding any other provision of this License, for material you
+add to a covered work, you may (if authorized by the copyright holders of
+that material) supplement the terms of this License with terms:
+
+    a) Disclaiming warranty or limiting liability differently from the
+    terms of sections 15 and 16 of this License; or
+
+    b) Requiring preservation of specified reasonable legal notices or
+    author attributions in that material or in the Appropriate Legal
+    Notices displayed by works containing it; or
+
+    c) Prohibiting misrepresentation of the origin of that material, or
+    requiring that modified versions of such material be marked in
+    reasonable ways as different from the original version; or
+
+    d) Limiting the use for publicity purposes of names of licensors or
+    authors of the material; or
+
+    e) Declining to grant rights under trademark law for use of some
+    trade names, trademarks, or service marks; or
+
+    f) Requiring indemnification of licensors and authors of that
+    material by anyone who conveys the material (or modified versions of
+    it) with contractual assumptions of liability to the recipient, for
+    any liability that these contractual assumptions directly impose on
+    those licensors and authors.
+
+  All other non-permissive additional terms are considered "further
+restrictions" within the meaning of section 10.  If the Program as you
+received it, or any part of it, contains a notice stating that it is
+governed by this License along with a term that is a further
+restriction, you may remove that term.  If a license document contains
+a further restriction but permits relicensing or conveying under this
+License, you may add to a covered work material governed by the terms
+of that license document, provided that the further restriction does
+not survive such relicensing or conveying.
+
+  If you add terms to a covered work in accord with this section, you
+must place, in the relevant source files, a statement of the
+additional terms that apply to those files, or a notice indicating
+where to find the applicable terms.
+
+  Additional terms, permissive or non-permissive, may be stated in the
+form of a separately written license, or stated as exceptions;
+the above requirements apply either way.
+
+  8. Termination.
+
+  You may not propagate or modify a covered work except as expressly
+provided under this License.  Any attempt otherwise to propagate or
+modify it is void, and will automatically terminate your rights under
+this License (including any patent licenses granted under the third
+paragraph of section 11).
+
+  However, if you cease all violation of this License, then your
+license from a particular copyright holder is reinstated (a)
+provisionally, unless and until the copyright holder explicitly and
+finally terminates your license, and (b) permanently, if the copyright
+holder fails to notify you of the violation by some reasonable means
+prior to 60 days after the cessation.
+
+  Moreover, your license from a particular copyright holder is
+reinstated permanently if the copyright holder notifies you of the
+violation by some reasonable means, this is the first time you have
+received notice of violation of this License (for any work) from that
+copyright holder, and you cure the violation prior to 30 days after
+your receipt of the notice.
+
+  Termination of your rights under this section does not terminate the
+licenses of parties who have received copies or rights from you under
+this License.  If your rights have been terminated and not permanently
+reinstated, you do not qualify to receive new licenses for the same
+material under section 10.
+
+  9. Acceptance Not Required for Having Copies.
+
+  You are not required to accept this License in order to receive or
+run a copy of the Program.  Ancillary propagation of a covered work
+occurring solely as a consequence of using peer-to-peer transmission
+to receive a copy likewise does not require acceptance.  However,
+nothing other than this License grants you permission to propagate or
+modify any covered work.  These actions infringe copyright if you do
+not accept this License.  Therefore, by modifying or propagating a
+covered work, you indicate your acceptance of this License to do so.
+
+  10. Automatic Licensing of Downstream Recipients.
+
+  Each time you convey a covered work, the recipient automatically
+receives a license from the original licensors, to run, modify and
+propagate that work, subject to this License.  You are not responsible
+for enforcing compliance by third parties with this License.
+
+  An "entity transaction" is a transaction transferring control of an
+organization, or substantially all assets of one, or subdividing an
+organization, or merging organizations.  If propagation of a covered
+work results from an entity transaction, each party to that
+transaction who receives a copy of the work also receives whatever
+licenses to the work the party's predecessor in interest had or could
+give under the previous paragraph, plus a right to possession of the
+Corresponding Source of the work from the predecessor in interest, if
+the predecessor has it or can get it with reasonable efforts.
+
+  You may not impose any further restrictions on the exercise of the
+rights granted or affirmed under this License.  For example, you may
+not impose a license fee, royalty, or other charge for exercise of
+rights granted under this License, and you may not initiate litigation
+(including a cross-claim or counterclaim in a lawsuit) alleging that
+any patent claim is infringed by making, using, selling, offering for
+sale, or importing the Program or any portion of it.
+
+  11. Patents.
+
+  A "contributor" is a copyright holder who authorizes use under this
+License of the Program or a work on which the Program is based.  The
+work thus licensed is called the contributor's "contributor version".
+
+  A contributor's "essential patent claims" are all patent claims
+owned or controlled by the contributor, whether already acquired or
+hereafter acquired, that would be infringed by some manner, permitted
+by this License, of making, using, or selling its contributor version,
+but do not include claims that would be infringed only as a
+consequence of further modification of the contributor version.  For
+purposes of this definition, "control" includes the right to grant
+patent sublicenses in a manner consistent with the requirements of
+this License.
+
+  Each contributor grants you a non-exclusive, worldwide, royalty-free
+patent license under the contributor's essential patent claims, to
+make, use, sell, offer for sale, import and otherwise run, modify and
+propagate the contents of its contributor version.
+
+  In the following three paragraphs, a "patent license" is any express
+agreement or commitment, however denominated, not to enforce a patent
+(such as an express permission to practice a patent or covenant not to
+sue for patent infringement).  To "grant" such a patent license to a
+party means to make such an agreement or commitment not to enforce a
+patent against the party.
+
+  If you convey a covered work, knowingly relying on a patent license,
+and the Corresponding Source of the work is not available for anyone
+to copy, free of charge and under the terms of this License, through a
+publicly available network server or other readily accessible means,
+then you must either (1) cause the Corresponding Source to be so
+available, or (2) arrange to deprive yourself of the benefit of the
+patent license for this particular work, or (3) arrange, in a manner
+consistent with the requirements of this License, to extend the patent
+license to downstream recipients.  "Knowingly relying" means you have
+actual knowledge that, but for the patent license, your conveying the
+covered work in a country, or your recipient's use of the covered work
+in a country, would infringe one or more identifiable patents in that
+country that you have reason to believe are valid.
+
+  If, pursuant to or in connection with a single transaction or
+arrangement, you convey, or propagate by procuring conveyance of, a
+covered work, and grant a patent license to some of the parties
+receiving the covered work authorizing them to use, propagate, modify
+or convey a specific copy of the covered work, then the patent license
+you grant is automatically extended to all recipients of the covered
+work and works based on it.
+
+  A patent license is "discriminatory" if it does not include within
+the scope of its coverage, prohibits the exercise of, or is
+conditioned on the non-exercise of one or more of the rights that are
+specifically granted under this License.  You may not convey a covered
+work if you are a party to an arrangement with a third party that is
+in the business of distributing software, under which you make payment
+to the third party based on the extent of your activity of conveying
+the work, and under which the third party grants, to any of the
+parties who would receive the covered work from you, a discriminatory
+patent license (a) in connection with copies of the covered work
+conveyed by you (or copies made from those copies), or (b) primarily
+for and in connection with specific products or compilations that
+contain the covered work, unless you entered into that arrangement,
+or that patent license was granted, prior to 28 March 2007.
+
+  Nothing in this License shall be construed as excluding or limiting
+any implied license or other defenses to infringement that may
+otherwise be available to you under applicable patent law.
+
+  12. No Surrender of Others' Freedom.
+
+  If conditions are imposed on you (whether by court order, agreement or
+otherwise) that contradict the conditions of this License, they do not
+excuse you from the conditions of this License.  If you cannot convey a
+covered work so as to satisfy simultaneously your obligations under this
+License and any other pertinent obligations, then as a consequence you may
+not convey it at all.  For example, if you agree to terms that obligate you
+to collect a royalty for further conveying from those to whom you convey
+the Program, the only way you could satisfy both those terms and this
+License would be to refrain entirely from conveying the Program.
+
+  13. Use with the GNU Affero General Public License.
+
+  Notwithstanding any other provision of this License, you have
+permission to link or combine any covered work with a work licensed
+under version 3 of the GNU Affero General Public License into a single
+combined work, and to convey the resulting work.  The terms of this
+License will continue to apply to the part which is the covered work,
+but the special requirements of the GNU Affero General Public License,
+section 13, concerning interaction through a network will apply to the
+combination as such.
+
+  14. Revised Versions of this License.
+
+  The Free Software Foundation may publish revised and/or new versions of
+the GNU General Public License from time to time.  Such new versions will
+be similar in spirit to the present version, but may differ in detail to
+address new problems or concerns.
+
+  Each version is given a distinguishing version number.  If the
+Program specifies that a certain numbered version of the GNU General
+Public License "or any later version" applies to it, you have the
+option of following the terms and conditions either of that numbered
+version or of any later version published by the Free Software
+Foundation.  If the Program does not specify a version number of the
+GNU General Public License, you may choose any version ever published
+by the Free Software Foundation.
+
+  If the Program specifies that a proxy can decide which future
+versions of the GNU General Public License can be used, that proxy's
+public statement of acceptance of a version permanently authorizes you
+to choose that version for the Program.
+
+  Later license versions may give you additional or different
+permissions.  However, no additional obligations are imposed on any
+author or copyright holder as a result of your choosing to follow a
+later version.
+
+  15. Disclaimer of Warranty.
+
+  THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
+APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT
+HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY
+OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM
+IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF
+ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
+
+  16. Limitation of Liability.
+
+  IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS
+THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY
+GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF
+DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD
+PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS),
+EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGES.
+
+  17. Interpretation of Sections 15 and 16.
+
+  If the disclaimer of warranty and limitation of liability provided
+above cannot be given local legal effect according to their terms,
+reviewing courts shall apply local law that most closely approximates
+an absolute waiver of all civil liability in connection with the
+Program, unless a warranty or assumption of liability accompanies a
+copy of the Program in return for a fee.
+
+                     END OF TERMS AND CONDITIONS
+
+            How to Apply These Terms to Your New Programs
+
+  If you develop a new program, and you want it to be of the greatest
+possible use to the public, the best way to achieve this is to make it
+free software which everyone can redistribute and change under these terms.
+
+  To do so, attach the following notices to the program.  It is safest
+to attach them to the start of each source file to most effectively
+state the exclusion of warranty; and each file should have at least
+the "copyright" line and a pointer to where the full notice is found.
+
+    <one line to give the program's name and a brief idea of what it does.>
+    Copyright (C) <year>  <name of author>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+Also add information on how to contact you by electronic and paper mail.
+
+  If the program does terminal interaction, make it output a short
+notice like this when it starts in an interactive mode:
+
+    <program>  Copyright (C) <year>  <name of author>
+    This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+    This is free software, and you are welcome to redistribute it
+    under certain conditions; type `show c' for details.
+
+The hypothetical commands `show w' and `show c' should show the appropriate
+parts of the General Public License.  Of course, your program's commands
+might be different; for a GUI interface, you would use an "about box".
+
+  You should also get your employer (if you work as a programmer) or school,
+if any, to sign a "copyright disclaimer" for the program, if necessary.
+For more information on this, and how to apply and follow the GNU GPL, see
+<https://www.gnu.org/licenses/>.
+
+  The GNU General Public License does not permit incorporating your program
+into proprietary programs.  If your program is a subroutine library, you
+may consider it more useful to permit linking proprietary applications with
+the library.  If this is what you want to do, use the GNU Lesser General
+Public License instead of this License.  But first, please read
+<https://www.gnu.org/licenses/why-not-lgpl.html>.
+</file>
+
+<file path="package.json">
+{
+  "name": "tower-tool",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.30",
+    "@fortawesome/free-brands-svg-icons": "^5.14.0",
+    "@fortawesome/free-solid-svg-icons": "^5.14.0",
+    "@fortawesome/react-fontawesome": "^0.1.11",
+    "@reduxjs/toolkit": "^1.4.0",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.5.0",
+    "@testing-library/user-event": "^7.2.1",
+    "@types/classnames": "^2.2.10",
+    "@types/jest": "^24.9.1",
+    "@types/lodash": "^4.14.159",
+    "@types/node": "^12.12.54",
+    "@types/react": "^16.9.46",
+    "@types/react-dom": "^16.9.8",
+    "@types/react-redux": "^7.1.9",
+    "classnames": "^2.2.6",
+    "gh-pages": "^3.1.0",
+    "husky": "^4.2.5",
+    "immer": "^9.0.6",
+    "lint-staged": "^10.2.11",
+    "lodash": "^4.17.21",
+    "node-sass": "^4.14.1",
+    "prettier": "^2.0.5",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-redux": "^7.2.1",
+    "react-scripts": "^3.4.3",
+    "sass-material-colors": "0.0.5",
+    "typescript": "^3.9.7"
+  },
+  "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
+      "prettier --write"
+    ]
+  },
+  "homepage": "https://kawaii.computer/tower-tool/"
+}
+</file>
+
+<file path="README.md">
+# tower-tool
+
+A tool to generate sweet calibration towers for your 3D printer!
+
+Try it out at **[https://kawaii.computer/tower-tool/](https://kawaii.computer/tower-tool/)**!
+
+## Features
+
+Tower Tool can generate towers that adjust these variables:
+
+- Retraction distance.
+- Retraction speed.
+- Hotend temperature.
+- Acceleration.
+- Jerk.
+- Flow.
+
+Handy dandy test shapes are included for retraction, various edges, overhangs, etc.
+
+### Future Features
+
+I'd like to add these eventually:
+
+- Auto-detect layer height.
+- Linear and pressure advance variable.
+
+## Developing
+
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app) so has all the usual scripts provided by it.
+
+## Credits
+
+- Skyline vector created by [rawpixel.com](https://www.rawpixel.com/).
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react"
+  },
+  "include": [
+    "src"
+  ]
+}
+</file>
+
+</files>

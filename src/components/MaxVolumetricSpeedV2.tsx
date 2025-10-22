@@ -17,6 +17,8 @@ import {
   SwitchField,
   FieldGroup,
 } from '@/components/calibration/FormFields';
+import { SliceSettingsInput } from './SliceSettingsInput';
+import { SliceSettings } from '../utils/stlGeometryAnalyzer';
 
 interface MaxVolumetricSpeedProps {
   onNavigate?: (tool: string, path?: string) => void;
@@ -38,6 +40,11 @@ const MaxVolumetricSpeedV2: React.FC<MaxVolumetricSpeedProps> = ({ onNavigate })
   const [useNativeModifiers, setUseNativeModifiers] = useState(firmware === 'orcaslicer');
   const [generating, setGenerating] = useState(false);
   const [towerResult, setTowerResult] = useState<string | null>(null);
+  const [sliceSettings, setSliceSettings] = useState<SliceSettings>({
+    layerHeight: 0.2,
+    firstLayerHeight: 0.3,
+    nozzleDiameter: 0.4
+  });
 
   const materialOptions = [
     { value: 'PLA', label: 'PLA' },
@@ -71,6 +78,7 @@ const MaxVolumetricSpeedV2: React.FC<MaxVolumetricSpeedProps> = ({ onNavigate })
         startValue: parseInt(towerStart),
         endValue: parseInt(towerEnd),
         stepSize: parseInt(towerStep),
+        sliceSettings: sliceSettings
       };
 
       const project = await generateMaxVolumetricTower3MF(
@@ -305,6 +313,11 @@ const MaxVolumetricSpeedV2: React.FC<MaxVolumetricSpeedProps> = ({ onNavigate })
                 min={1}
                 max={10}
                 placeholder="5"
+              />
+
+              <SliceSettingsInput
+                settings={sliceSettings}
+                onChange={setSliceSettings}
               />
 
               <SwitchField

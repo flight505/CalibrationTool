@@ -4,6 +4,7 @@
  */
 
 import { stlToString, ParsedSTL, Triangle } from './asciiStlUtils';
+import { SliceSettings, STLGeometryInfo } from './stlGeometryAnalyzer';
 
 export interface OrcaTowerParameters {
   type: 'temperature' | 'pressure_advance' | 'max_flow' | 'fan' | 'layer_time' | 'retraction' | 'fan_speed' | 'flow_rate' | 'max_volumetric';
@@ -17,6 +18,8 @@ export interface OrcaTowerParameters {
   includeLabels?: boolean;
   includeModifierMesh?: boolean;
   material?: 'PLA' | 'PETG' | 'ABS' | 'TPU' | 'ASA' | 'PC' | 'PA';
+  // Slice settings for accurate Z-height calculation
+  sliceSettings?: SliceSettings;
 }
 
 export interface TowerSection {
@@ -32,6 +35,8 @@ export interface GeneratedTower {
   modifierMeshes?: Blob[];
   orcaSettings?: OrcaSlicerSettings;
   instructions: string;
+  geometryInfo?: STLGeometryInfo;  // Actual STL geometry analysis
+  sliceSettings?: SliceSettings;    // User's slice settings
 }
 
 export interface OrcaSlicerSettings {
@@ -71,8 +76,16 @@ export const PA_PRESETS = {
 export abstract class TowerGeneratorBase {
   protected params: OrcaTowerParameters;
   protected sections: TowerSection[] = [];
+  protected geometryInfo?: STLGeometryInfo;
 
   constructor(params: OrcaTowerParameters) {
+    // Default slice settings
+    const defaultSliceSettings = {
+      layerHeight: 0.2,
+      firstLayerHeight: 0.3,
+      nozzleDiameter: 0.4
+    };
+
     this.params = {
       baseHeight: 1.0,
       sectionHeight: 10.0,
@@ -80,9 +93,14 @@ export abstract class TowerGeneratorBase {
       towerDepth: 10,
       includeLabels: true,
       includeModifierMesh: true,
-      ...params
+      ...params,
+      // Merge slice settings if provided
+      sliceSettings: {
+        ...defaultSliceSettings,
+        ...(params.sliceSettings || {})
+      }
     };
-    
+
     this.calculateSections();
   }
 
@@ -259,21 +277,27 @@ Tower Parameters:
    */
   public async generate(): Promise<GeneratedTower> {
     const mainGeometry = await this.generateTowerGeometry();
-    
+
+    // Analyze the geometry to understand actual section positions
+    const { analyzeSTLGeometry } = await import('./stlGeometryAnalyzer');
+    this.geometryInfo = analyzeSTLGeometry(mainGeometry);
+
     // Validate the main geometry
     this.validateGeometry(mainGeometry);
-    
+
     const mainSTL = new Blob([stlToString(mainGeometry)], { type: 'application/sla' });
-    
+
     const result: GeneratedTower = {
       mainSTL,
       sections: this.sections,
-      instructions: this.generateInstructions()
+      instructions: this.generateInstructions(),
+      geometryInfo: this.geometryInfo,
+      sliceSettings: this.params.sliceSettings
     };
-    
+
     if (this.params.includeModifierMesh) {
       const modifiers = this.generateModifierMeshes();
-      
+
       // Validate each modifier mesh
       modifiers.forEach((mod, index) => {
         try {
@@ -282,13 +306,13 @@ Tower Parameters:
           console.warn(`Warning: Modifier mesh ${index} validation failed:`, error);
         }
       });
-      
-      result.modifierMeshes = modifiers.map(mod => 
+
+      result.modifierMeshes = modifiers.map(mod =>
         new Blob([stlToString(mod)], { type: 'application/sla' })
       );
       result.orcaSettings = this.generateOrcaSettings();
     }
-    
+
     return result;
   }
   
@@ -395,16 +419,8 @@ Tower Parameters:
  * Generate a text label as triangles (simplified version)
  * In a real implementation, this would use a proper text-to-mesh library
  */
-export function generateTextMesh(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _text: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _position: { x: number, y: number, z: number },
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _size: number = 5,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _depth: number = 0.5
-): Triangle[] {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function generateTextMesh(..._args: unknown[]): Triangle[] {
   // This is a placeholder - in production, use a proper text mesh generator
   // For now, return an empty array
   return [];

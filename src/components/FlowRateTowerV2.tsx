@@ -15,6 +15,8 @@ import {
   SwitchField,
   FieldGroup,
 } from '@/components/calibration/FormFields';
+import { SliceSettingsInput } from './SliceSettingsInput';
+import { SliceSettings } from '../utils/stlGeometryAnalyzer';
 
 interface FlowRateTowerProps {
   onNavigate?: (tool: string, path?: string) => void;
@@ -29,6 +31,11 @@ const FlowRateTowerV2: React.FC<FlowRateTowerProps> = ({ onNavigate }) => {
   const [useNativeModifiers, setUseNativeModifiers] = useState(firmware === 'orcaslicer');
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [sliceSettings, setSliceSettings] = useState<SliceSettings>({
+    layerHeight: 0.2,
+    firstLayerHeight: 0.3,
+    nozzleDiameter: 0.4
+  });
 
   const materialOptions = [
     { value: 'PLA', label: 'PLA' },
@@ -76,6 +83,7 @@ const FlowRateTowerV2: React.FC<FlowRateTowerProps> = ({ onNavigate }) => {
         startValue: parseFloat(startFlow),
         endValue: parseFloat(endFlow),
         stepSize: parseFloat(flowStep),
+        sliceSettings,
       };
 
       const project = await generateFlowRateTower3MF(
@@ -243,6 +251,11 @@ const FlowRateTowerV2: React.FC<FlowRateTowerProps> = ({ onNavigate }) => {
             helperText="Increment between test sections"
           />
 
+          <SliceSettingsInput
+            settings={sliceSettings}
+            onChange={setSliceSettings}
+          />
+
           <SwitchField
             label="Use Orca native modifiers"
             id="native-modifiers"
@@ -299,7 +312,7 @@ const FlowRateTowerV2: React.FC<FlowRateTowerProps> = ({ onNavigate }) => {
               <li>• No over-extrusion</li>
               <li>• Smooth surface</li>
             </ul>
-            <p>5. Note that section's flow ratio</p>
+            <p>5. Note that section&apos;s flow ratio</p>
             <p>6. Apply in Material settings → Flow ratio</p>
           </div>
         </FormSection>

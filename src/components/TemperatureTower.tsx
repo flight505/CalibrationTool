@@ -18,6 +18,8 @@ import {
   SwitchField,
   FieldGroup,
 } from '@/components/calibration/FormFields';
+import { SliceSettingsInput } from './SliceSettingsInput';
+import { SliceSettings } from '../utils/stlGeometryAnalyzer';
 
 interface TemperatureTowerProps {
   onNavigate?: (tool: string, path?: string) => void;
@@ -27,7 +29,7 @@ const TemperatureTower: React.FC<TemperatureTowerProps> = ({ onNavigate }) => {
   const [material, setMaterial] = useState('PLA');
   const [bestTemp, setBestTemp] = useState('');
   const [result, setResult] = useState<string | null>(null);
-  
+
   // Tower generation states
   const [startTemp, setStartTemp] = useState('220');
   const [endTemp, setEndTemp] = useState('190');
@@ -37,6 +39,13 @@ const TemperatureTower: React.FC<TemperatureTowerProps> = ({ onNavigate }) => {
   const [includeLabels, setIncludeLabels] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [towerInstructions, setTowerInstructions] = useState<string | null>(null);
+
+  // Slice settings state
+  const [sliceSettings, setSliceSettings] = useState<SliceSettings>({
+    layerHeight: 0.2,
+    firstLayerHeight: 0.3,
+    nozzleDiameter: 0.4
+  });
 
   const materialOptions = [
     { value: 'PLA', label: 'PLA' },
@@ -72,7 +81,8 @@ const TemperatureTower: React.FC<TemperatureTowerProps> = ({ onNavigate }) => {
         endValue: parseInt(endTemp),
         stepSize: parseInt(tempStep),
         includeLabels,
-        includeModifierMesh: true
+        includeModifierMesh: true,
+        sliceSettings
       });
       
       if (export3MF) {
@@ -283,6 +293,11 @@ const TemperatureTower: React.FC<TemperatureTowerProps> = ({ onNavigate }) => {
                   placeholder="5"
                 />
               </FieldGroup>
+
+              <SliceSettingsInput
+                settings={sliceSettings}
+                onChange={setSliceSettings}
+              />
 
               <FieldGroup>
                 <TextField

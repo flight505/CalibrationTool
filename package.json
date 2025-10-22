@@ -47,6 +47,7 @@
     "chalk": "^5.4.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "decimal.js": "^10.6.0",
     "drizzle-kit": "^0.31.4",
     "drizzle-orm": "^0.44.3",
     "formidable": "^3.5.4",

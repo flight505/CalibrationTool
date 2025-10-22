@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Wind, Package, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { generateFanSpeedTower3MF } from '@/utils/orcaTower3MFExports';
+import { SliceSettingsInput } from './SliceSettingsInput';
+import { SliceSettings } from '../utils/stlGeometryAnalyzer';
 import {
   CalibrationToolLayout,
   FormSection,
@@ -29,6 +31,11 @@ const FanSpeedTowerV2: React.FC<FanSpeedTowerProps> = ({ onNavigate }) => {
   const [useNativeModifiers, setUseNativeModifiers] = useState(firmware === 'orcaslicer');
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [sliceSettings, setSliceSettings] = useState<SliceSettings>({
+    layerHeight: 0.2,
+    firstLayerHeight: 0.3,
+    nozzleDiameter: 0.4,
+  });
 
   const materialOptions = [
     { value: 'PLA', label: 'PLA' },
@@ -79,6 +86,7 @@ const FanSpeedTowerV2: React.FC<FanSpeedTowerProps> = ({ onNavigate }) => {
         startValue: parseInt(startFan),
         endValue: parseInt(endFan),
         stepSize: parseInt(fanStep),
+        sliceSettings,
       };
 
       const project = await generateFanSpeedTower3MF(
@@ -244,6 +252,14 @@ const FanSpeedTowerV2: React.FC<FanSpeedTowerProps> = ({ onNavigate }) => {
             onCheckedChange={setUseNativeModifiers}
             description="Recommended when slicing in OrcaSlicer; disables firmware G-code overrides"
           />
+        </FormSection>
+
+        <FormSection
+          title="Slice Settings"
+          description="Match these settings to your slicer configuration"
+          icon={<Settings className="h-4 w-4" />}
+        >
+          <SliceSettingsInput settings={sliceSettings} onChange={setSliceSettings} />
 
           <ActionSection>
             <Button

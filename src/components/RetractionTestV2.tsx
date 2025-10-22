@@ -19,6 +19,8 @@ import {
   SwitchField,
   FieldGroup,
 } from '@/components/calibration/FormFields';
+import { SliceSettingsInput } from '@/components/SliceSettingsInput';
+import type { SliceSettings } from '@/utils/stlGeometryAnalyzer';
 
 interface RetractionTestProps {
   onNavigate?: (tool: string, path?: string) => void;
@@ -40,6 +42,13 @@ const RetractionTestV2: React.FC<RetractionTestProps> = ({ onNavigate }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [firmware, setFirmware] = useState<FirmwareType>('marlin');
   const [useNativeModifiers, setUseNativeModifiers] = useState(firmware === 'orcaslicer');
+
+  // Slice settings state
+  const [sliceSettings, setSliceSettings] = useState<SliceSettings>({
+    layerHeight: 0.2,
+    firstLayerHeight: 0.3,
+    nozzleDiameter: 0.4
+  });
 
   const extruderOptions = [
     { value: 'Direct Drive', label: 'Direct Drive' },
@@ -120,7 +129,8 @@ const RetractionTestV2: React.FC<RetractionTestProps> = ({ onNavigate }) => {
           endValue: parseFloat(stlEndRetraction),
           stepSize: parseFloat(stlRetractionStep),
           extruderType: extruderTypeMap[extruderType] || 'direct_drive',
-          retractionSpeed: 30
+          retractionSpeed: 30,
+          sliceSettings
         },
         firmware,
         !useNativeModifiers
@@ -270,6 +280,11 @@ const RetractionTestV2: React.FC<RetractionTestProps> = ({ onNavigate }) => {
                 helperText={`Typical: ${extruderType === 'Direct Drive' ? '0.1mm' : '0.2mm'}`}
               />
 
+              <SliceSettingsInput
+                settings={sliceSettings}
+                onChange={setSliceSettings}
+              />
+
               <InfoCard variant="info">
                 <div className="space-y-1 text-xs">
                   <div><strong>Tower Height:</strong> {towerHeight.toFixed(1)}mm</div>
@@ -318,7 +333,7 @@ const RetractionTestV2: React.FC<RetractionTestProps> = ({ onNavigate }) => {
               </ActionSection>
 
               <InfoCard variant="warning">
-                <strong>Remember these values!</strong> You'll need them in the Calculate tab to find your optimal retraction.
+                <strong>Remember these values!</strong> You&apos;ll need them in the Calculate tab to find your optimal retraction.
               </InfoCard>
             </FormSection>
           </TabsContent>

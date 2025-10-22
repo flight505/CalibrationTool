@@ -1,11 +1,15 @@
 /**
  * Post-Processing Generator for Calibration Towers
  * Generates firmware-specific G-code commands for OrcaSlicer calibration
+ *
+ * Based on AutoTowersGenerator's LayerEnumerate algorithm with Decimal precision
  */
 
+import Decimal from 'decimal.js';
 import { GeneratedTower, TowerSection, OrcaSlicerSettings } from './orcaTowerGenerator';
 import type { FirmwareType } from './firmwareTypes';
 import { mapModifierSettingsRecord } from './orcaSettingMapper';
+import { calculateLayerHeights, SliceSettings, STLGeometryInfo } from './stlGeometryAnalyzer';
 
 export type { FirmwareType };
 
@@ -25,6 +29,9 @@ export interface PostProcessingOptions {
   sectionHeight: number;
   initialLayerHeight: number;
   layerHeight: number;
+  // New: Optional geometry info for accurate calculation
+  geometryInfo?: STLGeometryInfo;
+  sliceSettings?: SliceSettings;
 }
 
 export interface LayerInfo {
@@ -54,40 +61,95 @@ export class PostProcessingGenerator {
   }
 
   /**
-   * Calculate layer information for each section
+   * Calculate layer information for each section using Decimal precision
+   * Based on AutoTowersGenerator's LayerEnumerate algorithm
    */
   calculateLayerInfo(sections: TowerSection[]): LayerInfo[] {
-    const { baseHeight, sectionHeight, initialLayerHeight, layerHeight } = this.options;
-    const layerInfo: LayerInfo[] = [];
-    
-    // Start after the base
-    let currentZ = baseHeight;
-    let layerNumber = Math.ceil(baseHeight / layerHeight);
-    
-    sections.forEach((_section, index) => {
-      // Calculate the Z height for this section
-      const sectionStartZ = baseHeight + (index * sectionHeight);
-      
-      // Find the first layer that enters this section
-      while (currentZ < sectionStartZ && layerNumber === Math.ceil(baseHeight / layerHeight)) {
-        currentZ = initialLayerHeight + (layerNumber - 1) * layerHeight;
-        layerNumber++;
+    const { baseHeight, sectionHeight, initialLayerHeight, layerHeight, geometryInfo, sliceSettings } = this.options;
+
+    // If we have geometry info and slice settings, use the accurate analyzer
+    if (geometryInfo && sliceSettings) {
+      return this.calculateLayerInfoFromGeometry(sections, geometryInfo, sliceSettings);
+    }
+
+    // Otherwise, use the legacy calculation with Decimal precision
+    let currentZ = new Decimal(0);
+    let layerNumber = 0;
+    let sectionIndex = 0;
+
+    const baseHeightDec = new Decimal(baseHeight);
+    const sectionHeightDec = new Decimal(sectionHeight);
+    const firstLayerDec = new Decimal(initialLayerHeight);
+    const standardLayerDec = new Decimal(layerHeight);
+
+    // Calculate next section boundary
+    let nextSectionStart = baseHeightDec;
+
+    // Calculate total height needed
+    const totalSections = sections.length;
+    const totalHeight = baseHeightDec.plus(sectionHeightDec.times(totalSections));
+
+    // Track section boundaries
+    const sectionBoundaries: LayerInfo[] = [];
+
+    // Iterate through all layers
+    while (currentZ.lessThan(totalHeight)) {
+      // Increment height (first layer uses firstLayerHeight)
+      if (layerNumber === 0) {
+        currentZ = currentZ.plus(firstLayerDec);
+      } else {
+        currentZ = currentZ.plus(standardLayerDec);
       }
-      
-      while (currentZ < sectionStartZ) {
-        currentZ += layerHeight;
-        layerNumber++;
+      layerNumber++;
+
+      // Check if we've crossed into a new section
+      const isNewSection = currentZ.greaterThan(nextSectionStart) && sectionIndex < sections.length;
+
+      if (isNewSection) {
+        // Record this as a section boundary
+        sectionBoundaries.push({
+          zHeight: currentZ.toNumber(),
+          layerNumber,
+          isNewSection: true,
+          sectionIndex
+        });
+
+        // Move to next section
+        sectionIndex++;
+        nextSectionStart = nextSectionStart.plus(sectionHeightDec);
       }
-      
-      layerInfo.push({
-        zHeight: currentZ,
-        layerNumber,
+    }
+
+    return sectionBoundaries;
+  }
+
+  /**
+   * Calculate layer info using actual STL geometry analysis
+   */
+  private calculateLayerInfoFromGeometry(
+    sections: TowerSection[],
+    geometryInfo: STLGeometryInfo,
+    sliceSettings: SliceSettings
+  ): LayerInfo[] {
+    // Use the geometry analyzer to get precise layer positions
+    const geometryLayers = calculateLayerHeights(geometryInfo, sliceSettings);
+
+    // Filter to only get section boundary layers
+    const sectionBoundaries = geometryLayers
+      .filter(layer => layer.isNewSection)
+      .map(layer => ({
+        zHeight: layer.zHeight.toNumber(),
+        layerNumber: layer.layerNumber,
         isNewSection: true,
-        sectionIndex: index
-      });
-    });
-    
-    return layerInfo;
+        sectionIndex: layer.sectionIndex
+      }));
+
+    // Validate that we have the right number of sections
+    if (sectionBoundaries.length < sections.length) {
+      console.warn(`Geometry analysis found ${sectionBoundaries.length} sections, expected ${sections.length}`);
+    }
+
+    return sectionBoundaries.slice(0, sections.length);
   }
 
   /**
@@ -158,11 +220,12 @@ export class PostProcessingGenerator {
         commands.push(...this.generateRetractionCommands(section.value, 30, firmware));
         break;
       
-      case 'max_volumetric_speed':
+      case 'max_volumetric_speed': {
         // Convert volumetric speed to print speed based on layer height and line width
         const printSpeed = this.calculatePrintSpeed(section.value);
         commands.push(...this.generateSpeedCommands(printSpeed, firmware));
         break;
+      }
     }
     
     // Add LCD message if enabled

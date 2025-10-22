@@ -504,8 +504,11 @@ export async function exportTowerAs3MF(
     postProcessingOptions: {
       baseHeight: tower.sections[0]?.height || 1.0,
       sectionHeight: tower.sections[1]?.height - tower.sections[0]?.height || 10.0,
-      initialLayerHeight: 0.3,
-      layerHeight: 0.2
+      initialLayerHeight: tower.sliceSettings?.firstLayerHeight || 0.3,
+      layerHeight: tower.sliceSettings?.layerHeight || 0.2,
+      // Pass geometry info and slice settings for accurate calculation
+      geometryInfo: tower.geometryInfo,
+      sliceSettings: tower.sliceSettings
     }
   });
 }

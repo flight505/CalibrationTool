@@ -3,6 +3,7 @@ import { Move3D, BarChart3, Activity, FileDown, LineChart } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { CalibrationToolLayout, TwoColumnLayout, InfoCard } from '@/components/calibration/CalibrationToolLayout';
+import { SliceSettingsInput } from './SliceSettingsInput';
 
 import { PAInputPanel } from './pa-optimizer/PAInputPanel';
 import { PAAnalysisPanel } from './pa-optimizer/PAAnalysisPanel';
@@ -12,6 +13,7 @@ import { PAVisualizationPanel } from './pa-optimizer/PAVisualizationPanel';
 
 import { analyzePA } from '@/lib/pa-optimizer';
 import type { PATestConfig, PATestResult, PAAnalysisResult, ModelType } from '@/lib/pa-optimizer';
+import type { SliceSettings } from '@/utils/stlGeometryAnalyzer';
 
 interface PressureAdvanceOptimizerProps {
   onNavigate?: (tool: string, path?: string) => void;
@@ -47,6 +49,11 @@ const PressureAdvanceOptimizer: React.FC<PressureAdvanceOptimizerProps> = ({ onN
   const [activeTab, setActiveTab] = useState('input');
   const [manualModelOverride, setManualModelOverride] = useState<string | null>(null);
   const [outlierCorrectionMode, setOutlierCorrectionMode] = useState<'none' | 'ransac' | 'model'>('none');
+  const [sliceSettings, setSliceSettings] = useState<SliceSettings>({
+    layerHeight: 0.2,
+    firstLayerHeight: 0.3,
+    nozzleDiameter: 0.4
+  });
 
   // Run analysis whenever data, model selection, or correction mode changes
   const analysis: PAAnalysisResult | null = useMemo(() => {
@@ -155,6 +162,11 @@ const PressureAdvanceOptimizer: React.FC<PressureAdvanceOptimizerProps> = ({ onN
           </TabsList>
 
           <TabsContent value="input" className="space-y-4">
+            <SliceSettingsInput
+              settings={sliceSettings}
+              onChange={setSliceSettings}
+            />
+
             <PAInputPanel
               config={config}
               testData={testData}
