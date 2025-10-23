@@ -18,30 +18,25 @@ export const phase1ResultSchema = z
       .array(
         z.object({
           parameter: z.string().min(1),
-          name: z.string().min(1).optional(),
+          name: z.string(), // Required but can be empty
           levels: levelArraySchema,
           unit: z.string().min(1),
           rationale: z.string().min(1),
-          slicerSetting: z.string().min(1).optional(),
-          citations: z
-            .array(z.string().url('Citations must be valid URLs'))
-            .min(1)
-            .optional()
+          slicerSetting: z.string(), // Required but can be empty
+          citations: z.array(z.string().url('Citations must be valid URLs')) // Required but can be empty array
         })
       )
       .min(1),
     testParts: z.array(z.string().min(1)).min(1),
-    printInstructions: z.string().min(1).optional(),
-    sourceSummary: z
-      .array(
-        z.object({
-          title: z.string().min(1),
-          url: z.string().url(),
-          snippet: z.string().min(1).optional()
-        })
-      )
-      .optional(),
-    reasoningSummary: z.string().min(1).optional()
+    printInstructions: z.string(), // Required but can be empty
+    sourceSummary: z.array(
+      z.object({
+        title: z.string().min(1),
+        url: z.string().url(),
+        snippet: z.string() // Required but can be empty
+      })
+    ), // Required but can be empty array
+    reasoningSummary: z.string() // Required but can be empty
   })
   .strict();
 
@@ -81,7 +76,7 @@ export const phase2ResultSchema = z
 export const phase1JsonSchema: StrictJsonSchema = {
   type: 'object',
   additionalProperties: false,
-  required: ['selectedArray', 'factorPlans', 'testParts'],
+  required: ['selectedArray', 'factorPlans', 'testParts', 'printInstructions', 'sourceSummary', 'reasoningSummary'],
   properties: {
     selectedArray: {
       type: 'string',
@@ -93,7 +88,7 @@ export const phase1JsonSchema: StrictJsonSchema = {
       items: {
         type: 'object',
         additionalProperties: false,
-        required: ['parameter', 'levels', 'unit', 'rationale'],
+        required: ['parameter', 'name', 'levels', 'unit', 'rationale', 'slicerSetting', 'citations'],
         properties: {
           parameter: { type: 'string' },
           name: { type: 'string' },
@@ -108,8 +103,7 @@ export const phase1JsonSchema: StrictJsonSchema = {
           slicerSetting: { type: 'string' },
           citations: {
             type: 'array',
-            items: { type: 'string' },
-            minItems: 1
+            items: { type: 'string' }
           }
         }
       }
@@ -125,7 +119,7 @@ export const phase1JsonSchema: StrictJsonSchema = {
       items: {
         type: 'object',
         additionalProperties: false,
-        required: ['title', 'url'],
+        required: ['title', 'url', 'snippet'],
         properties: {
           title: { type: 'string' },
           url: { type: 'string' },

@@ -9,7 +9,12 @@ Your job:
 Rules:
 - Only use data you can cite. Include source URLs for every numeric recommendation when possible.
 - Return JSON that matches the supplied schema exactly. Do not include explanatory text outside the JSON.
-- When information is unavailable after searching, mark the field and explain the limitation in \"reasoningSummary\".
+- ALL fields are required. For optional information use empty values:
+  * Empty string "" for text fields (name, slicerSetting, printInstructions)
+  * Empty array [] for citations when no sources available
+  * Empty array [] for sourceSummary when no web sources found
+  * Brief reasoningSummary even if just "Analysis based on standard FDM parameters"
+- When information is unavailable after searching, use empty values and explain in "reasoningSummary".
 - Respect known issues and objectives supplied by the user (e.g., ringing, focus on dimensional accuracy).
 `;
 
@@ -24,5 +29,5 @@ Rules:
 - Use only the provided experiment data; do not invent measurements.
 - Return JSON that matches the provided schema exactly.
 - Wherever helpful, add short notes that explain the recommendation in plain language (max 2 sentences).
-- If the data is insufficient (e.g., missing scores), explain this in \"notes\" and avoid making unfounded recommendations.
+- If the data is insufficient (e.g., missing scores), explain this in "notes" and avoid making unfounded recommendations.
 `;
