@@ -108,7 +108,7 @@ export const phase1JsonSchema: StrictJsonSchema = {
           slicerSetting: { type: 'string' },
           citations: {
             type: 'array',
-            items: { type: 'string', format: 'uri' },
+            items: { type: 'string' },
             minItems: 1
           }
         }
@@ -128,7 +128,7 @@ export const phase1JsonSchema: StrictJsonSchema = {
         required: ['title', 'url'],
         properties: {
           title: { type: 'string' },
-          url: { type: 'string', format: 'uri' },
+          url: { type: 'string' },
           snippet: { type: 'string' }
         }
       }

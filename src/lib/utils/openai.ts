@@ -287,7 +287,13 @@ function normaliseError(error: unknown): DOECallError {
   }
 
   if (error instanceof APIError) {
-    const err: DOECallError = Object.assign(new Error(error.message), {
+    // Enhance schema validation error messages
+    let message = error.message;
+    if (error.status === 400 && message.includes('Invalid schema')) {
+      message = 'The AI parameter suggestion service encountered a configuration issue. Please try again or configure parameters manually.';
+    }
+
+    const err: DOECallError = Object.assign(new Error(message), {
       name: 'DOECallError',
       code: error.code ?? undefined,
       status: error.status,
@@ -298,7 +304,13 @@ function normaliseError(error: unknown): DOECallError {
   }
 
   if (error instanceof Error) {
-    const err: DOECallError = Object.assign(new Error(error.message), {
+    // Enhance generic error messages
+    let message = error.message;
+    if (message.includes('Invalid schema')) {
+      message = 'Parameter suggestion service is temporarily unavailable. You can still configure parameters manually.';
+    }
+
+    const err: DOECallError = Object.assign(new Error(message), {
       name: 'DOECallError',
       cause: error
     });
