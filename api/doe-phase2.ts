@@ -41,7 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     await callPhase2LLM({
       payload,
-      stream: true,
+      stream: false, // Disabled to avoid OpenAI organization verification requirement
       handlers: {
         onTextDelta: (delta) => send(res, { kind: 'delta', delta }),
         onEvent: (event) => send(res, { kind: 'event', event }),

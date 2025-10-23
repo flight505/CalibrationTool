@@ -47,7 +47,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     await callPhase1LLM({
       payload,
-      stream: true,
+      stream: false, // Disabled to avoid OpenAI organization verification requirement
       location,
       handlers: {
         onWebSearchStatus: (status) => send(res, { kind: 'status', status }),

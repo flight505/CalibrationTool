@@ -419,8 +419,7 @@ Tower Parameters:
  * Generate a text label as triangles (simplified version)
  * In a real implementation, this would use a proper text-to-mesh library
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function generateTextMesh(..._args: unknown[]): Triangle[] {
+export function generateTextMesh(): Triangle[] {
   // This is a placeholder - in production, use a proper text mesh generator
   // For now, return an empty array
   return [];
